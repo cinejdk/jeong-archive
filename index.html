@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v9.2</title>
+    <title>JDM Archive v9.3</title>
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f4f6f7; --nav-height: 65px; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); }
@@ -26,14 +26,16 @@
         .btn-save { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         
         /* 데이터 복원 박스 */
-        .restore-box { background: #e8f5e9; border: 2px solid #4caf50; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .restore-box { background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
 
-        /* 모달 (보기/수정) */
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; }
-        .modal-content { background:white; width:90%; max-width:500px; padding:20px; border-radius:12px; max-height:85vh; overflow-y:auto; position: relative; }
-        .close-btn { position: absolute; top: 15px; right: 15px; font-size: 1.5rem; border: none; background: none; cursor: pointer; }
-        .view-body img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
-        .view-body { line-height: 1.6; white-space: pre-wrap; }
+        /* 모달 (팝업창) 디자인 개선 */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(2px); }
+        .modal-content { background:white; width:85%; max-width:500px; padding:25px; border-radius:15px; max-height:80vh; overflow-y:auto; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .close-btn { position: absolute; top: 15px; right: 15px; font-size: 1.8rem; border: none; background: none; cursor: pointer; color: #999; }
+        
+        /* 뷰어 스타일 (이미지 보이게) */
+        .view-body img { max-width: 100%; border-radius: 8px; margin: 10px 0; display:block; }
+        .view-body { line-height: 1.6; white-space: pre-wrap; font-size: 1rem; color: #333; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: white; display: flex; border-top: 1px solid #eee; z-index: 1000; }
         .nav-item { flex: 1; text-align: center; padding: 8px; color: #999; font-size: 0.8rem; cursor: pointer; }
@@ -42,7 +44,7 @@
     </style>
 </head>
 <body>
-<header><h1>JDM Archive v9.2</h1></header>
+<header><h1>JDM Archive v9.3</h1></header>
 
 <div class="container">
     <div id="tab-calendar" class="tab-content active">
@@ -68,7 +70,7 @@
             <textarea id="inputContent" style="height:150px" placeholder="내용을 입력하세요"></textarea>
             <input type="text" id="inputLink" placeholder="관련 링크 (URL)">
             <label style="display:block; margin-bottom:5px; font-weight:bold;">📸 사진 첨부 (여러 장 가능)</label>
-            <input type="file" id="inputImage" accept="image/*" multiple style="padding:10px; background:#eee;">
+            <input type="file" id="inputImage" accept="image/*" multiple style="padding:10px; background:#eee; width:100%;">
             <button class="btn-save" onclick="saveMemo()">저 장</button>
         </div>
     </div>
@@ -78,12 +80,12 @@
             <h3>💾 데이터 관리</h3>
             
             <div class="restore-box">
-                <strong style="color:#2e7d32; display:block; margin-bottom:5px;">📂 파일로 복원하기</strong>
-                <p style="font-size:0.8rem; margin:0 0 10px 0;">가지고 있는 .json 백업 파일을 선택하세요.</p>
-                <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc;">
+                <strong style="color:#d35400; display:block; margin-bottom:5px;">📂 파일로 복원하기 (수정됨)</strong>
+                <p style="font-size:0.8rem; margin:0 0 10px 0;">Jeong_Backup 파일을 선택하세요.<br>('notes' 이름표도 인식합니다)</p>
+                <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%;">
             </div>
 
-            <div style="background:#e3f2fd; padding:15px; border-radius:10px; margin-bottom:20px; border:2px dashed #2196f3;">
+             <div style="background:#e3f2fd; padding:15px; border-radius:10px; margin-bottom:20px; border:2px dashed #2196f3;">
                 <strong style="color:#1565c0; display:block; margin-bottom:5px;">⚡ 긴급 데이터 복구</strong>
                 <p style="font-size:0.8rem; margin:0 0 10px 0;">파일이 안 될 때 누르세요. (11개 기록 복원)</p>
                 <button onclick="injectEmergencyData()" class="btn-save" style="background:#2196f3; padding:10px;">데이터 강제 주입</button>
@@ -98,17 +100,19 @@
 <div id="viewModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeViewModal()">×</button>
-        <div style="margin-bottom:10px;">
-            <span id="viewDate" style="color:#888; font-size:0.9rem;"></span>
-            <span id="viewTag" style="color:var(--accent-color); font-weight:bold; margin-left:10px;"></span>
+        <div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+            <span id="viewTag" style="color:white; background:var(--accent-color); padding:3px 8px; border-radius:4px; font-size:0.8rem;"></span>
+            <span id="viewDate" style="color:#888; font-size:0.9rem; margin-left:10px;"></span>
         </div>
         <h2 id="viewTitle" style="margin-top:0; color:#2c3e50;"></h2>
-        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+        
         <div id="viewBody" class="view-body"></div>
+        
         <div id="viewLink" style="margin-top:20px;"></div>
+        
         <div style="margin-top:20px; display:flex; gap:10px;">
-            <button class="btn-save" onclick="switchToEditMode()" style="background:#f39c12;">수 정</button>
-            <button class="btn-save" onclick="closeViewModal()" style="background:#999;">닫 기</button>
+            <button class="btn-save" onclick="switchToEditMode()" style="background:#f39c12; flex:1;">수 정</button>
+            <button class="btn-save" onclick="closeViewModal()" style="background:#999; flex:1;">닫 기</button>
         </div>
     </div>
 </div>
@@ -119,10 +123,10 @@
         <input type="hidden" id="editId">
         <input type="text" id="editTitle">
         <select id="editTag"><option>#일반</option><option>#업무</option><option>#아이디어</option><option>#건강</option><option>#현장</option><option>#AI</option><option>#심리</option></select>
-        <textarea id="editContent" style="height:150px; font-family:monospace; font-size:0.9rem;" placeholder="HTML 태그가 보일 수 있습니다."></textarea>
+        <textarea id="editContent" style="height:150px; font-family:monospace; font-size:0.9rem;" placeholder="HTML 코드가 보입니다. 이미지는 건드리지 마세요."></textarea>
         <input type="text" id="editLink">
         <div style="display:flex; gap:10px;">
-            <button class="btn-save" onclick="updateMemo()">수정 완료</button>
+            <button class="btn-save" onclick="updateMemo()">저장 완료</button>
             <button class="btn-save" onclick="closeEditModal()" style="background:#999;">취소</button>
         </div>
     </div>
@@ -157,13 +161,14 @@
     }
 
     function injectEmergencyData() {
-        if(!confirm("긴급 복구를 진행하시겠습니까? (11개 데이터)")) return;
+        if(!confirm("긴급 복구를 진행하시겠습니까?")) return;
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
         EMERGENCY_DATA.forEach(item => store.put(item));
         tx.oncomplete = () => { alert("복구 완료!"); switchTab('calendar'); renderCalendar(); };
     }
 
+    // [핵심] 수정된 복원 로직: notes 키 확인
     function restoreData(input) {
         const file = input.files[0];
         if(!file) return;
@@ -172,20 +177,36 @@
             try {
                 let raw = e.target.result;
                 if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+                
                 let data = JSON.parse(raw);
                 if (typeof data === 'string') data = JSON.parse(data);
+
+                // [중요] 데이터가 'notes'라는 주머니에 있는지 확인
                 if (!Array.isArray(data)) {
                      if(data.memos) data = data.memos;
+                     else if(data.notes) data = data.notes; // 여기가 범인 해결!
                      else if(typeof data === 'object') data = Object.values(data);
                      else data = [data];
                 }
+
+                if(!data || data.length === 0) throw new Error("데이터를 찾을 수 없습니다.");
+
                 const tx = db.transaction(STORE_NAME, 'readwrite');
                 const store = tx.objectStore(STORE_NAME);
-                data.forEach(item => store.put(item));
-                tx.oncomplete = () => { alert(`파일 복원 성공! (${data.length}개)`); switchTab('list'); };
-            } catch (err) { alert("파일 오류: " + err.message); }
+                let count = 0;
+                data.forEach(item => {
+                    // 구형 데이터 호환성 처리
+                    if(!item.dateStr) item.dateStr = item.date || new Date().toLocaleDateString('ko-KR');
+                    if(!item.tag) item.tag = "#복원";
+                    store.put(item);
+                    count++;
+                });
+
+                tx.oncomplete = () => { alert(`성공! ${count}개의 기록을 복원했습니다.`); switchTab('list'); };
+            } catch (err) { alert("복원 실패: " + err.message); }
         };
         reader.readAsText(file);
+        input.value = '';
     }
 
     async function saveMemo() {
@@ -220,12 +241,16 @@
         if(!m) return;
         document.getElementById('viewTitle').innerText = m.title;
         document.getElementById('viewDate').innerText = m.dateStr;
-        document.getElementById('viewTag').innerText = m.tag;
+        document.getElementById('viewTag').innerText = m.tag || '#일반';
+        
+        // HTML 그대로 보여주기 (이미지 렌더링)
         document.getElementById('viewBody').innerHTML = m.content;
+        
         const linkBox = document.getElementById('viewLink');
         linkBox.innerHTML = m.link ? `<a href="${m.link}" target="_blank" style="display:block; background:#f1f1f1; padding:10px; border-radius:8px; text-decoration:none; color:#0d47a1;">🔗 관련 링크 열기</a>` : '';
+        
         document.getElementById('viewModal').style.display = 'flex';
-        // 수정 모드 전환을 위해 ID 저장
+        // 수정 모드를 위해 ID 저장
         document.getElementById('editId').value = m.id;
     }
 
