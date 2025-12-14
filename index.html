@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v9.1</title>
+    <title>JDM Archive v9.2</title>
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f4f6f7; --nav-height: 65px; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); }
@@ -25,12 +25,13 @@
         input, textarea, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
         .btn-save { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         
+        /* 데이터 복원 박스 */
+        .restore-box { background: #e8f5e9; border: 2px solid #4caf50; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+
         /* 모달 (보기/수정) */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; }
         .modal-content { background:white; width:90%; max-width:500px; padding:20px; border-radius:12px; max-height:85vh; overflow-y:auto; position: relative; }
         .close-btn { position: absolute; top: 15px; right: 15px; font-size: 1.5rem; border: none; background: none; cursor: pointer; }
-        
-        /* 뷰어 스타일 */
         .view-body img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
         .view-body { line-height: 1.6; white-space: pre-wrap; }
 
@@ -41,7 +42,7 @@
     </style>
 </head>
 <body>
-<header><h1>JDM Archive</h1></header>
+<header><h1>JDM Archive v9.2</h1></header>
 
 <div class="container">
     <div id="tab-calendar" class="tab-content active">
@@ -66,10 +67,8 @@
             <select id="inputTag"><option>#일반</option><option>#업무</option><option>#아이디어</option><option>#건강</option><option>#현장</option><option>#AI</option><option>#심리</option></select>
             <textarea id="inputContent" style="height:150px" placeholder="내용을 입력하세요"></textarea>
             <input type="text" id="inputLink" placeholder="관련 링크 (URL)">
-            
             <label style="display:block; margin-bottom:5px; font-weight:bold;">📸 사진 첨부 (여러 장 가능)</label>
             <input type="file" id="inputImage" accept="image/*" multiple style="padding:10px; background:#eee;">
-            
             <button class="btn-save" onclick="saveMemo()">저 장</button>
         </div>
     </div>
@@ -77,12 +76,21 @@
     <div id="tab-data" class="tab-content">
         <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
             <h3>💾 데이터 관리</h3>
-            <div style="background:#e3f2fd; padding:15px; border-radius:8px; margin-bottom:20px; border:2px dashed #2196f3;">
-                <p style="margin:0; font-size:0.9rem; color:#1565c0;">혹시 데이터가 또 안 보이면<br>아래 버튼을 한 번 더 누르세요.</p>
-                <button onclick="injectEmergencyData()" class="btn-save" style="background:#2196f3; margin-top:10px; padding:10px;">⚡ 데이터 긴급 복구</button>
+            
+            <div class="restore-box">
+                <strong style="color:#2e7d32; display:block; margin-bottom:5px;">📂 파일로 복원하기</strong>
+                <p style="font-size:0.8rem; margin:0 0 10px 0;">가지고 있는 .json 백업 파일을 선택하세요.</p>
+                <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc;">
             </div>
-            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:10px;">데이터 백업 (파일 저장)</button>
-            <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">초기화</button>
+
+            <div style="background:#e3f2fd; padding:15px; border-radius:10px; margin-bottom:20px; border:2px dashed #2196f3;">
+                <strong style="color:#1565c0; display:block; margin-bottom:5px;">⚡ 긴급 데이터 복구</strong>
+                <p style="font-size:0.8rem; margin:0 0 10px 0;">파일이 안 될 때 누르세요. (11개 기록 복원)</p>
+                <button onclick="injectEmergencyData()" class="btn-save" style="background:#2196f3; padding:10px;">데이터 강제 주입</button>
+            </div>
+
+            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:10px;">📤 전체 백업 (파일 저장)</button>
+            <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 전체 초기화</button>
         </div>
     </div>
 </div>
@@ -96,11 +104,8 @@
         </div>
         <h2 id="viewTitle" style="margin-top:0; color:#2c3e50;"></h2>
         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-        
         <div id="viewBody" class="view-body"></div>
-        
         <div id="viewLink" style="margin-top:20px;"></div>
-        
         <div style="margin-top:20px; display:flex; gap:10px;">
             <button class="btn-save" onclick="switchToEditMode()" style="background:#f39c12;">수 정</button>
             <button class="btn-save" onclick="closeViewModal()" style="background:#999;">닫 기</button>
@@ -131,8 +136,7 @@
 </nav>
 
 <script>
-    const EMERGENCY_DATA = [{"title":"클라우드 테스트1","link":"https://n.news.naver.com/article/015/0005220929?cds=news_edit","dateStr":"2025. 12. 6.","tag":"#AI","id":1765026140868,"content":"신난다^^ <br><img src='https://via.placeholder.com/150' alt='복원된이미지예시'>"},{"title":"앱개발은 힘들다.","link":"","dateStr":"2025. 12. 6.","tag":"#AI","id":1765035202224,"content":"오늘 하루종일... 앱개발에 매달렸다.\n\n제미나이의 도움으로 여기까지 왔다."},{"title":"사무실에서 확인함","link":"https://jeong-archive.netlify.app/","dateStr":"2025. 12. 8.","tag":"#일반","id":1765156067646,"content":"잘 작동되고 있다."}];
-    // (용량상 일부만 예시로 넣었으나, 실제론 이전 데이터가 유지됩니다)
+    const EMERGENCY_DATA = [{"title":"클라우드 테스트1","link":"https://n.news.naver.com/article/015/0005220929?cds=news_edit","dateStr":"2025. 12. 6.","tag":"#AI","id":1765026140868,"content":"신난다^^"},{"title":"새클라우드 테스트2","link":"https://n.news.naver.com/article/015/0005220929?cds=news_edit","dateStr":"2025. 12. 7.","tag":"#일반","id":1765026186966,"content":"https://n.news.naver.com/article/015/0005220929?cds=news_edit\n\n가나다라. 마바사"},{"title":"모바일 테스트","link":"","dateStr":"2025. 12. 6.","tag":"#일반","id":1765030899297,"content":"모바일 사진 첨부\n\n가나다라 마바사아. 자차카타ㅠㅏ하파ㅏㅏㅏ"},{"title":"앱개발은 힘들다.","link":"","dateStr":"2025. 12. 6.","tag":"#AI","id":1765035202224,"content":"오늘 하루종일 거의 10시간을 넘게 이 앱개발에 매달렸다.\n\n제미나이의 도움으로 여기까지 왔다.\n\n힘들긴 하지만 재미있는것 같기도 하다. 앱개발에도 관심을 가져야겠다"},{"title":"다용도실 담배","link":"","dateStr":"2025. 12. 7.","tag":"#일반","id":1765037460264,"content":"내 전용공간\n\n제미나이와 나의 합작 앱.ㅎㅎ"},{"title":"느락골교 가는 길","link":"","dateStr":"2025. 12. 7.","tag":"#일반","id":1765101591921,"content":"그림으로 그리기 좋은."},{"title":"사무실에서 확인함","link":"https://jeong-archive.netlify.app/","dateStr":"2025. 12. 8.","tag":"#일반","id":1765156067646,"content":"잘 작동되고 있다."},{"title":"새로운 탈모치료제 개발","link":"https://naver.me/5mhy6hqq","dateStr":"2025. 12. 10.","tag":"#건강","id":1765364574967,"content":"이제 잘되는구만\n\n하하하. 기분좋다"},{"title":"82세 넘겨사는 법","link":"https://youtube.com/shorts/o93XwcIG0kk?si=phE_-smKqhKJ-Je-","dateStr":"2025. 12. 14.","tag":"#건강","id":1765690658371,"content":"1. 걷기\n2. 단 맛 멀리하기\n3. 짠 맛 멀리하기\n4. 6시간 이상 수면\n5. 사람 멀리하지 않기"},{"title":"아이유베게","link":"https://www.sleepnsleepmall.com/surl/P/334&cafe_mkt=ue_GFA_251209_02","dateStr":"2025. 12. 14.","tag":"#건강","id":1765695186989,"content":""},{"title":"감정이 거제된 사람의 모습","link":"https://naver.me/5zXrBE7E","dateStr":"2025. 12. 14.","tag":"#심리","id":1765696670203,"content":"자기가 자기에게 인정받지 못한다면"}];
 
     const DB_NAME = 'JeongArchiveDB_v9';
     const STORE_NAME = 'memos';
@@ -143,7 +147,6 @@
     request.onsuccess = e => { db = e.target.result; initApp(); };
 
     function initApp() { renderCalendar(); renderMemos(); }
-    
     function switchTab(tab) {
         document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
@@ -154,43 +157,56 @@
     }
 
     function injectEmergencyData() {
-        if(!confirm("긴급 복구를 진행하시겠습니까? (기존 데이터 유지됨)")) return;
-        // 아까 복원하신 데이터가 이미 있으면 굳이 덮어쓰지 않아도 됩니다. 
-        // 혹시 몰라 기능은 남겨둡니다.
-        alert("이미 복원된 상태라면 이 기능은 안 쓰셔도 됩니다!");
+        if(!confirm("긴급 복구를 진행하시겠습니까? (11개 데이터)")) return;
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        EMERGENCY_DATA.forEach(item => store.put(item));
+        tx.oncomplete = () => { alert("복구 완료!"); switchTab('calendar'); renderCalendar(); };
     }
 
-    // [핵심] 다중 파일 업로드 처리
+    function restoreData(input) {
+        const file = input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                let raw = e.target.result;
+                if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+                let data = JSON.parse(raw);
+                if (typeof data === 'string') data = JSON.parse(data);
+                if (!Array.isArray(data)) {
+                     if(data.memos) data = data.memos;
+                     else if(typeof data === 'object') data = Object.values(data);
+                     else data = [data];
+                }
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                data.forEach(item => store.put(item));
+                tx.oncomplete = () => { alert(`파일 복원 성공! (${data.length}개)`); switchTab('list'); };
+            } catch (err) { alert("파일 오류: " + err.message); }
+        };
+        reader.readAsText(file);
+    }
+
     async function saveMemo() {
         const title = document.getElementById('inputTitle').value;
         let content = document.getElementById('inputContent').value;
-        if(!title && !content) return alert('내용을 입력하세요.');
-        
-        // 여러 장의 사진 처리
+        if(!title && !content) return alert('내용 입력 필요');
         const files = document.getElementById('inputImage').files;
         if(files.length > 0) {
-            content += "<br>"; // 줄바꿈
+            content += "<br>";
             for(let i=0; i<files.length; i++) {
                 const imgData = await compressImage(files[i]);
                 content += `<img src="${imgData}" style="max-width:100%; border-radius:8px; margin-top:5px;"><br>`;
             }
         }
-
-        const now = new Date();
         const memo = {
-            id: Date.now(),
-            dateStr: now.toLocaleDateString('ko-KR'), 
-            title: title || "제목 없음",
-            tag: document.getElementById('inputTag').value,
-            content: content, // 이미지가 HTML 태그로 포함됨
-            link: document.getElementById('inputLink').value,
-            image: null // 이제 이미지는 content 안에 들어갑니다.
+            id: Date.now(), dateStr: new Date().toLocaleDateString('ko-KR'), 
+            title: title || "제목 없음", tag: document.getElementById('inputTag').value,
+            content: content, link: document.getElementById('inputLink').value, image: null
         };
-
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        tx.objectStore(STORE_NAME).add(memo);
-        tx.oncomplete = () => { 
-            alert('저장됨!'); 
+        db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).add(memo).oncomplete = () => { 
+            alert('저장됨'); 
             document.getElementById('inputTitle').value='';
             document.getElementById('inputContent').value='';
             document.getElementById('inputImage').value=''; 
@@ -198,103 +214,66 @@
         };
     }
 
-    // [핵심] 보기 모드 (View Modal) 열기
-    let currentMemoId = null;
     async function openViewModal(id) {
-        currentMemoId = id;
         const memos = await getAll();
         const m = memos.find(x => x.id === id);
         if(!m) return;
-
         document.getElementById('viewTitle').innerText = m.title;
         document.getElementById('viewDate').innerText = m.dateStr;
         document.getElementById('viewTag').innerText = m.tag;
-        
-        // HTML 태그(이미지 포함)를 그대로 보여줌
-        document.getElementById('viewBody').innerHTML = m.content; 
-        
-        // 링크 처리
+        document.getElementById('viewBody').innerHTML = m.content;
         const linkBox = document.getElementById('viewLink');
-        if(m.link) linkBox.innerHTML = `<a href="${m.link}" target="_blank" style="display:block; background:#f1f1f1; padding:10px; border-radius:8px; text-decoration:none; color:#0d47a1;">🔗 관련 링크 열기</a>`;
-        else linkBox.innerHTML = '';
-
+        linkBox.innerHTML = m.link ? `<a href="${m.link}" target="_blank" style="display:block; background:#f1f1f1; padding:10px; border-radius:8px; text-decoration:none; color:#0d47a1;">🔗 관련 링크 열기</a>` : '';
         document.getElementById('viewModal').style.display = 'flex';
+        // 수정 모드 전환을 위해 ID 저장
+        document.getElementById('editId').value = m.id;
     }
 
     function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
 
-    // 수정 모드 전환
     async function switchToEditMode() {
         closeViewModal();
+        const id = Number(document.getElementById('editId').value);
         const memos = await getAll();
-        const m = memos.find(x => x.id === currentMemoId);
+        const m = memos.find(x => x.id === id);
         if(!m) return;
-
         document.getElementById('editId').value = m.id;
         document.getElementById('editTitle').value = m.title;
         document.getElementById('editTag').value = m.tag;
-        document.getElementById('editContent').value = m.content; // 태그 그대로 노출 (삭제 방지)
+        document.getElementById('editContent').value = m.content;
         document.getElementById('editLink').value = m.link;
-        
         document.getElementById('editModal').style.display = 'flex';
     }
     
     function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
-
     function updateMemo() {
         const id = Number(document.getElementById('editId').value);
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
+        const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
         store.get(id).onsuccess = (e) => {
             const data = e.target.result;
             data.title = document.getElementById('editTitle').value;
             data.tag = document.getElementById('editTag').value;
             data.content = document.getElementById('editContent').value;
             data.link = document.getElementById('editLink').value;
-            store.put(data).onsuccess = () => {
-                alert('수정 완료');
-                closeEditModal();
-                renderMemos();
-                renderCalendar();
-            };
+            store.put(data).onsuccess = () => { alert('수정 완료'); closeEditModal(); renderMemos(); renderCalendar(); };
         };
     }
-
     function getAll() { return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result)); }
-    
     async function renderMemos() {
         const list = document.getElementById('memoList'); list.innerHTML='';
         const memos = await getAll();
         const key = document.getElementById('searchInput').value;
         memos.sort((a,b) => b.id - a.id);
-
         memos.forEach(m => {
             if(key && !m.title.includes(key) && !m.content.includes(key)) return;
-            
-            // 목록에서는 텍스트만 요약해서 보여줌 (이미지 태그 제거)
             let summary = m.content.replace(/<[^>]*>?/gm, '');
             if(summary.length > 40) summary = summary.substring(0, 40) + "...";
-            
-            // 썸네일 확인 (content 안에 img 태그가 있으면 표시)
-            let thumbnail = '';
-            if(m.content.includes('<img')) {
-                thumbnail = '<div style="font-size:0.8rem; color:#27ae60; margin-top:5px;">📷 사진 있음</div>';
-            }
-
-            list.innerHTML += `
-            <div class="memo-card" onclick="openViewModal(${m.id})">
-                <div style="display:flex; justify-content:space-between; color:#666; font-size:0.8rem;">
-                    <span>${m.dateStr}</span>
-                    <span style="color:var(--accent-color);">${m.tag || '#일반'}</span>
-                </div>
-                <h3 style="margin:5px 0; font-size:1.1rem; color:#2c3e50;">${m.title}</h3>
-                <p style="color:#555; font-size:0.9rem; margin-bottom:5px;">${summary}</p>
-                ${thumbnail}
-            </div>`;
+            let thumbnail = m.content.includes('<img') ? '<div style="font-size:0.8rem; color:#27ae60; margin-top:5px;">📷 사진 있음</div>' : '';
+            list.innerHTML += `<div class="memo-card" onclick="openViewModal(${m.id})">
+                <div style="display:flex; justify-content:space-between; color:#666; font-size:0.8rem;"><span>${m.dateStr}</span><span style="color:var(--accent-color);">${m.tag || '#일반'}</span></div>
+                <h3 style="margin:5px 0; font-size:1.1rem; color:#2c3e50;">${m.title}</h3><p style="color:#555; font-size:0.9rem; margin-bottom:5px;">${summary}</p>${thumbnail}</div>`;
         });
     }
-
-    // 달력 렌더링
     let currDate = new Date();
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
     async function renderCalendar() {
@@ -304,73 +283,26 @@
         '일월화수목금토'.split('').forEach(d=>grid.innerHTML+=`<div style="text-align:center; font-size:0.8rem; color:#888;">${d}</div>`);
         const first = new Date(y,m,1).getDay(), last = new Date(y,m+1,0).getDate();
         for(let i=0; i<first; i++) grid.innerHTML+=`<div></div>`;
-        
         const memos = await getAll();
         for(let d=1; d<=last; d++) {
             const checkDate = new Date(y,m,d).toLocaleDateString('ko-KR');
             const has = memos.some(x => x.dateStr.replace(/\s/g,'') === checkDate.replace(/\s/g,''));
-            const div = document.createElement('div');
-            div.className = 'cal-day' + (has ? ' has-memo' : '');
-            const today = new Date();
-            if(y===today.getFullYear() && m===today.getMonth() && d===today.getDate()) div.classList.add('today');
+            const div = document.createElement('div'); div.className = 'cal-day' + (has ? ' has-memo' : '');
+            const today = new Date(); if(y===today.getFullYear() && m===today.getMonth() && d===today.getDate()) div.classList.add('today');
             div.innerHTML = `<span>${d}</span>${has?'<div class="dot"></div>':''}`;
             div.onclick = () => showDayMemos(checkDate, memos);
             grid.appendChild(div);
         }
     }
-
     function showDayMemos(dateStr, memos) {
         const target = memos.filter(m => m.dateStr.replace(/\s/g, '') === dateStr.replace(/\s/g, ''));
         const box = document.getElementById('calendarMemos');
         if(target.length==0) box.innerHTML = `<p>${dateStr} 기록이 없습니다.</p>`;
-        else {
-            box.innerHTML = `<h4 style="margin:10px 0;">${dateStr} 기록 (${target.length}건)</h4>` + 
-            target.map(m=>`
-                <div style="background:#fff; padding:15px; margin-bottom:10px; border-radius:8px; text-align:left; border:1px solid #eee;" onclick="openViewModal(${m.id})">
-                    <strong style="display:block; font-size:1.1rem; margin-bottom:5px;">${m.title}</strong>
-                    <div style="font-size:0.9rem; color:#555;">${m.content.replace(/<[^>]*>?/gm, '').substring(0,30)}...</div>
-                    ${m.content.includes('<img') ? '<span style="font-size:0.8rem; color:green;">📷 사진 포함</span>' : ''}
-                </div>
-            `).join('');
-        }
+        else box.innerHTML = `<h4 style="margin:10px 0;">${dateStr} 기록 (${target.length}건)</h4>` + target.map(m=>`<div style="background:#fff; padding:15px; margin-bottom:10px; border-radius:8px; text-align:left; border:1px solid #eee;" onclick="openViewModal(${m.id})"><strong style="display:block; font-size:1.1rem; margin-bottom:5px;">${m.title}</strong><div style="font-size:0.9rem; color:#555;">${m.content.replace(/<[^>]*>?/gm, '').substring(0,30)}...</div>${m.content.includes('<img') ? '<span style="font-size:0.8rem; color:green;">📷 사진 포함</span>' : ''}</div>`).join('');
     }
-
-    function compressImage(file) {
-        return new Promise(r => {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = new Image();
-                img.onload = () => {
-                    const c = document.createElement('canvas');
-                    let w=img.width, h=img.height;
-                    if(w>1024) { h*=1024/w; w=1024; }
-                    c.width=w; c.height=h;
-                    c.getContext('2d').drawImage(img,0,0,w,h);
-                    r(c.toDataURL('image/jpeg',0.7));
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    function backupData() {
-        getAll().then(memos => {
-            if(memos.length==0) return alert('데이터 없음');
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([JSON.stringify(memos)],{type:'application/json'}));
-            a.download = `JDM_Backup_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-        });
-    }
-    
-    function resetApp() { 
-        if(confirm('초기화하시겠습니까?')) {
-            db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{
-                alert('초기화 완료'); location.reload(); 
-            };
-        }
-    }
+    function compressImage(file) { return new Promise(r => { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); let w=img.width, h=img.height; if(w>1024) { h*=1024/w; w=1024; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); r(c.toDataURL('image/jpeg',0.7)); }; img.src = e.target.result; }; reader.readAsDataURL(file); }); }
+    function backupData() { getAll().then(memos => { if(memos.length==0) return alert('데이터 없음'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(memos)],{type:'application/json'})); a.download = `JDM_Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }); }
+    function resetApp() { if(confirm('초기화하시겠습니까?')) { db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{ alert('초기화 완료'); location.reload(); }; } }
 </script>
 </body>
 </html>
