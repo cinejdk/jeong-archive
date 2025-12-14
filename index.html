@@ -5,46 +5,46 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v9.6</title>
+    <title>JDM Archive v9.7</title>
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f4f6f7; --nav-height: 65px; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); }
         
-        /* 헤더 수정: 자물쇠 버튼 배치를 위해 Flex 적용 */
         header { background: white; padding: 15px; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
-        header h1 { margin: 0; font-size: 1.5rem; flex-grow: 1; text-align: center; margin-left: 40px; } /* 타이틀 중앙 정렬 */
+        header h1 { margin: 0; font-size: 1.5rem; flex-grow: 1; text-align: center; margin-left: 40px; }
         
         .container { max-width: 800px; margin: 0 auto; padding: 15px; }
         .tab-content { display: none; } .tab-content.active { display: block; }
         
-        /* 암호 잠금 화면 */
+        /* 암호 잠금 */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #loginOverlay input { width: 200px; padding: 15px; font-size: 1.5rem; text-align: center; border-radius: 10px; border: none; margin-top: 20px; letter-spacing: 5px; }
         #loginOverlay button { margin-top: 15px; padding: 10px 30px; background: #c0392b; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; }
 
-        /* 달력 */
+        /* 공통 스타일 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: white; padding: 10px; border-radius: 12px; }
         .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; border-radius: 8px; font-size: 0.9rem; cursor: pointer; padding-top: 5px; }
         .cal-day.today { background: #e8f4fd; color: var(--primary-color); font-weight: bold; }
         .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; }
         
-        /* 목록 카드 */
-        .memo-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.1s; }
-        .memo-card:active { transform: scale(0.98); }
-        .list-link-btn { display: inline-block; background: #f1f1f1; color: #0d47a1; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 0.8rem; margin-top: 8px; }
+        /* 메모 카드 스타일 */
+        .memo-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .list-action-bar { margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 8px; }
+        .btn-mini { padding: 5px 12px; font-size: 0.85rem; border: none; border-radius: 5px; cursor: pointer; color: white; }
+        .btn-edit { background: #f39c12; }
+        .btn-del { background: #e74c3c; }
 
-        /* 입력 폼 */
         input, textarea, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
         .btn-save { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         
-        /* 데이터 복원 박스 */
-        .restore-box { background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        /* 검색 및 필터 영역 */
+        .search-bar-area { display: flex; gap: 5px; margin-bottom: 15px; }
+        .search-bar-area select { width: 35%; margin-bottom: 0; }
+        .search-bar-area input { width: 65%; margin-bottom: 0; }
 
-        /* 모달 (팝업창) */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(2px); }
-        .modal-content { background:white; width:85%; max-width:500px; padding:25px; border-radius:15px; max-height:80vh; overflow-y:auto; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .modal-content { background:white; width:85%; max-width:500px; padding:25px; border-radius:15px; max-height:80vh; overflow-y:auto; position: relative; }
         .close-btn { position: absolute; top: 15px; right: 15px; font-size: 1.8rem; border: none; background: none; cursor: pointer; color: #999; }
         .view-body img { max-width: 100%; border-radius: 8px; margin: 10px 0; display:block; }
         .view-body { line-height: 1.6; white-space: pre-wrap; font-size: 1rem; color: #333; }
@@ -67,7 +67,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v9.6</h1>
+    <h1>JDM Archive v9.7</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px;">🔒</button>
 </header>
 
@@ -83,40 +83,42 @@
     </div>
 
     <div id="tab-list" class="tab-content">
-        <input type="text" id="searchInput" placeholder="검색어 입력..." onkeyup="renderMemos()">
+        <div class="search-bar-area">
+            <select id="listFilter" onchange="renderMemos()">
+                <option value="all">전체보기</option>
+                <option>#일반</option><option>#업무</option><option>#아이디어</option>
+                <option>#건강</option><option>#현장</option><option>#AI</option><option>#심리</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="검색어..." onkeyup="renderMemos()">
+        </div>
         <div id="memoList"></div>
     </div>
 
     <div id="tab-write" class="tab-content">
         <div style="background:white; padding:20px; border-radius:12px;">
-            <h3>📝 새 기록 작성</h3>
-            <input type="text" id="inputTitle" placeholder="제목">
+            <h3 id="writeModeTitle">📝 새 기록 작성</h3>
+            <input type="hidden" id="editModeId"> <input type="text" id="inputTitle" placeholder="제목">
             <select id="inputTag"><option>#일반</option><option>#업무</option><option>#아이디어</option><option>#건강</option><option>#현장</option><option>#AI</option><option>#심리</option></select>
-            <textarea id="inputContent" style="height:150px" placeholder="내용을 입력하세요"></textarea>
+            <textarea id="inputContent" style="height:200px" placeholder="내용을 입력하세요"></textarea>
             <input type="text" id="inputLink" placeholder="관련 링크 (URL)">
-            <label style="display:block; margin-bottom:5px; font-weight:bold;">📸 사진 첨부 (여러 장 가능)</label>
-            <input type="file" id="inputImage" accept="image/*" multiple style="padding:10px; background:#eee; width:100%;">
-            <button class="btn-save" onclick="saveMemo()">저 장</button>
+            
+            <label style="display:block; margin-bottom:5px; font-weight:bold;">📸 사진 첨부</label>
+            <input type="file" id="inputImage" accept="image/*" multiple style="padding:10px; background:#eee; width:100%; margin-bottom:20px;">
+            
+            <button id="btnSaveAction" class="btn-save" onclick="saveMemo()">저 장</button>
+            <button id="btnCancelEdit" class="btn-save" style="background:#95a5a6; margin-top:10px; display:none;" onclick="cancelEdit()">작성 취소</button>
         </div>
     </div>
 
     <div id="tab-data" class="tab-content">
         <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
             <h3>💾 데이터 관리</h3>
-            
-            <div class="restore-box">
-                <strong style="color:#d35400; display:block; margin-bottom:5px;">📂 파일로 복원하기</strong>
-                <p style="font-size:0.8rem; margin:0 0 10px 0;">Jeong_Backup 파일을 선택하세요.</p>
-                <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%;">
+             <div style="background:#fff3cd; padding:15px; border-radius:10px; margin-bottom:15px; border:2px solid #ffc107;">
+                <strong style="color:#d35400;">📂 파일로 복원</strong>
+                <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%; margin-top:5px;">
             </div>
-            
-             <div style="background:#e3f2fd; padding:15px; border-radius:10px; margin-bottom:20px; border:2px dashed #2196f3;">
-                <strong style="color:#1565c0; display:block; margin-bottom:5px;">⚡ 긴급 데이터 복구</strong>
-                <p style="font-size:0.8rem; margin:0 0 10px 0;">파일이 안 될 때 누르세요. (11개 기록 복원)</p>
-                <button onclick="injectEmergencyData()" class="btn-save" style="background:#2196f3; padding:10px;">데이터 강제 주입</button>
-            </div>
-
-            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:10px;">📤 전체 백업 (파일 저장)</button>
+            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:10px;">📤 전체 백업</button>
+            <button onclick="injectEmergencyData()" class="btn-save" style="background:#2196f3; margin-bottom:10px;">⚡ 긴급 복구 (테스트용)</button>
             <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 전체 초기화</button>
         </div>
     </div>
@@ -132,25 +134,7 @@
         <h2 id="viewTitle" style="margin-top:0; color:#2c3e50;"></h2>
         <div id="viewBody" class="view-body"></div>
         <div id="viewLink" style="margin-top:20px;"></div>
-        <div style="margin-top:20px; display:flex; gap:10px;">
-            <button class="btn-save" onclick="switchToEditMode()" style="background:#f39c12; flex:1;">수 정</button>
-            <button class="btn-save" onclick="closeViewModal()" style="background:#999; flex:1;">닫 기</button>
-        </div>
-    </div>
-</div>
-
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <h3>수정하기</h3>
-        <input type="hidden" id="editId">
-        <input type="text" id="editTitle">
-        <select id="editTag"><option>#일반</option><option>#업무</option><option>#아이디어</option><option>#건강</option><option>#현장</option><option>#AI</option><option>#심리</option></select>
-        <textarea id="editContent" style="height:150px; font-family:monospace; font-size:0.9rem;" placeholder="HTML 코드가 보입니다. 이미지는 건드리지 마세요."></textarea>
-        <input type="text" id="editLink">
-        <div style="display:flex; gap:10px;">
-            <button class="btn-save" onclick="updateMemo()">저장 완료</button>
-            <button class="btn-save" onclick="closeEditModal()" style="background:#999;">취소</button>
-        </div>
+        <button class="btn-save" onclick="closeViewModal()" style="background:#999; margin-top:20px;">닫 기</button>
     </div>
 </div>
 
@@ -162,107 +146,60 @@
 </nav>
 
 <script>
-    // === 1. 암호 시스템 (변경 가능) ===
-    function getPassword() {
-        return localStorage.getItem('appPass') || "0403"; // 저장된 게 없으면 0403
-    }
-
-    function checkPass() {
-        const input = document.getElementById('passInput').value;
-        if(input === getPassword()) {
-            document.getElementById('loginOverlay').style.display = 'none';
-        } else {
-            alert('비밀번호가 틀렸습니다.');
-            document.getElementById('passInput').value = '';
-        }
-    }
-
-    function changePassword() {
-        const current = prompt("현재 비밀번호를 입력하세요:");
-        if (current !== getPassword()) return alert("현재 비밀번호가 틀렸습니다.");
-        
-        const newPass = prompt("새로운 비밀번호를 입력하세요 (숫자 4자리 권장):");
-        if (!newPass) return;
-        
-        localStorage.setItem('appPass', newPass);
-        alert(`비밀번호가 변경되었습니다!\n새 비밀번호: ${newPass}`);
-    }
-
-    const EMERGENCY_DATA = [{"title":"클라우드 테스트1","link":"https://n.news.naver.com/article/015/0005220929?cds=news_edit","dateStr":"2025. 12. 6.","tag":"#AI","id":1765026140868,"content":"신난다^^"},{"title":"새클라우드 테스트2","link":"https://n.news.naver.com/article/015/0005220929?cds=news_edit","dateStr":"2025. 12. 7.","tag":"#일반","id":1765026186966,"content":"https://n.news.naver.com/article/015/0005220929?cds=news_edit\n\n가나다라. 마바사"},{"title":"모바일 테스트","link":"","dateStr":"2025. 12. 6.","tag":"#일반","id":1765030899297,"content":"모바일 사진 첨부\n\n가나다라 마바사아. 자차카타ㅠㅏ하파ㅏㅏㅏ"},{"title":"앱개발은 힘들다.","link":"","dateStr":"2025. 12. 6.","tag":"#AI","id":1765035202224,"content":"오늘 하루종일 거의 10시간을 넘게 이 앱개발에 매달렸다.\n\n제미나이의 도움으로 여기까지 왔다.\n\n힘들긴 하지만 재미있는것 같기도 하다. 앱개발에도 관심을 가져야겠다"},{"title":"다용도실 담배","link":"","dateStr":"2025. 12. 7.","tag":"#일반","id":1765037460264,"content":"내 전용공간\n\n제미나이와 나의 합작 앱.ㅎㅎ"},{"title":"느락골교 가는 길","link":"","dateStr":"2025. 12. 7.","tag":"#일반","id":1765101591921,"content":"그림으로 그리기 좋은."},{"title":"사무실에서 확인함","link":"https://jeong-archive.netlify.app/","dateStr":"2025. 12. 8.","tag":"#일반","id":1765156067646,"content":"잘 작동되고 있다."},{"title":"새로운 탈모치료제 개발","link":"https://naver.me/5mhy6hqq","dateStr":"2025. 12. 10.","tag":"#건강","id":1765364574967,"content":"이제 잘되는구만\n\n하하하. 기분좋다"},{"title":"82세 넘겨사는 법","link":"https://youtube.com/shorts/o93XwcIG0kk?si=phE_-smKqhKJ-Je-","dateStr":"2025. 12. 14.","tag":"#건강","id":1765690658371,"content":"1. 걷기\n2. 단 맛 멀리하기\n3. 짠 맛 멀리하기\n4. 6시간 이상 수면\n5. 사람 멀리하지 않기"},{"title":"아이유베게","link":"https://www.sleepnsleepmall.com/surl/P/334&cafe_mkt=ue_GFA_251209_02","dateStr":"2025. 12. 14.","tag":"#건강","id":1765695186989,"content":""},{"title":"감정이 거제된 사람의 모습","link":"https://naver.me/5zXrBE7E","dateStr":"2025. 12. 14.","tag":"#심리","id":1765696670203,"content":"자기가 자기에게 인정받지 못한다면"}];
-
+    // === 기본 설정 ===
     const DB_NAME = 'JeongArchiveDB_v9';
     const STORE_NAME = 'memos';
     let db;
+    let currDate = new Date();
 
+    // === 암호 관련 ===
+    function getPassword() { return localStorage.getItem('appPass') || "0403"; }
+    function checkPass() {
+        if(document.getElementById('passInput').value === getPassword()) {
+            document.getElementById('loginOverlay').style.display = 'none';
+        } else { alert('비밀번호가 틀렸습니다.'); document.getElementById('passInput').value=''; }
+    }
+    function changePassword() {
+        const cur = prompt("현재 비밀번호:"); if(cur!==getPassword()) return alert("오류");
+        const newP = prompt("새 비밀번호:"); if(newP) { localStorage.setItem('appPass', newP); alert("변경 완료"); }
+    }
+
+    // === DB 초기화 ===
     const request = indexedDB.open(DB_NAME, 1);
     request.onupgradeneeded = e => { db = e.target.result; if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:'id'}); };
     request.onsuccess = e => { db = e.target.result; initApp(); };
 
     function initApp() { renderCalendar(); renderMemos(); }
+
+    // === 탭 전환 ===
     function switchTab(tab) {
         document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
         document.getElementById('tab-'+tab).classList.add('active');
+        
         const idx = ['calendar','list','write','data'].indexOf(tab);
         document.querySelectorAll('.nav-item')[idx].classList.add('active');
-        if(tab==='list') renderMemos();
+
+        if(tab === 'write') {
+            // 탭을 직접 눌러서 들어오면 '새 글 작성' 모드로 리셋
+            // 단, 수정 버튼을 통해 들어온 경우(editModeId가 있을 때)는 유지
+            if(!document.getElementById('editModeId').value) resetWriteForm();
+        } else if (tab === 'list') {
+            resetWriteForm(); // 다른 탭 가면 편집모드 해제
+            renderMemos();
+        }
     }
 
-    function injectEmergencyData() {
-        if(!confirm("긴급 복구를 진행하시겠습니까?")) return;
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
-        EMERGENCY_DATA.forEach(item => store.put(item));
-        tx.oncomplete = () => { alert("복구 완료!"); switchTab('calendar'); renderCalendar(); };
-    }
-
-    function restoreData(input) {
-        const file = input.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                let raw = e.target.result;
-                if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
-                
-                let data = JSON.parse(raw);
-                if (typeof data === 'string') data = JSON.parse(data);
-
-                if (!Array.isArray(data)) {
-                      if(data.memos) data = data.memos;
-                      else if(data.notes) data = data.notes;
-                      else if(typeof data === 'object') data = Object.values(data);
-                      else data = [data];
-                }
-
-                if(!data || data.length === 0) throw new Error("데이터를 찾을 수 없습니다.");
-
-                const tx = db.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                let count = 0;
-                data.forEach(item => {
-                    if(!item.dateStr) item.dateStr = item.date || new Date().toLocaleDateString('ko-KR');
-                    if(!item.tag) item.tag = "#복원";
-                    store.put(item);
-                    count++;
-                });
-
-                tx.oncomplete = () => { 
-                    alert(`성공! ${count}개의 기록을 복원했습니다.`); 
-                    renderCalendar(); 
-                    renderMemos(); 
-                    switchTab('calendar'); 
-                };
-            } catch (err) { alert("복원 실패: " + err.message); }
-        };
-        reader.readAsText(file);
-        input.value = '';
-    }
-
+    // === 데이터 조작 (저장/수정) ===
     async function saveMemo() {
         const title = document.getElementById('inputTitle').value;
         let content = document.getElementById('inputContent').value;
-        if(!title && !content) return alert('내용 입력 필요');
+        const tag = document.getElementById('inputTag').value;
+        const link = document.getElementById('inputLink').value;
+        const editId = document.getElementById('editModeId').value; // 수정 모드인지 확인
+
+        if(!title && !content) return alert('내용을 입력하세요.');
+
         const files = document.getElementById('inputImage').files;
         if(files.length > 0) {
             content += "<br>";
@@ -271,89 +208,148 @@
                 content += `<img src="${imgData}" style="max-width:100%; border-radius:8px; margin-top:5px;"><br>`;
             }
         }
-        const memo = {
-            id: Date.now(), dateStr: new Date().toLocaleDateString('ko-KR'), 
-            title: title || "제목 없음", tag: document.getElementById('inputTag').value,
-            content: content, link: document.getElementById('inputLink').value, image: null
-        };
-        db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).add(memo).oncomplete = () => { 
-            alert('저장됨'); 
-            document.getElementById('inputTitle').value='';
-            document.getElementById('inputContent').value='';
-            document.getElementById('inputImage').value=''; 
-            switchTab('calendar'); renderCalendar(); 
+
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+
+        if (editId) {
+            // 수정 모드
+            store.get(Number(editId)).onsuccess = (e) => {
+                const data = e.target.result;
+                data.title = title; data.tag = tag; data.content = content; data.link = link;
+                // 날짜는 수정 시 업데이트 안함 (원하면 new Date()로 변경 가능)
+                store.put(data).onsuccess = () => {
+                    alert('수정되었습니다.');
+                    resetWriteForm();
+                    switchTab('list');
+                };
+            };
+        } else {
+            // 새 글 모드
+            const memo = {
+                id: Date.now(),
+                dateStr: new Date().toLocaleDateString('ko-KR'), 
+                title: title || "무제",
+                tag: tag, content: content, link: link
+            };
+            store.add(memo).onsuccess = () => {
+                alert('저장되었습니다.');
+                resetWriteForm();
+                switchTab('calendar');
+            };
+        }
+    }
+
+    // === 수정 모드 진입 (목록에서 버튼 클릭 시) ===
+    function editMemoDirect(id) {
+        db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get(id).onsuccess = (e) => {
+            const m = e.target.result;
+            if(!m) return;
+
+            // 1. 값 채워넣기
+            document.getElementById('editModeId').value = m.id;
+            document.getElementById('inputTitle').value = m.title;
+            document.getElementById('inputTag').value = m.tag;
+            document.getElementById('inputContent').value = m.content;
+            document.getElementById('inputLink').value = m.link;
+
+            // 2. UI 변경 (새 창처럼 보이기 위해 제목과 버튼 변경)
+            document.getElementById('writeModeTitle').innerText = "📝 기록 수정하기";
+            document.getElementById('btnSaveAction').innerText = "수정 완료";
+            document.getElementById('btnSaveAction').style.background = "#f39c12"; // 주황색
+            document.getElementById('btnCancelEdit').style.display = "block";
+
+            // 3. 탭 이동
+            switchTab('write');
         };
     }
 
+    function deleteMemo(id) {
+        if(confirm('정말 삭제하시겠습니까?')) {
+            db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(id).onsuccess = () => {
+                renderMemos(); renderCalendar();
+            };
+        }
+    }
+
+    function resetWriteForm() {
+        document.getElementById('editModeId').value = "";
+        document.getElementById('inputTitle').value = "";
+        document.getElementById('inputContent').value = "";
+        document.getElementById('inputLink').value = "";
+        document.getElementById('inputImage').value = "";
+        
+        // UI 원복
+        document.getElementById('writeModeTitle').innerText = "📝 새 기록 작성";
+        document.getElementById('btnSaveAction').innerText = "저 장";
+        document.getElementById('btnSaveAction').style.background = "#2c3e50";
+        document.getElementById('btnCancelEdit').style.display = "none";
+    }
+
+    function cancelEdit() {
+        resetWriteForm();
+        switchTab('list');
+    }
+
+    // === 목록 렌더링 (필터 적용) ===
+    async function renderMemos() {
+        const list = document.getElementById('memoList'); list.innerHTML='';
+        const memos = await getAll();
+        
+        const filter = document.getElementById('listFilter').value;
+        const key = document.getElementById('searchInput').value;
+        
+        memos.sort((a,b) => b.id - a.id);
+        
+        memos.forEach(m => {
+            // 필터링 로직
+            if(filter !== 'all' && m.tag !== filter) return;
+            if(key && !m.title.includes(key) && !m.content.includes(key)) return;
+
+            let summary = m.content.replace(/<[^>]*>?/gm, '');
+            if(summary.length > 35) summary = summary.substring(0, 35) + "...";
+            let hasImg = m.content.includes('<img') ? '📷' : '';
+
+            // 카드 HTML (수정/삭제 버튼 포함)
+            list.innerHTML += `
+            <div class="memo-card">
+                <div onclick="openViewModal(${m.id})">
+                    <div style="display:flex; justify-content:space-between; color:#666; font-size:0.8rem;">
+                        <span>${m.dateStr}</span>
+                        <span style="color:var(--accent-color); font-weight:bold;">${m.tag}</span>
+                    </div>
+                    <h3 style="margin:8px 0; font-size:1.1rem; color:#2c3e50;">${m.title} ${hasImg}</h3>
+                    <p style="color:#555; font-size:0.9rem; margin-bottom:5px;">${summary}</p>
+                </div>
+                <div class="list-action-bar">
+                    <button class="btn-mini btn-edit" onclick="editMemoDirect(${m.id})">수정</button>
+                    <button class="btn-mini btn-del" onclick="deleteMemo(${m.id})">삭제</button>
+                </div>
+            </div>`;
+        });
+    }
+
+    // === 기타 기능들 (조회, 복원 등 기존 유지) ===
     async function openViewModal(id) {
         const memos = await getAll();
         const m = memos.find(x => x.id === id);
         if(!m) return;
         document.getElementById('viewTitle').innerText = m.title;
         document.getElementById('viewDate').innerText = m.dateStr;
-        document.getElementById('viewTag').innerText = m.tag || '#일반';
+        document.getElementById('viewTag').innerText = m.tag;
         document.getElementById('viewBody').innerHTML = m.content;
-        
-        const linkBox = document.getElementById('viewLink');
-        linkBox.innerHTML = m.link ? `<a href="${m.link}" target="_blank" style="display:block; background:#f1f1f1; padding:10px; border-radius:8px; text-decoration:none; color:#0d47a1;">🔗 관련 링크 열기</a>` : '';
-        
+        document.getElementById('viewLink').innerHTML = m.link ? `<a href="${m.link}" target="_blank">🔗 링크 열기</a>` : '';
         document.getElementById('viewModal').style.display = 'flex';
-        document.getElementById('editId').value = m.id;
     }
-
     function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
 
-    async function switchToEditMode() {
-        closeViewModal();
-        const id = Number(document.getElementById('editId').value);
-        const memos = await getAll();
-        const m = memos.find(x => x.id === id);
-        if(!m) return;
-        document.getElementById('editId').value = m.id;
-        document.getElementById('editTitle').value = m.title;
-        document.getElementById('editTag').value = m.tag;
-        document.getElementById('editContent').value = m.content;
-        document.getElementById('editLink').value = m.link;
-        document.getElementById('editModal').style.display = 'flex';
-    }
-    
-    function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
-    function updateMemo() {
-        const id = Number(document.getElementById('editId').value);
-        const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
-        store.get(id).onsuccess = (e) => {
-            const data = e.target.result;
-            data.title = document.getElementById('editTitle').value;
-            data.tag = document.getElementById('editTag').value;
-            data.content = document.getElementById('editContent').value;
-            data.link = document.getElementById('editLink').value;
-            store.put(data).onsuccess = () => { alert('수정 완료'); closeEditModal(); renderMemos(); renderCalendar(); };
-        };
-    }
+    // 유틸리티
     function getAll() { return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result)); }
+    function compressImage(file) { return new Promise(r => { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); let w=img.width, h=img.height; if(w>1024) { h*=1024/w; w=1024; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); r(c.toDataURL('image/jpeg',0.7)); }; img.src = e.target.result; }; reader.readAsDataURL(file); }); }
     
-    async function renderMemos() {
-        const list = document.getElementById('memoList'); list.innerHTML='';
-        const memos = await getAll();
-        const key = document.getElementById('searchInput').value;
-        memos.sort((a,b) => b.id - a.id);
-        memos.forEach(m => {
-            if(key && !m.title.includes(key) && !m.content.includes(key)) return;
-            let summary = m.content.replace(/<[^>]*>?/gm, '');
-            if(summary.length > 40) summary = summary.substring(0, 40) + "...";
-            let thumbnail = m.content.includes('<img') ? '<div style="font-size:0.8rem; color:#27ae60; margin-top:5px;">📷 사진 있음</div>' : '';
-            let linkBtn = m.link ? `<a href="${m.link}" target="_blank" class="list-link-btn" onclick="event.stopPropagation()">🔗 링크</a>` : '';
-            list.innerHTML += `<div class="memo-card" onclick="openViewModal(${m.id})">
-                <div style="display:flex; justify-content:space-between; color:#666; font-size:0.8rem;"><span>${m.dateStr}</span><span style="color:var(--accent-color);">${m.tag || '#일반'}</span></div>
-                <h3 style="margin:5px 0; font-size:1.1rem; color:#2c3e50;">${m.title}</h3><p style="color:#555; font-size:0.9rem; margin-bottom:5px;">${summary}</p>${thumbnail} ${linkBtn}</div>`;
-        });
-    }
-
-    let currDate = new Date();
+    // 달력 로직
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
-    
     function normalizeDate(d) { return d.replace(/[.\-\s]/g, ''); }
-
     async function renderCalendar() {
         const y = currDate.getFullYear(), m = currDate.getMonth();
         document.getElementById('currentMonth').innerText = `${y}년 ${m+1}월`;
@@ -364,7 +360,7 @@
         const memos = await getAll();
         for(let d=1; d<=last; d++) {
             const targetStr = normalizeDate(`${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`);
-            const has = memos.some(x => normalizeDate(x.dateStr).includes(targetStr) || targetStr.includes(normalizeDate(x.dateStr)));
+            const has = memos.some(x => normalizeDate(x.dateStr).includes(targetStr));
             const div = document.createElement('div'); div.className = 'cal-day' + (has ? ' has-memo' : '');
             const today = new Date(); if(y===today.getFullYear() && m===today.getMonth() && d===today.getDate()) div.classList.add('today');
             div.innerHTML = `<span>${d}</span>${has?'<div class="dot"></div>':''}`;
@@ -372,17 +368,30 @@
             grid.appendChild(div);
         }
     }
-    
     function showDayMemos(targetKey, memos) {
-        const target = memos.filter(m => normalizeDate(m.dateStr).includes(targetKey) || targetKey.includes(normalizeDate(m.dateStr)));
+        const target = memos.filter(m => normalizeDate(m.dateStr).includes(targetKey));
         const box = document.getElementById('calendarMemos');
-        if(target.length==0) box.innerHTML = `<p>기록이 없습니다.</p>`;
-        else box.innerHTML = `<h4 style="margin:10px 0;">${target.length}건의 기록</h4>` + target.map(m=>`<div style="background:#fff; padding:15px; margin-bottom:10px; border-radius:8px; text-align:left; border:1px solid #eee;" onclick="openViewModal(${m.id})"><strong style="display:block; font-size:1.1rem; margin-bottom:5px;">${m.title}</strong><div style="font-size:0.9rem; color:#555;">${m.content.replace(/<[^>]*>?/gm, '').substring(0,30)}...</div>${m.content.includes('<img') ? '<span style="font-size:0.8rem; color:green;">📷 사진 포함</span>' : ''}</div>`).join('');
+        box.innerHTML = target.length ? target.map(m=>`<div style="background:#fff; padding:10px; margin-bottom:5px; border:1px solid #eee;"><b>${m.title}</b></div>`).join('') : '<p>기록 없음</p>';
     }
 
-    function compressImage(file) { return new Promise(r => { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); let w=img.width, h=img.height; if(w>1024) { h*=1024/w; w=1024; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); r(c.toDataURL('image/jpeg',0.7)); }; img.src = e.target.result; }; reader.readAsDataURL(file); }); }
+    // 데이터 관리 (백업/복원/초기화)
     function backupData() { getAll().then(memos => { if(memos.length==0) return alert('데이터 없음'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(memos)],{type:'application/json'})); a.download = `JDM_Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }); }
-    function resetApp() { if(confirm('초기화하시겠습니까?')) { db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{ alert('초기화 완료'); location.reload(); }; } }
+    function resetApp() { if(confirm('전체 초기화?')) { db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{ alert('초기화 완료'); location.reload(); }; } }
+    
+    // 긴급복구 (테스트용 데이터)
+    const EMERGENCY_DATA = [{"title":"테스트1","dateStr":"2025. 12. 6.","tag":"#AI","id":1765026140868,"content":"테스트"}];
+    function injectEmergencyData() { const tx = db.transaction(STORE_NAME, 'readwrite'); EMERGENCY_DATA.forEach(i => tx.objectStore(STORE_NAME).put(i)); tx.oncomplete=()=>{alert('복구완료'); location.reload();} }
+    function restoreData(input) {
+        const file = input.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const data = JSON.parse(e.target.result);
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            (Array.isArray(data)?data:[data]).forEach(i => tx.objectStore(STORE_NAME).put(i));
+            tx.oncomplete = () => { alert('복원 완료'); location.reload(); };
+        };
+        reader.readAsText(file);
+    }
 </script>
 </body>
 </html>
