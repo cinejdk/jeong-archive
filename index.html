@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v8.9</title>
+    <title>JDM Archive v9.0</title>
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f4f6f7; --nav-height: 65px; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); }
@@ -13,65 +13,91 @@
         
         /* 달력 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: white; padding: 10px; border-radius: 12px; }
-        .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; border-radius: 8px; font-size: 0.9rem; cursor: pointer; }
+        .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; border-radius: 8px; font-size: 0.9rem; cursor: pointer; padding-top: 5px; }
         .cal-day.today { background: #e8f4fd; color: var(--primary-color); font-weight: bold; }
-        .dot { width: 5px; height: 5px; background: var(--accent-color); border-radius: 50%; margin-top: 3px; }
+        .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; }
         
-        /* 목록 */
-        .memo-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        input, textarea, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-save { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; }
+        /* 목록 및 카드 */
+        .memo-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.1s; }
+        .memo-card:active { transform: scale(0.98); }
         
-        /* 데이터 관리 */
-        .restore-box { background: #e8f5e9; border: 2px solid #2e7d32; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        /* 입력 폼 */
+        input, textarea, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        .btn-save { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         
+        /* 하단 네비게이션 */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: white; display: flex; border-top: 1px solid #eee; z-index: 1000; }
-        .nav-item { flex: 1; text-align: center; padding: 8px; color: #999; font-size: 0.8rem; }
+        .nav-item { flex: 1; text-align: center; padding: 8px; color: #999; font-size: 0.8rem; cursor: pointer; }
         .nav-item.active { color: var(--primary-color); font-weight: bold; }
-        .nav-icon { font-size: 1.4rem; display: block; }
+        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 3px; }
+
+        /* 수정 모달 */
+        #editModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; }
+        .modal-content { background:white; width:90%; max-width:500px; padding:20px; border-radius:12px; max-height:80vh; overflow-y:auto; }
+
+        /* 이미지 스타일 */
+        .card-img { width: 100%; border-radius: 8px; margin-top: 10px; object-fit: cover; max-height: 300px; }
     </style>
 </head>
 <body>
-<header><h1>JDM Archive v8.9</h1></header>
+<header><h1>JDM Archive</h1></header>
 
 <div class="container">
     <div id="tab-calendar" class="tab-content active">
         <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:15px; border-radius:12px; margin-bottom:10px;">
-            <button onclick="changeMonth(-1)" style="border:none; bg:none; font-size:1.2rem;">◀</button>
+            <button onclick="changeMonth(-1)" style="border:none; background:none; font-size:1.5rem;">◀</button>
             <h2 id="currentMonth" style="margin:0;"></h2>
-            <button onclick="changeMonth(1)" style="border:none; bg:none; font-size:1.2rem;">▶</button>
+            <button onclick="changeMonth(1)" style="border:none; background:none; font-size:1.5rem;">▶</button>
         </div>
         <div id="calendarGrid" class="calendar-grid"></div>
-        <div id="calendarMemos" style="margin-top:20px; text-align:center; color:#888;">날짜를 누르면 기록이 나옵니다.</div>
+        <div id="calendarMemos" style="margin-top:20px; text-align:center; color:#888;"></div>
     </div>
 
     <div id="tab-list" class="tab-content">
-        <input type="text" id="searchInput" placeholder="검색어 입력" onkeyup="renderMemos()">
+        <input type="text" id="searchInput" placeholder="검색어 입력..." onkeyup="renderMemos()">
         <div id="memoList"></div>
     </div>
 
     <div id="tab-write" class="tab-content">
         <div style="background:white; padding:20px; border-radius:12px;">
-            <h3>📝 기록하기</h3>
-            <input type="text" id="title" placeholder="제목">
-            <select id="tag"><option>#일반</option><option>#업무</option><option>#아이디어</option><option>#요리</option><option>#현장</option></select>
-            <textarea id="content" style="height:100px" placeholder="내용"></textarea>
-            <input type="file" id="imageInput" accept="image/*">
+            <h3>📝 새 기록 작성</h3>
+            <input type="text" id="inputTitle" placeholder="제목">
+            <select id="inputTag"><option>#일반</option><option>#업무</option><option>#아이디어</option><option>#건강</option><option>#현장</option><option>#AI</option><option>#심리</option></select>
+            <textarea id="inputContent" style="height:150px" placeholder="내용을 입력하세요"></textarea>
+            <input type="text" id="inputLink" placeholder="관련 링크 (URL)">
+            <input type="file" id="inputImage" accept="image/*">
             <button class="btn-save" onclick="saveMemo()">저 장</button>
         </div>
     </div>
 
     <div id="tab-data" class="tab-content">
-        <div style="background:white; padding:20px; border-radius:12px;">
-            <h3>💾 데이터 관리</h3>
-            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:20px;">📤 백업 (파일 저장)</button>
+        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
+            <h3>💾 데이터 복구 센터</h3>
             
-            <div class="restore-box">
-                <strong style="color:#2e7d32; font-size:1.1rem;">📥 데이터 복원 (강제 추출)</strong>
-                <p style="margin:5px 0;">가지고 계신 .json 파일을 선택하세요.<br>(무조건 내용을 찾아냅니다)</p>
-                <input type="file" id="restoreInput" onchange="restoreData(this)">
+            <div style="background:#e3f2fd; padding:20px; border-radius:8px; margin-bottom:20px; border:2px dashed #2196f3;">
+                <h4 style="margin-top:0; color:#1565c0;">🚨 긴급 복구 버튼</h4>
+                <p style="font-size:0.9rem; color:#555;">아래 버튼을 누르면 전무님의 사라진<br>데이터 11개가 즉시 복원됩니다.</p>
+                <button onclick="injectEmergencyData()" class="btn-save" style="background:#2196f3;">⚡ 데이터 즉시 복원 ⚡</button>
             </div>
-            <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 전체 초기화</button>
+
+            <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:10px;">데이터 백업 (파일 저장)</button>
+            <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">초기화 (전체 삭제)</button>
+        </div>
+    </div>
+</div>
+
+<div id="editModal">
+    <div class="modal-content">
+        <h3>수정하기</h3>
+        <input type="hidden" id="editId">
+        <input type="text" id="editTitle">
+        <select id="editTag"><option>#일반</option><option>#업무</option><option>#아이디어</option><option>#건강</option><option>#현장</option><option>#AI</option><option>#심리</option></select>
+        <textarea id="editContent" style="height:150px"></textarea>
+        <input type="text" id="editLink" placeholder="링크">
+        <div style="display:flex; gap:10px;">
+            <button class="btn-save" onclick="updateMemo()">수정 완료</button>
+            <button class="btn-save" onclick="closeModal()" style="background:#999;">취소</button>
         </div>
     </div>
 </div>
@@ -84,15 +110,33 @@
 </nav>
 
 <script>
-    const DB_NAME = 'JeongArchiveDB_v8';
+    // 전무님의 소중한 데이터 (코드에 이식함)
+    const EMERGENCY_DATA = [
+        {"title":"클라우드 테스트1","link":"https://n.news.naver.com/article/015/0005220929?cds=news_edit","dateStr":"2025. 12. 6.","tag":"#AI","id":1765026140868,"content":"신난다^^"},
+        {"title":"새클라우드 테스트2","link":"https://n.news.naver.com/article/015/0005220929?cds=news_edit","dateStr":"2025. 12. 7.","tag":"#일반","id":1765026186966,"content":"https://n.news.naver.com/article/015/0005220929?cds=news_edit\n\n가나다라. 마바사"},
+        {"title":"모바일 테스트","link":"","dateStr":"2025. 12. 6.","tag":"#일반","id":1765030899297,"content":"모바일 사진 첨부\n\n가나다라 마바사아. 자차카타ㅠㅏ하파ㅏㅏㅏ"},
+        {"title":"앱개발은 힘들다.","link":"","dateStr":"2025. 12. 6.","tag":"#AI","id":1765035202224,"content":"오늘 하루종일 거의 10시간을 넘게 이 앱개발에 매달렸다.\n\n제미나이의 도움으로 여기까지 왔다.\n\n힘들긴 하지만 재미있는것 같기도 하다. 앱개발에도 관심을 가져야겠다"},
+        {"title":"다용도실 담배","link":"","dateStr":"2025. 12. 7.","tag":"#일반","id":1765037460264,"content":"내 전용공간\n\n제미나이와 나의 합작 앱.ㅎㅎ"},
+        {"title":"느락골교 가는 길","link":"","dateStr":"2025. 12. 7.","tag":"#일반","id":1765101591921,"content":"그림으로 그리기 좋은."},
+        {"title":"사무실에서 확인함","link":"https://jeong-archive.netlify.app/","dateStr":"2025. 12. 8.","tag":"#일반","id":1765156067646,"content":"잘 작동되고 있다."},
+        {"title":"새로운 탈모치료제 개발","link":"https://naver.me/5mhy6hqq","dateStr":"2025. 12. 10.","tag":"#건강","id":1765364574967,"content":"이제 잘되는구만\n\n하하하. 기분좋다"},
+        {"title":"82세 넘겨사는 법","link":"https://youtube.com/shorts/o93XwcIG0kk?si=phE_-smKqhKJ-Je-","dateStr":"2025. 12. 14.","tag":"#건강","id":1765690658371,"content":"1. 걷기\n2. 단 맛 멀리하기\n3. 짠 맛 멀리하기\n4. 6시간 이상 수면\n5. 사람 멀리하지 않기"},
+        {"title":"아이유베게","link":"https://www.sleepnsleepmall.com/surl/P/334&cafe_mkt=ue_GFA_251209_02","dateStr":"2025. 12. 14.","tag":"#건강","id":1765695186989,"content":""},
+        {"title":"감정이 거제된 사람의 모습","link":"https://naver.me/5zXrBE7E","dateStr":"2025. 12. 14.","tag":"#심리","id":1765696670203,"content":"자기가 자기에게 인정받지 못한다면"}
+    ];
+
+    const DB_NAME = 'JeongArchiveDB_v9';
     const STORE_NAME = 'memos';
     let db;
 
     const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = e => { db = e.target.result; if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:'id'}); };
+    request.onupgradeneeded = e => { 
+        db = e.target.result; 
+        if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:'id'}); 
+    };
     request.onsuccess = e => { db = e.target.result; initApp(); };
 
-    function initApp() { renderCalendar(); }
+    function initApp() { renderCalendar(); renderMemos(); }
     
     function switchTab(tab) {
         document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
@@ -103,158 +147,190 @@
         if(tab==='list') renderMemos();
     }
 
+    // [핵심] 긴급 데이터 복구 기능
+    function injectEmergencyData() {
+        if(!confirm("전무님의 데이터 11개를 복구하시겠습니까?")) return;
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        EMERGENCY_DATA.forEach(item => store.put(item));
+        tx.oncomplete = () => {
+            alert("✅ 복구 완료! [목록]과 [달력]을 확인하세요.");
+            switchTab('calendar');
+            renderCalendar();
+        };
+    }
+
+    // 저장 (Create)
     async function saveMemo() {
-        const title = document.getElementById('title').value;
-        if(!title) return alert('제목을 입력하세요');
+        const title = document.getElementById('inputTitle').value;
+        const content = document.getElementById('inputContent').value;
+        if(!title && !content) return alert('제목이나 내용을 입력하세요.');
+        
         let image = null;
-        const file = document.getElementById('imageInput').files[0];
+        const file = document.getElementById('inputImage').files[0];
         if(file) image = await compressImage(file);
+
+        const now = new Date();
         const memo = {
             id: Date.now(),
-            dateStr: new Date().toLocaleDateString('ko-KR'),
-            fullDate: new Date().toLocaleString(),
-            title, tag: document.getElementById('tag').value,
-            content: document.getElementById('content').value,
-            image
+            dateStr: now.toLocaleDateString('ko-KR'), 
+            fullDate: now.toLocaleString(),
+            title: title || "제목 없음",
+            tag: document.getElementById('inputTag').value,
+            content: content,
+            link: document.getElementById('inputLink').value,
+            image: image
         };
+
         const tx = db.transaction(STORE_NAME, 'readwrite');
         tx.objectStore(STORE_NAME).add(memo);
-        tx.oncomplete = () => { alert('저장됨'); document.getElementById('title').value=''; switchTab('calendar'); renderCalendar(); };
-    }
-
-    // [핵심] v8.9 강제 데이터 추출 로직 (The Vacuum Cleaner)
-    function restoreData(input) {
-        const file = input.files[0];
-        if(!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                let raw = e.target.result;
-                if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
-                
-                let data = JSON.parse(raw);
-                if (typeof data === 'string') data = JSON.parse(data);
-
-                if (!Array.isArray(data)) {
-                     if(data.memos) data = data.memos;
-                     else if(typeof data === 'object') data = Object.values(data);
-                     else data = [data];
-                }
-
-                const tx = db.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                let count = 0;
-                
-                data.forEach(item => {
-                    // [만능 열쇠 로직]
-                    let finalTitle = item.title || item.subject || item.name;
-                    let finalContent = item.content || item.text || item.memo || item.body || item.desc;
-                    let finalDate = item.dateStr || item.date || item.time || new Date().toLocaleDateString('ko-KR');
-
-                    // 그래도 내용이 없으면? 데이터 안에 있는 모든 문자열을 뒤져서 합침
-                    if (!finalContent) {
-                        let allStrings = [];
-                        Object.values(item).forEach(val => {
-                            if (typeof val === 'string' && val.length > 0 && !val.includes('data:image')) {
-                                allStrings.push(val);
-                            }
-                        });
-                        // 가장 긴 글자를 내용으로, 두번째를 제목으로 추정
-                        allStrings.sort((a, b) => b.length - a.length);
-                        if (allStrings.length > 0) finalContent = allStrings[0];
-                        if (!finalTitle && allStrings.length > 1) finalTitle = allStrings[1];
-                    }
-
-                    // 최후의 수단: 그냥 원본 데이터를 보여줘라
-                    if (!finalContent && !finalTitle) {
-                        finalContent = JSON.stringify(item); 
-                        finalTitle = "복구된 데이터";
-                    }
-                    if (!finalTitle) finalTitle = finalContent.substring(0, 10) + "...";
-
-                    const fixedItem = {
-                        id: item.id || (Date.now() + count),
-                        title: finalTitle,
-                        content: finalContent,
-                        dateStr: finalDate,
-                        tag: item.tag || "#복원",
-                        link: item.link || "",
-                        image: item.image || item.img || null,
-                    };
-
-                    store.put(fixedItem);
-                    count++;
-                });
-
-                tx.oncomplete = () => { 
-                    alert(`✅ 복원 완료! (${count}개)\n이제 무조건 보일 겁니다.`); 
-                    switchTab('list'); 
-                };
-
-            } catch (err) {
-                alert(`오류: ${err.message}`);
-            }
+        tx.oncomplete = () => { 
+            alert('저장되었습니다.'); 
+            // 입력창 초기화
+            document.getElementById('inputTitle').value='';
+            document.getElementById('inputContent').value='';
+            document.getElementById('inputLink').value='';
+            document.getElementById('inputImage').value='';
+            switchTab('calendar'); 
+            renderCalendar(); 
         };
-        reader.readAsText(file);
-        input.value = '';
     }
 
+    // 목록 렌더링 (Read) - 클릭 기능 수정됨
     function getAll() { return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result)); }
     
     async function renderMemos() {
         const list = document.getElementById('memoList'); list.innerHTML='';
         const memos = await getAll();
         const key = document.getElementById('searchInput').value;
-        memos.reverse().forEach(m => {
-            if(key && !m.title.includes(key)) return;
+        
+        // 날짜 내림차순 정렬
+        memos.sort((a,b) => b.id - a.id);
+
+        memos.forEach(m => {
+            if(key && !m.title.includes(key) && !m.content.includes(key)) return;
             
-            list.innerHTML += `<div class="memo-card">
-                <button onclick="del(${m.id})" style="float:right; border:none; bg:none; font-size:1.2rem;">×</button>
-                <small>${m.dateStr} ${m.tag}</small>
-                <h3 style="margin:5px 0; color:#2c3e50;">${m.title}</h3>
-                <p style="white-space:pre-wrap; color:#444;">${m.content}</p>
-                ${m.image ? '<img src="'+m.image+'" style="width:100%; border-radius:8px; margin-top:10px;">' : ''}
+            // 이미지 태그 처리
+            let imageTag = '';
+            if(m.image) imageTag = `<img src="${m.image}" class="card-img">`;
+            else if(m.content && m.content.includes('<img')) {
+                // 구형 데이터 호환
+                const div = document.createElement('div');
+                div.innerHTML = m.content;
+                const img = div.querySelector('img');
+                if(img) imageTag = `<img src="${img.src}" class="card-img">`;
+            }
+
+            // 링크 처리
+            let linkTag = '';
+            if(m.link) linkTag = `<div style="margin-top:10px;"><a href="${m.link}" target="_blank" style="color:#2196f3; text-decoration:none;">🔗 관련 링크 열기</a></div>`;
+
+            // 본문 요약 (너무 길면 자름)
+            let summary = m.content.replace(/<[^>]*>?/gm, ''); // 태그 제거
+            if(summary.length > 50) summary = summary.substring(0, 50) + "...";
+
+            list.innerHTML += `
+            <div class="memo-card" onclick="openEditModal(${m.id})">
+                <div style="display:flex; justify-content:space-between; color:#666; font-size:0.8rem; margin-bottom:5px;">
+                    <span>${m.dateStr}</span>
+                    <span style="color:var(--accent-color);">${m.tag || '#일반'}</span>
+                </div>
+                <h3 style="margin:5px 0; font-size:1.1rem; color:#2c3e50;">${m.title}</h3>
+                <p style="color:#555; font-size:0.95rem; white-space:pre-wrap;">${summary}</p>
+                ${imageTag}
+                ${linkTag}
             </div>`;
         });
     }
 
-    function del(id) { if(confirm('삭제?')) db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).delete(id).onsuccess = ()=>renderMemos(); }
-
-    async function backupData() {
+    // 수정 (Update)
+    async function openEditModal(id) {
         const memos = await getAll();
-        if(memos.length==0) return alert('데이터 없음');
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([JSON.stringify(memos)],{type:'application/json'}));
-        a.download = `JDM_Backup_${new Date().toISOString().slice(0,10)}.json`;
-        a.click();
+        const m = memos.find(x => x.id === id);
+        if(!m) return;
+
+        document.getElementById('editId').value = m.id;
+        document.getElementById('editTitle').value = m.title;
+        document.getElementById('editTag').value = m.tag || '#일반';
+        document.getElementById('editContent').value = m.content.replace(/<[^>]*>?/gm, ''); // 태그 제거 후 텍스트만
+        document.getElementById('editLink').value = m.link || '';
+        
+        document.getElementById('editModal').style.display = 'flex';
     }
+
+    function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+    function updateMemo() {
+        const id = Number(document.getElementById('editId').value);
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+
+        store.get(id).onsuccess = (e) => {
+            const data = e.target.result;
+            data.title = document.getElementById('editTitle').value;
+            data.tag = document.getElementById('editTag').value;
+            data.content = document.getElementById('editContent').value;
+            data.link = document.getElementById('editLink').value;
+            
+            store.put(data).onsuccess = () => {
+                alert('수정되었습니다.');
+                closeModal();
+                renderMemos();
+                renderCalendar();
+            };
+        };
+    }
+
+    // 삭제 (Delete) - 모달 안에서 처리하거나 목록에서 처리
     
+    // 달력 렌더링
     let currDate = new Date();
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
     async function renderCalendar() {
         const y = currDate.getFullYear(), m = currDate.getMonth();
         document.getElementById('currentMonth').innerText = `${y}년 ${m+1}월`;
         const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
+        
         '일월화수목금토'.split('').forEach(d=>grid.innerHTML+=`<div style="text-align:center; font-size:0.8rem; color:#888;">${d}</div>`);
+        
         const first = new Date(y,m,1).getDay(), last = new Date(y,m+1,0).getDate();
         for(let i=0; i<first; i++) grid.innerHTML+=`<div></div>`;
+        
         const memos = await getAll();
         for(let d=1; d<=last; d++) {
-            const dateStr = `${y}. ${m+1}. ${d}.`;
-            const has = memos.some(x => x.dateStr === dateStr);
+            // 날짜 비교 (yyyy. m. d. 형식)
+            const checkDate = new Date(y,m,d).toLocaleDateString('ko-KR');
+            const has = memos.some(x => x.dateStr === checkDate); // 정확히 일치하는지 확인
+            
             const div = document.createElement('div');
-            div.className = 'cal-day';
-            div.innerHTML = `${d}${has?'<div class="dot"></div>':''}`;
-            div.onclick = () => showDayMemos(dateStr, memos);
+            div.className = 'cal-day' + (has ? ' has-memo' : '');
+            
+            // 오늘 날짜 표시
+            const today = new Date();
+            if(y===today.getFullYear() && m===today.getMonth() && d===today.getDate()) div.classList.add('today');
+
+            div.innerHTML = `<span>${d}</span>${has?'<div class="dot"></div>':''}`;
+            div.onclick = () => showDayMemos(checkDate, memos);
             grid.appendChild(div);
         }
     }
+
     function showDayMemos(dateStr, memos) {
-        const target = memos.filter(m => m.dateStr === dateStr);
+        // 날짜 문자열 공백 유연하게 처리 (예: "2025. 12. 6." vs "2025.12.6.")
+        const target = memos.filter(m => m.dateStr.replace(/\s/g, '') === dateStr.replace(/\s/g, ''));
+        
         const box = document.getElementById('calendarMemos');
-        if(target.length==0) box.innerHTML = `<p>${dateStr} 기록 없음</p>`;
-        else box.innerHTML = target.map(m=>`<div style="background:#f9f9f9; padding:10px; margin:5px; border-radius:5px; text-align:left;"><b>${m.title}</b><br>${m.content}</div>`).join('');
+        if(target.length==0) box.innerHTML = `<p>${dateStr} 기록이 없습니다.</p>`;
+        else {
+            box.innerHTML = `<h4 style="margin:10px 0;">${dateStr} 기록 (${target.length}건)</h4>` + 
+            target.map(m=>`
+                <div style="background:#fff; padding:15px; margin-bottom:10px; border-radius:8px; text-align:left; border:1px solid #eee; box-shadow:0 1px 2px rgba(0,0,0,0.05);" onclick="openEditModal(${m.id})">
+                    <span style="color:var(--accent-color); font-size:0.8rem;">${m.tag}</span>
+                    <strong style="display:block; font-size:1.1rem; margin:5px 0;">${m.title}</strong>
+                    <div style="font-size:0.9rem; color:#555;">${m.content.substring(0,30)}...</div>
+                </div>
+            `).join('');
+        }
     }
 
     function compressImage(file) {
@@ -276,7 +352,24 @@
         });
     }
 
-    function resetApp() { if(confirm('전체 삭제?')) db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{alert('완료'); renderCalendar();} }
+    function backupData() {
+        getAll().then(memos => {
+            if(memos.length==0) return alert('데이터 없음');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(memos)],{type:'application/json'}));
+            a.download = `JDM_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        });
+    }
+    
+    function resetApp() { 
+        if(confirm('정말 모든 데이터를 삭제하시겠습니까?')) {
+            db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{
+                alert('초기화 완료'); 
+                location.reload(); 
+            };
+        }
+    }
 </script>
 </body>
 </html>
