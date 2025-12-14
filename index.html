@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v8.8</title>
+    <title>JDM Archive v8.9</title>
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f4f6f7; --nav-height: 65px; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); }
@@ -22,8 +22,8 @@
         input, textarea, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .btn-save { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; }
         
-        /* 복원 */
-        .restore-box { background: #e8f5e9; border: 2px solid #4caf50; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        /* 데이터 관리 */
+        .restore-box { background: #e8f5e9; border: 2px solid #2e7d32; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
         
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: white; display: flex; border-top: 1px solid #eee; z-index: 1000; }
         .nav-item { flex: 1; text-align: center; padding: 8px; color: #999; font-size: 0.8rem; }
@@ -32,7 +32,7 @@
     </style>
 </head>
 <body>
-<header><h1>JDM Archive v8.8</h1></header>
+<header><h1>JDM Archive v8.9</h1></header>
 
 <div class="container">
     <div id="tab-calendar" class="tab-content active">
@@ -67,8 +67,8 @@
             <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:20px;">📤 백업 (파일 저장)</button>
             
             <div class="restore-box">
-                <strong style="color:#2e7d32; font-size:1.1rem;">📥 데이터 복원 (자동 수리)</strong>
-                <p style="margin:5px 0;">가지고 계신 .json 파일을 선택하세요.<br>(undefined 문제 자동 해결)</p>
+                <strong style="color:#2e7d32; font-size:1.1rem;">📥 데이터 복원 (강제 추출)</strong>
+                <p style="margin:5px 0;">가지고 계신 .json 파일을 선택하세요.<br>(무조건 내용을 찾아냅니다)</p>
                 <input type="file" id="restoreInput" onchange="restoreData(this)">
             </div>
             <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 전체 초기화</button>
@@ -122,7 +122,7 @@
         tx.oncomplete = () => { alert('저장됨'); document.getElementById('title').value=''; switchTab('calendar'); renderCalendar(); };
     }
 
-    // [핵심] v8.8 데이터 자동 수리 복원 로직
+    // [핵심] v8.9 강제 데이터 추출 로직 (The Vacuum Cleaner)
     function restoreData(input) {
         const file = input.files[0];
         if(!file) return;
@@ -131,52 +131,56 @@
         reader.onload = (e) => {
             try {
                 let raw = e.target.result;
-                // BOM 제거
                 if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
                 
                 let data = JSON.parse(raw);
-                if (typeof data === 'string') data = JSON.parse(data); // 이중 파싱
+                if (typeof data === 'string') data = JSON.parse(data);
 
                 if (!Array.isArray(data)) {
-                     // 객체면 배열로 변환
                      if(data.memos) data = data.memos;
                      else if(typeof data === 'object') data = Object.values(data);
                      else data = [data];
                 }
-
-                if(!confirm(`총 ${data.length}개의 데이터를 복원합니다.`)) return;
 
                 const tx = db.transaction(STORE_NAME, 'readwrite');
                 const store = tx.objectStore(STORE_NAME);
                 let count = 0;
                 
                 data.forEach(item => {
-                    // [자동 수리 로직] undefined 방지
-                    // 1. 내용(Content) 찾기: content가 없으면 text, memo, body 등 다른 이름으로 찾아봄
-                    let safeContent = item.content || item.text || item.memo || item.body || "";
-                    
-                    // 2. 제목(Title) 찾기: 없으면 내용의 앞 15글자를 제목으로 사용
-                    let safeTitle = item.title || item.subject || "제목 없음";
-                    if(safeTitle === "제목 없음" && safeContent) {
-                        safeTitle = safeContent.substring(0, 15) + "...";
+                    // [만능 열쇠 로직]
+                    let finalTitle = item.title || item.subject || item.name;
+                    let finalContent = item.content || item.text || item.memo || item.body || item.desc;
+                    let finalDate = item.dateStr || item.date || item.time || new Date().toLocaleDateString('ko-KR');
+
+                    // 그래도 내용이 없으면? 데이터 안에 있는 모든 문자열을 뒤져서 합침
+                    if (!finalContent) {
+                        let allStrings = [];
+                        Object.values(item).forEach(val => {
+                            if (typeof val === 'string' && val.length > 0 && !val.includes('data:image')) {
+                                allStrings.push(val);
+                            }
+                        });
+                        // 가장 긴 글자를 내용으로, 두번째를 제목으로 추정
+                        allStrings.sort((a, b) => b.length - a.length);
+                        if (allStrings.length > 0) finalContent = allStrings[0];
+                        if (!finalTitle && allStrings.length > 1) finalTitle = allStrings[1];
                     }
 
-                    // 3. 날짜(Date) 찾기
-                    let safeDate = item.dateStr || item.date || new Date().toLocaleDateString('ko-KR');
+                    // 최후의 수단: 그냥 원본 데이터를 보여줘라
+                    if (!finalContent && !finalTitle) {
+                        finalContent = JSON.stringify(item); 
+                        finalTitle = "복구된 데이터";
+                    }
+                    if (!finalTitle) finalTitle = finalContent.substring(0, 10) + "...";
 
-                    // 4. 태그 찾기
-                    let safeTag = item.tag || "#일반";
-
-                    // 5. 새 규격으로 저장
                     const fixedItem = {
                         id: item.id || (Date.now() + count),
-                        title: safeTitle,
-                        content: safeContent,
-                        dateStr: safeDate,
-                        tag: safeTag,
+                        title: finalTitle,
+                        content: finalContent,
+                        dateStr: finalDate,
+                        tag: item.tag || "#복원",
                         link: item.link || "",
                         image: item.image || item.img || null,
-                        fullDate: item.fullDate || new Date().toLocaleString()
                     };
 
                     store.put(fixedItem);
@@ -184,7 +188,7 @@
                 });
 
                 tx.oncomplete = () => { 
-                    alert(`✅ 성공! ${count}개의 메모가 복구되었습니다.\n[목록] 탭에서 확인하세요.`); 
+                    alert(`✅ 복원 완료! (${count}개)\n이제 무조건 보일 겁니다.`); 
                     switchTab('list'); 
                 };
 
@@ -204,15 +208,12 @@
         const key = document.getElementById('searchInput').value;
         memos.reverse().forEach(m => {
             if(key && !m.title.includes(key)) return;
-            // undefined가 보이면 '내용 없음'으로 표시
-            const displayTitle = m.title !== "undefined" ? m.title : "제목 없음";
-            const displayContent = m.content !== "undefined" ? m.content : "";
             
             list.innerHTML += `<div class="memo-card">
                 <button onclick="del(${m.id})" style="float:right; border:none; bg:none; font-size:1.2rem;">×</button>
                 <small>${m.dateStr} ${m.tag}</small>
-                <h3 style="margin:5px 0; color:#2c3e50;">${displayTitle}</h3>
-                <p style="white-space:pre-wrap; color:#444;">${displayContent}</p>
+                <h3 style="margin:5px 0; color:#2c3e50;">${m.title}</h3>
+                <p style="white-space:pre-wrap; color:#444;">${m.content}</p>
                 ${m.image ? '<img src="'+m.image+'" style="width:100%; border-radius:8px; margin-top:10px;">' : ''}
             </div>`;
         });
