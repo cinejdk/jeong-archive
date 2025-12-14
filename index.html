@@ -2,8 +2,12 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v9.4</title>
+    <title>JDM Archive v9.5</title>
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f4f6f7; --nav-height: 65px; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); }
@@ -38,8 +42,6 @@
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(2px); }
         .modal-content { background:white; width:85%; max-width:500px; padding:25px; border-radius:15px; max-height:80vh; overflow-y:auto; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .close-btn { position: absolute; top: 15px; right: 15px; font-size: 1.8rem; border: none; background: none; cursor: pointer; color: #999; }
-        
-        /* 뷰어 스타일 */
         .view-body img { max-width: 100%; border-radius: 8px; margin: 10px 0; display:block; }
         .view-body { line-height: 1.6; white-space: pre-wrap; font-size: 1rem; color: #333; }
 
@@ -60,7 +62,7 @@
     </div>
 </div>
 
-<header><h1>JDM Archive v9.4</h1></header>
+<header><h1>JDM Archive v9.5</h1></header>
 
 <div class="container">
     <div id="tab-calendar" class="tab-content active">
@@ -100,6 +102,8 @@
                 <p style="font-size:0.8rem; margin:0 0 10px 0;">Jeong_Backup 파일을 선택하세요.</p>
                 <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%;">
             </div>
+            
+            <button onclick="changePassword()" class="btn-save" style="background:#8e44ad; margin-bottom:10px;">🔒 비밀번호 변경</button>
 
              <div style="background:#e3f2fd; padding:15px; border-radius:10px; margin-bottom:20px; border:2px dashed #2196f3;">
                 <strong style="color:#1565c0; display:block; margin-bottom:5px;">⚡ 긴급 데이터 복구</strong>
@@ -153,17 +157,30 @@
 </nav>
 
 <script>
-    // === 1. 암호 설정 (생일) ===
-    const PASSWORD = "0403"; 
+    // === 1. 암호 시스템 (변경 가능) ===
+    function getPassword() {
+        return localStorage.getItem('appPass') || "0403"; // 저장된 게 없으면 0403
+    }
 
     function checkPass() {
         const input = document.getElementById('passInput').value;
-        if(input === PASSWORD) {
+        if(input === getPassword()) {
             document.getElementById('loginOverlay').style.display = 'none';
         } else {
             alert('비밀번호가 틀렸습니다.');
             document.getElementById('passInput').value = '';
         }
+    }
+
+    function changePassword() {
+        const current = prompt("현재 비밀번호를 입력하세요:");
+        if (current !== getPassword()) return alert("현재 비밀번호가 틀렸습니다.");
+        
+        const newPass = prompt("새로운 비밀번호를 입력하세요 (숫자 4자리 권장):");
+        if (!newPass) return;
+        
+        localStorage.setItem('appPass', newPass);
+        alert(`비밀번호가 변경되었습니다!\n새 비밀번호: ${newPass}`);
     }
 
     const EMERGENCY_DATA = [{"title":"클라우드 테스트1","link":"https://n.news.naver.com/article/015/0005220929?cds=news_edit","dateStr":"2025. 12. 6.","tag":"#AI","id":1765026140868,"content":"신난다^^"},{"title":"새클라우드 테스트2","link":"https://n.news.naver.com/article/015/0005220929?cds=news_edit","dateStr":"2025. 12. 7.","tag":"#일반","id":1765026186966,"content":"https://n.news.naver.com/article/015/0005220929?cds=news_edit\n\n가나다라. 마바사"},{"title":"모바일 테스트","link":"","dateStr":"2025. 12. 6.","tag":"#일반","id":1765030899297,"content":"모바일 사진 첨부\n\n가나다라 마바사아. 자차카타ㅠㅏ하파ㅏㅏㅏ"},{"title":"앱개발은 힘들다.","link":"","dateStr":"2025. 12. 6.","tag":"#AI","id":1765035202224,"content":"오늘 하루종일 거의 10시간을 넘게 이 앱개발에 매달렸다.\n\n제미나이의 도움으로 여기까지 왔다.\n\n힘들긴 하지만 재미있는것 같기도 하다. 앱개발에도 관심을 가져야겠다"},{"title":"다용도실 담배","link":"","dateStr":"2025. 12. 7.","tag":"#일반","id":1765037460264,"content":"내 전용공간\n\n제미나이와 나의 합작 앱.ㅎㅎ"},{"title":"느락골교 가는 길","link":"","dateStr":"2025. 12. 7.","tag":"#일반","id":1765101591921,"content":"그림으로 그리기 좋은."},{"title":"사무실에서 확인함","link":"https://jeong-archive.netlify.app/","dateStr":"2025. 12. 8.","tag":"#일반","id":1765156067646,"content":"잘 작동되고 있다."},{"title":"새로운 탈모치료제 개발","link":"https://naver.me/5mhy6hqq","dateStr":"2025. 12. 10.","tag":"#건강","id":1765364574967,"content":"이제 잘되는구만\n\n하하하. 기분좋다"},{"title":"82세 넘겨사는 법","link":"https://youtube.com/shorts/o93XwcIG0kk?si=phE_-smKqhKJ-Je-","dateStr":"2025. 12. 14.","tag":"#건강","id":1765690658371,"content":"1. 걷기\n2. 단 맛 멀리하기\n3. 짠 맛 멀리하기\n4. 6시간 이상 수면\n5. 사람 멀리하지 않기"},{"title":"아이유베게","link":"https://www.sleepnsleepmall.com/surl/P/334&cafe_mkt=ue_GFA_251209_02","dateStr":"2025. 12. 14.","tag":"#건강","id":1765695186989,"content":""},{"title":"감정이 거제된 사람의 모습","link":"https://naver.me/5zXrBE7E","dateStr":"2025. 12. 14.","tag":"#심리","id":1765696670203,"content":"자기가 자기에게 인정받지 못한다면"}];
@@ -225,11 +242,10 @@
                     count++;
                 });
 
-                // [중요] 복원 후 달력 및 목록 즉시 갱신
                 tx.oncomplete = () => { 
                     alert(`성공! ${count}개의 기록을 복원했습니다.`); 
-                    renderCalendar(); // 달력 갱신
-                    renderMemos(); // 목록 갱신
+                    renderCalendar(); 
+                    renderMemos(); 
                     switchTab('calendar'); 
                 };
             } catch (err) { alert("복원 실패: " + err.message); }
@@ -321,10 +337,7 @@
             let summary = m.content.replace(/<[^>]*>?/gm, '');
             if(summary.length > 40) summary = summary.substring(0, 40) + "...";
             let thumbnail = m.content.includes('<img') ? '<div style="font-size:0.8rem; color:#27ae60; margin-top:5px;">📷 사진 있음</div>' : '';
-            
-            // [수정] 목록에도 링크 버튼 추가
             let linkBtn = m.link ? `<a href="${m.link}" target="_blank" class="list-link-btn" onclick="event.stopPropagation()">🔗 링크</a>` : '';
-
             list.innerHTML += `<div class="memo-card" onclick="openViewModal(${m.id})">
                 <div style="display:flex; justify-content:space-between; color:#666; font-size:0.8rem;"><span>${m.dateStr}</span><span style="color:var(--accent-color);">${m.tag || '#일반'}</span></div>
                 <h3 style="margin:5px 0; font-size:1.1rem; color:#2c3e50;">${m.title}</h3><p style="color:#555; font-size:0.9rem; margin-bottom:5px;">${summary}</p>${thumbnail} ${linkBtn}</div>`;
@@ -334,7 +347,6 @@
     let currDate = new Date();
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
     
-    // [중요] 날짜 형식 정규화 (점, 대시, 공백 무시하고 숫자만 비교)
     function normalizeDate(d) { return d.replace(/[.\-\s]/g, ''); }
 
     async function renderCalendar() {
@@ -346,26 +358,17 @@
         for(let i=0; i<first; i++) grid.innerHTML+=`<div></div>`;
         const memos = await getAll();
         for(let d=1; d<=last; d++) {
-            // 비교를 위해 숫자만 남김 (예: 20251206)
             const targetStr = normalizeDate(`${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`);
-            
-            const has = memos.some(x => {
-                // 저장된 날짜도 숫자만 남겨서 비교 (2025-12-06 이든 2025. 12. 6. 이든 상관없음)
-                return normalizeDate(x.dateStr).includes(targetStr) || targetStr.includes(normalizeDate(x.dateStr));
-            });
-
+            const has = memos.some(x => normalizeDate(x.dateStr).includes(targetStr) || targetStr.includes(normalizeDate(x.dateStr)));
             const div = document.createElement('div'); div.className = 'cal-day' + (has ? ' has-memo' : '');
             const today = new Date(); if(y===today.getFullYear() && m===today.getMonth() && d===today.getDate()) div.classList.add('today');
             div.innerHTML = `<span>${d}</span>${has?'<div class="dot"></div>':''}`;
-            
-            // 클릭 시 해당 날짜 필터링
             div.onclick = () => showDayMemos(targetStr, memos);
             grid.appendChild(div);
         }
     }
     
     function showDayMemos(targetKey, memos) {
-        // 비교 로직 동일하게 적용
         const target = memos.filter(m => normalizeDate(m.dateStr).includes(targetKey) || targetKey.includes(normalizeDate(m.dateStr)));
         const box = document.getElementById('calendarMemos');
         if(target.length==0) box.innerHTML = `<p>기록이 없습니다.</p>`;
