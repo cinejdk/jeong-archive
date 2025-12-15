@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v11.0</title>
+    <title>JDM Archive v11.1</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { 
@@ -18,7 +18,7 @@
         }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); -webkit-font-smoothing: antialiased; }
         
-        /* 헤더: 깔끔한 남색 디자인 (버전 확인용) */
+        /* 헤더 */
         header { background: var(--primary-color); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; color: white; }
         header h1 { margin: 0; font-size: 1.4rem; font-weight: 700; flex-grow: 1; text-align: center; margin-left: 40px; letter-spacing: -0.5px; }
         
@@ -34,7 +34,7 @@
         #loginOverlay button { margin-top: 20px; padding: 12px 40px; background: #c0392b; color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
         #loginOverlay button:active { transform: scale(0.95); }
 
-        /* === 달력 스타일 (반응형 핵심) === */
+        /* === 달력 스타일 === */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: var(--card-bg); padding: 15px; border-radius: 16px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
         .day-header { text-align: center; font-size: 0.85rem; color: #888; padding-bottom: 10px; font-weight: 600; }
         
@@ -56,17 +56,15 @@
         .cal-day.today { background: #e8f4fd; color: var(--primary-color); font-weight: bold; border: 1px solid #bbdefb; }
         .cal-day.has-memo .day-num { font-weight: bold; color: var(--primary-color); }
 
-        /* 점 (모바일용) */
         .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; display: block; }
-        /* PC용 타이틀 리스트 (기본 숨김) */
         .cal-events-pc { display: none; width: 100%; margin-top: 5px; padding: 0 2px; box-sizing: border-box; }
 
         /* === PC 화면 대응 (768px 이상) === */
         @media (min-width: 768px) {
             .calendar-grid { gap: 10px; padding: 20px; }
             .cal-day { aspect-ratio: auto; min-height: 100px; align-items: flex-start; padding: 8px; border: 1px solid #eee; }
-            .dot { display: none; } /* PC에선 점 숨김 */
-            .cal-events-pc { display: block; } /* PC에선 리스트 보임 */
+            .dot { display: none; } 
+            .cal-events-pc { display: block; }
             
             .cal-event-item {
                 font-size: 0.75rem;
@@ -101,11 +99,9 @@
         .btn-save { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 6px rgba(44, 62, 80, 0.2); transition: transform 0.1s; }
         .btn-save:active { transform: scale(0.98); }
         
-        /* 기존 이미지 미리보기 영역 */
         #existingImagesArea { display:none; margin-bottom:15px; background:#fafafa; padding:15px; border-radius:10px; border:1px dashed #ccc; }
         #existingImagesArea img { max-width: 80px; max-height: 80px; margin-right: 8px; border-radius: 6px; border: 1px solid #eee; object-fit: cover; }
 
-        /* 검색 및 필터 영역 */
         .search-bar-area { display: flex; gap: 8px; margin-bottom: 20px; }
         .search-bar-area select { width: 30%; margin-bottom: 0; cursor: pointer; }
         .search-bar-area input { width: 70%; margin-bottom: 0; }
@@ -118,7 +114,6 @@
         .view-body { line-height: 1.7; white-space: pre-wrap; font-size: 1.05rem; color: #333; margin: 20px 0; }
         .view-body img { max-width: 100%; border-radius: 10px; margin: 15px 0; display:block; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 
-        /* 하단 네비게이션 */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: white; display: flex; border-top: 1px solid #eee; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { flex: 1; text-align: center; padding: 10px; color: #999; font-size: 0.75rem; cursor: pointer; transition: color 0.2s; }
         .nav-item.active { color: var(--primary-color); font-weight: bold; }
@@ -137,8 +132,8 @@
 </div>
 
 <header>
-    <h1>JDM Archive v11.0</h1>
-    <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);" title="비밀번호 변경">🔒</button>
+    <h1>JDM Archive v11.1</h1>
+    <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
 <div class="container">
@@ -164,7 +159,7 @@
                 <option value="#AI">#AI</option>
                 <option value="#심리">#심리</option>
             </select>
-            <input type="text" id="searchInput" placeholder="제목 또는 내용 검색..." onkeyup="renderMemos()">
+            <input type="text" id="searchInput" placeholder="검색어 입력..." onkeyup="renderMemos()">
         </div>
         <div id="memoList"></div>
     </div>
@@ -175,20 +170,23 @@
             <input type="hidden" id="editModeId">
             
             <input type="text" id="inputTitle" placeholder="제목을 입력하세요">
-            <select id="inputTag">
-                <option value="#일반">#일반</option>
-                <option value="#업무">#업무</option>
-                <option value="#아이디어">#아이디어</option>
-                <option value="#건강">#건강</option>
-                <option value="#현장">#현장</option>
-                <option value="#AI">#AI</option>
-                <option value="#심리">#심리</option>
-            </select>
             
-            <textarea id="inputContent" style="height:250px; line-height:1.5;" placeholder="내용을 자유롭게 입력하세요."></textarea>
+            <label style="font-size:0.85rem; color:#666; font-weight:bold; margin-left:5px;">태그 (선택하거나 직접 입력)</label>
+            <input type="text" id="inputTag" list="tagOptions" placeholder="태그를 선택하거나 입력하세요 (예: #일반)">
+            <datalist id="tagOptions">
+                <option value="#일반">
+                <option value="#업무">
+                <option value="#아이디어">
+                <option value="#건강">
+                <option value="#현장">
+                <option value="#AI">
+                <option value="#심리">
+            </datalist>
+            
+            <textarea id="inputContent" style="height:250px; line-height:1.5; margin-top:5px;" placeholder="내용을 입력하세요."></textarea>
 
             <div id="existingImagesArea">
-                <span style="font-size:0.85rem; color:#666; display:block; margin-bottom:8px; font-weight:bold;">📂 기존 첨부 사진 (삭제되지 않음)</span>
+                <span style="font-size:0.85rem; color:#666; display:block; margin-bottom:8px; font-weight:bold;">📂 기존 첨부 사진 (유지됩니다)</span>
                 <div id="existingImagesPreview" style="display:flex; flex-wrap:wrap;"></div>
                 <input type="hidden" id="hiddenOldImages">
             </div>
@@ -196,7 +194,7 @@
             <input type="text" id="inputLink" placeholder="관련 링크 (URL) - 선택사항">
             
             <div style="margin:20px 0;">
-                <label style="display:block; margin-bottom:8px; font-weight:bold; color:#555;">📸 사진 추가 (여러 장 가능)</label>
+                <label style="display:block; margin-bottom:8px; font-weight:bold; color:#555;">📸 사진 추가</label>
                 <input type="file" id="inputImage" accept="image/*" multiple style="padding:12px; background:#f8f9fa; width:100%;">
             </div>
             
@@ -210,11 +208,10 @@
             <h3 style="color:var(--primary-color);">💾 데이터 센터</h3>
              <div style="background:#fff3cd; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #ffc107; text-align:left;">
                 <strong style="color:#d35400; font-size:1.1rem;">📂 백업 파일로 복원</strong>
-                <p style="margin:5px 0 10px 0; color:#666; font-size:0.9rem;">이전에 저장해둔 JDM_Backup 파일을 선택하세요.</p>
-                <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%;">
+                <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%; margin-top:10px;">
             </div>
-            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:12px;">📤 전체 데이터 백업 (저장)</button>
-            <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 앱 초기화 (데이터 삭제)</button>
+            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:12px;">📤 전체 데이터 백업</button>
+            <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 앱 초기화</button>
         </div>
     </div>
 </div>
@@ -241,13 +238,11 @@
 </nav>
 
 <script>
-    // === [핵심 로직] ===
     const DB_NAME = 'JeongArchiveDB_v9';
     const STORE_NAME = 'memos';
     let db;
     let currDate = new Date();
 
-    // 1. 비밀번호 시스템
     function getPassword() { return localStorage.getItem('appPass') || "0403"; }
     function checkPass() {
         if(document.getElementById('passInput').value === getPassword()) {
@@ -260,19 +255,16 @@
         const newP = prompt("새로운 비밀번호를 입력하세요:"); if(newP) { localStorage.setItem('appPass', newP); alert("비밀번호가 변경되었습니다."); }
     }
 
-    // 2. DB 초기화
     const request = indexedDB.open(DB_NAME, 1);
     request.onupgradeneeded = e => { db = e.target.result; if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:'id'}); };
     request.onsuccess = e => { db = e.target.result; initApp(); };
 
     function initApp() { renderCalendar(); renderMemos(); }
 
-    // 3. 탭 전환 애니메이션
     function switchTab(tab) {
         document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
         document.getElementById('tab-'+tab).classList.add('active');
-        
         const tabs = ['calendar','list','write','data'];
         document.querySelectorAll('.nav-item')[tabs.indexOf(tab)].classList.add('active');
 
@@ -284,18 +276,16 @@
         }
     }
 
-    // 4. 저장 및 수정 (외계어 방지 + 줄바꿈 처리)
     async function saveMemo() {
         const title = document.getElementById('inputTitle').value;
         const rawText = document.getElementById('inputContent').value;
-        const tag = document.getElementById('inputTag').value;
+        const tag = document.getElementById('inputTag').value; // 입력된 태그 값 그대로 가져옴
         const link = document.getElementById('inputLink').value;
         const editId = document.getElementById('editModeId').value;
         const oldImages = document.getElementById('hiddenOldImages').value; 
 
         if(!title && !rawText) return alert('내용을 입력해주세요.');
 
-        // 줄바꿈 처리: 엔터(\n)를 <br>로 변환해서 저장
         let finalContent = rawText.replace(/\n/g, "<br>");
         if(oldImages) finalContent += oldImages;
 
@@ -310,12 +300,11 @@
 
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
-
         const memoData = {
             id: editId ? Number(editId) : Date.now(),
             dateStr: editId ? (await getMemo(Number(editId))).dateStr : new Date().toLocaleDateString('ko-KR'),
             title: title || "무제",
-            tag: tag,
+            tag: tag, // 태그 저장
             content: finalContent,
             link: link
         };
@@ -330,15 +319,14 @@
 
     function getMemo(id) { return new Promise(r => db.transaction(STORE_NAME).objectStore(STORE_NAME).get(id).onsuccess = e => r(e.target.result)); }
 
-    // 5. 수정 모드 진입 (사람이 읽을 수 있게 변환)
     function editMemoDirect(id) {
         getMemo(id).then(m => {
             if(!m) return;
             document.getElementById('editModeId').value = m.id;
             document.getElementById('inputTitle').value = m.title;
-            document.getElementById('inputTag').value = m.tag || '#일반';
+            // 태그 값을 입력창에 넣어줌 (공백 제거)
+            document.getElementById('inputTag').value = (m.tag || '#일반').trim();
             
-            // HTML -> 텍스트 변환 (이미지 분리)
             const imgRegex = /<img[^>]*>/g;
             const images = m.content.match(imgRegex) || [];
             let onlyText = m.content.replace(imgRegex, "")
@@ -350,7 +338,6 @@
 
             document.getElementById('inputContent').value = onlyText;
             
-            // 이미지 미리보기 처리
             const imgArea = document.getElementById('existingImagesArea');
             if(images.length > 0) {
                 imgArea.style.display = 'block';
@@ -372,9 +359,7 @@
 
     function deleteMemo(id) {
         if(confirm('정말 삭제하시겠습니까?')) {
-            db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(id).onsuccess = () => {
-                renderMemos(); renderCalendar();
-            };
+            db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(id).onsuccess = () => { renderMemos(); renderCalendar(); };
         }
     }
 
@@ -382,11 +367,11 @@
         document.getElementById('editModeId').value = "";
         document.getElementById('inputTitle').value = "";
         document.getElementById('inputContent').value = "";
+        document.getElementById('inputTag').value = ""; // 태그 초기화
         document.getElementById('inputLink').value = "";
         document.getElementById('inputImage').value = "";
         document.getElementById('existingImagesArea').style.display = 'none';
         document.getElementById('hiddenOldImages').value = "";
-        
         document.getElementById('writeModeTitle').innerText = "📝 새 기록 작성";
         document.getElementById('btnSaveAction').innerText = "저 장 하 기";
         document.getElementById('btnSaveAction').style.background = "#2c3e50";
@@ -395,11 +380,9 @@
 
     function cancelEdit() { resetWriteForm(); switchTab('list'); }
 
-    // 6. 목록 렌더링 (공백 무시 강력 필터)
     async function renderMemos() {
         const list = document.getElementById('memoList'); list.innerHTML='';
         const memos = await getAll();
-        
         const filter = document.getElementById('listFilter').value.replace(/\s+/g, '');
         const key = document.getElementById('searchInput').value;
         
@@ -433,68 +416,36 @@
         });
     }
 
-    // 7. 달력 렌더링 (PC 타이틀 표시 기능 추가됨)
     async function renderCalendar() {
         const y = currDate.getFullYear(), m = currDate.getMonth();
         document.getElementById('currentMonth').innerText = `${y}년 ${m+1}월`;
         const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
-        
-        ['일','월','화','수','목','금','토'].forEach(d => 
-            grid.innerHTML += `<div class="day-header">${d}</div>`
-        );
-        
+        ['일','월','화','수','목','금','토'].forEach(d => grid.innerHTML += `<div class="day-header">${d}</div>`);
         const first = new Date(y,m,1).getDay(), last = new Date(y,m+1,0).getDate();
         for(let i=0; i<first; i++) grid.innerHTML += `<div></div>`;
-        
         const memos = await getAll();
-        
         for(let d=1; d<=last; d++) {
             const targetStr = normalizeDate(`${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`);
-            
-            // 해당 날짜의 메모 찾기
             const dayMemos = memos.filter(memo => normalizeDate(memo.dateStr).includes(targetStr));
-            
             const div = document.createElement('div');
             div.className = 'cal-day' + (dayMemos.length>0 ? ' has-memo' : '');
-            
-            // 오늘 날짜 표시
             const today = new Date();
             if(y===today.getFullYear() && m===today.getMonth() && d===today.getDate()) div.classList.add('today');
-            
-            // 모바일용 점
             const dotHtml = dayMemos.length > 0 ? `<div class="dot"></div>` : '';
-            
-            // PC용 제목 리스트 (최대 3개까지만 표시)
             let pcEvents = '';
-            dayMemos.slice(0, 4).forEach(dm => {
-                pcEvents += `<div class="cal-event-item">${dm.title}</div>`;
-            });
+            dayMemos.slice(0, 4).forEach(dm => { pcEvents += `<div class="cal-event-item">${dm.title}</div>`; });
             if(dayMemos.length > 4) pcEvents += `<div class="cal-event-item" style="background:none; color:#888;">+${dayMemos.length-4} 더보기</div>`;
-
-            div.innerHTML = `
-                <span class="day-num">${d}</span>
-                ${dotHtml}
-                <div class="cal-events-pc">${pcEvents}</div>
-            `;
-            
+            div.innerHTML = `<span class="day-num">${d}</span>${dotHtml}<div class="cal-events-pc">${pcEvents}</div>`;
             div.onclick = () => showDayMemos(targetStr, memos);
             grid.appendChild(div);
         }
     }
 
-    // 8. 기타 유틸리티
     function showDayMemos(targetKey, memos) {
         const target = memos.filter(m => normalizeDate(m.dateStr).includes(targetKey));
         const box = document.getElementById('calendarMemos');
-        if(target.length === 0) {
-            box.innerHTML = `<p>일정이 없습니다.</p>`;
-        } else {
-            box.innerHTML = `<div style="text-align:left; background:#fff; padding:15px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
-                <strong style="display:block; margin-bottom:10px; color:#2c3e50;">${target.length}건의 기록</strong>
-                ${target.map(m => `<div onclick="openViewModal(${m.id})" style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
-                    <span style="color:var(--accent-color); font-size:0.8rem; font-weight:bold;">${m.tag||''}</span> ${m.title}
-                </div>`).join('')}
-            </div>`;
+        if(target.length === 0) { box.innerHTML = `<p>일정이 없습니다.</p>`; } else {
+            box.innerHTML = `<div style="text-align:left; background:#fff; padding:15px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.1);"><strong style="display:block; margin-bottom:10px; color:#2c3e50;">${target.length}건의 기록</strong>${target.map(m => `<div onclick="openViewModal(${m.id})" style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;"><span style="color:var(--accent-color); font-size:0.8rem; font-weight:bold;">${m.tag||''}</span> ${m.title}</div>`).join('')}</div>`;
         }
     }
 
@@ -514,24 +465,12 @@
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
     function normalizeDate(d) { return d.replace(/[.\-\s]/g, ''); }
     function backupData() { getAll().then(memos => { if(memos.length==0) return alert('데이터 없음'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(memos)],{type:'application/json'})); a.download = `JDM_Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }); }
-    function resetApp() { if(confirm('정말 초기화하시겠습니까? 모든 데이터가 삭제됩니다.')) { db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{ alert('초기화 완료'); location.reload(); }; } }
+    function resetApp() { if(confirm('정말 초기화하시겠습니까?')) { db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{ alert('초기화 완료'); location.reload(); }; } }
     
     function restoreData(input) {
         const file = input.files[0]; if(!file) return;
         const reader = new FileReader();
-        reader.onload = e => {
-            try {
-                let data = JSON.parse(e.target.result);
-                if (!Array.isArray(data)) {
-                    if(data.memos) data = data.memos;
-                    else if(typeof data === 'object') data = Object.values(data);
-                    else data = [data];
-                }
-                const tx = db.transaction(STORE_NAME, 'readwrite');
-                data.forEach(i => tx.objectStore(STORE_NAME).put(i));
-                tx.oncomplete = () => { alert('데이터 복원 완료!'); location.reload(); };
-            } catch(err) { alert('파일 형식이 올바르지 않습니다.'); }
-        };
+        reader.onload = e => { try { let data = JSON.parse(e.target.result); if (!Array.isArray(data)) { if(data.memos) data = data.memos; else data = [data]; } const tx = db.transaction(STORE_NAME, 'readwrite'); data.forEach(i => tx.objectStore(STORE_NAME).put(i)); tx.oncomplete = () => { alert('복원 완료!'); location.reload(); }; } catch(err) { alert('파일 오류'); } };
         reader.readAsText(file);
     }
 </script>
