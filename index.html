@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v11.8</title>
+    <title>JDM Archive v11.9</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; }
@@ -35,17 +35,17 @@
         .cal-events-pc { display: none; width: 100%; margin-top: 5px; padding: 0 2px; box-sizing: border-box; }
         @media (min-width: 768px) {
             .calendar-grid { gap: 10px; padding: 20px; }
-            .cal-day { aspect-ratio: auto; min-height: 100px; align-items: flex-start; padding: 8px; border: 1px solid #eee; }
+            .cal-day { aspect-ratio: auto; min-height: 120px; align-items: flex-start; padding: 8px; border: 1px solid #eee; }
             .dot { display: none; } .cal-events-pc { display: block; }
-            .cal-event-item { font-size: 0.75rem; background: #f1f3f5; color: #495057; padding: 3px 6px; border-radius: 4px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; border-left: 3px solid var(--accent-color); cursor:pointer;}
-            .cal-event-item:hover { background:#e9ecef; }
+            .cal-event-item { font-size: 0.8rem; background: #f1f3f5; color: #495057; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; border-left: 3px solid var(--accent-color); cursor: pointer; transition: background 0.2s; }
+            .cal-event-item:hover { background: #e9ecef; color: #000; }
             .more-items { font-size: 0.75rem; color: #888; text-align: right; padding-right: 5px; margin-top: 2px; }
         }
 
         /* 메모 카드 */
         .memo-card { background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 15px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid #eee; cursor: pointer; }
+        .memo-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .memo-card:active { transform: scale(0.98); }
-        /* 선택 모드일 때 카드 스타일 */
         .memo-card.selected { border: 2px solid var(--accent-color); background: #fff5f5; }
         .check-circle { position: absolute; top: 15px; right: 15px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #ddd; background: white; display: none; }
         .memo-card.selection-mode .check-circle { display: block; }
@@ -56,17 +56,20 @@
         input, textarea, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; }
         .btn-save { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         
-        .search-bar-area { display: flex; gap: 5px; margin-bottom: 20px; align-items: center; }
-        .search-bar-area select { flex-grow: 1; margin-bottom: 0; } 
-        .search-bar-area input { flex-grow: 2; margin-bottom: 0; }
+        .search-bar-area { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .search-row { display: flex; gap: 5px; align-items: center; width: 100%; }
+        .search-row select { flex-grow: 1; margin-bottom: 0; }
+        .search-row input { flex-grow: 2; margin-bottom: 0; }
         .icon-btn { background: #95a5a6; color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; min-width: 45px; }
         .btn-select-mode { background: #2c3e50; }
         .btn-select-mode.active { background: var(--accent-color); box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); }
+        
+        /* 날짜 필터 스타일 (추가됨) */
+        .date-filter-row { display: flex; gap: 5px; align-items: center; }
+        .date-filter-row input[type="date"] { margin-bottom: 0; font-size: 0.9rem; padding: 8px; }
 
-        /* 하단 선택 삭제 바 */
         #bulkDeleteBar { position: fixed; bottom: var(--nav-height); left: 0; width: 100%; background: var(--accent-color); color: white; padding: 15px; text-align: center; font-weight: bold; cursor: pointer; display: none; z-index: 900; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
 
-        /* 모달 공통 */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(4px); }
         .modal-content { background:white; width:90%; max-width:550px; padding:30px; border-radius:20px; max-height:85vh; overflow-y:auto; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .close-btn { font-size: 2rem; border: none; background: none; cursor: pointer; color: #aaa; line-height: 1; margin-left: 10px;}
@@ -75,7 +78,6 @@
         .tag-item { background: #f1f3f5; padding: 8px 12px; border-radius: 20px; display: flex; align-items: center; gap: 5px; font-size: 0.9rem; }
         .tag-del-btn { color: #e74c3c; font-weight: bold; cursor: pointer; margin-left: 5px; }
 
-        /* 수정 팝업 */
         #editPopup { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#f0f2f5; z-index:3000; overflow-y:auto; padding-bottom: 50px;}
         .edit-container { max-width:800px; margin:20px auto; padding:20px; background:white; border-radius:15px; box-shadow:0 0 20px rgba(0,0,0,0.1); }
         .edit-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px; }
@@ -106,7 +108,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v11.8</h1>
+    <h1>JDM Archive v11.9</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -123,12 +125,21 @@
 
     <div id="tab-list" class="tab-content">
         <div class="search-bar-area">
-            <button class="icon-btn btn-tag-config" onclick="openTagManager()" title="태그 관리">⚙️</button>
-            <button class="icon-btn btn-select-mode" id="selectModeBtn" onclick="toggleSelectMode()" title="선택 모드 (삭제)">✅</button>
-            <select id="listFilter" onchange="renderMemos()">
-                <option value="all">전체보기</option>
-            </select>
-            <input type="text" id="searchInput" placeholder="검색어..." onkeyup="renderMemos()">
+            <div class="search-row">
+                <button class="icon-btn btn-tag-config" onclick="openTagManager()" title="태그 관리">⚙️</button>
+                <button class="icon-btn btn-select-mode" id="selectModeBtn" onclick="toggleSelectMode()" title="선택 모드 (삭제)">✅</button>
+                <select id="listFilter" onchange="renderMemos()">
+                    <option value="all">전체보기</option>
+                </select>
+            </div>
+            <div class="search-row">
+                <input type="text" id="searchInput" placeholder="검색어..." onkeyup="renderMemos()">
+            </div>
+            <div class="date-filter-row">
+                <input type="date" id="filterStartDate" onchange="renderMemos()" title="시작일">
+                <span>~</span>
+                <input type="date" id="filterEndDate" onchange="renderMemos()" title="종료일">
+            </div>
         </div>
         <div id="memoList"></div>
     </div>
@@ -137,8 +148,18 @@
         <div style="background:var(--card-bg); padding:25px; border-radius:16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <h3 style="margin-top:0; color:var(--primary-color);">📝 새 기록 작성</h3>
             <input type="text" id="inputTitle" placeholder="제목">
-            <label style="font-size:0.85rem; color:#666; font-weight:bold;">태그 선택</label>
-            <select id="inputTag"></select>
+            
+            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                <div style="flex:1;">
+                    <label style="font-size:0.85rem; color:#666; font-weight:bold;">날짜</label>
+                    <input type="date" id="inputDate" style="margin-bottom:0;">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:0.85rem; color:#666; font-weight:bold;">태그</label>
+                    <select id="inputTag" style="margin-bottom:0;"></select>
+                </div>
+            </div>
+
             <textarea id="inputContent" style="height:250px; line-height:1.5;" placeholder="내용을 입력하세요."></textarea>
             <input type="text" id="inputLink" placeholder="관련 링크 (URL)">
             <div style="margin:20px 0;">
@@ -188,10 +209,21 @@
         </div>
         <input type="hidden" id="editId">
         <input type="hidden" id="editOldImages">
+        
         <label>제목</label>
         <input type="text" id="editTitle">
-        <label>태그</label>
-        <select id="editTag"></select>
+        
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <div style="flex:1;">
+                <label>날짜 (수정 가능)</label>
+                <input type="date" id="editDate" style="margin-bottom:0;">
+            </div>
+            <div style="flex:1;">
+                <label>태그</label>
+                <select id="editTag" style="margin-bottom:0;"></select>
+            </div>
+        </div>
+
         <label>내용</label>
         <textarea id="editContent" style="height:250px; line-height:1.5;"></textarea>
         <div id="editImagePreviewArea" style="background:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:15px; display:none;">
@@ -243,8 +275,6 @@
     let db;
     let currDate = new Date();
     let myTags = JSON.parse(localStorage.getItem('myTags')) || ['#일반','#업무','#아이디어','#건강','#현장','#AI','#심리'];
-    
-    // 선택 모드 관련 변수
     let isSelectionMode = false;
     let selectedIds = new Set();
 
@@ -266,21 +296,16 @@
 
     function initApp() { 
         updateTagSelects(); 
+        // 오늘 날짜로 inputDate 기본값 설정
+        document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
         renderCalendar(); 
         renderMemos(); 
     }
 
-    // === 태그 관리 ===
     function openTagManager() { renderTagListModal(); document.getElementById('tagManagerModal').style.display = 'flex'; }
     function closeTagManager() { document.getElementById('tagManagerModal').style.display = 'none'; }
-    function renderTagListModal() {
-        document.getElementById('tagListDisplay').innerHTML = myTags.map(t => `<span class="tag-item">${t} <span class="tag-del-btn" onclick="removeTag('${t}')">×</span></span>`).join('');
-    }
-    function addNewTag() {
-        const val = document.getElementById('newTagInput').value.trim();
-        if(!val) return;
-        if(!myTags.includes(val)) { myTags.push(val); saveTags(); document.getElementById('newTagInput').value = ''; renderTagListModal(); updateTagSelects(); }
-    }
+    function renderTagListModal() { document.getElementById('tagListDisplay').innerHTML = myTags.map(t => `<span class="tag-item">${t} <span class="tag-del-btn" onclick="removeTag('${t}')">×</span></span>`).join(''); }
+    function addNewTag() { const val = document.getElementById('newTagInput').value.trim(); if(!val) return; if(!myTags.includes(val)) { myTags.push(val); saveTags(); document.getElementById('newTagInput').value = ''; renderTagListModal(); updateTagSelects(); } }
     function removeTag(tag) { if(confirm('삭제합니까?')) { myTags = myTags.filter(t => t !== tag); saveTags(); renderTagListModal(); updateTagSelects(); } }
     function saveTags() { localStorage.setItem('myTags', JSON.stringify(myTags)); }
     function updateTagSelects() {
@@ -292,51 +317,22 @@
         document.getElementById('listFilter').value = curFilter;
     }
 
-    // === 선택 모드 & 일괄 삭제 로직 ===
     function toggleSelectMode() {
         isSelectionMode = !isSelectionMode;
-        selectedIds.clear(); // 모드 전환 시 선택 초기화
-        
+        selectedIds.clear(); 
         const btn = document.getElementById('selectModeBtn');
         const bulkBar = document.getElementById('bulkDeleteBar');
-        
-        if(isSelectionMode) {
-            btn.classList.add('active');
-            bulkBar.style.display = 'block';
-            updateBulkBar();
-        } else {
-            btn.classList.remove('active');
-            bulkBar.style.display = 'none';
-        }
-        renderMemos(); // 목록 다시 그려서 체크박스/스타일 반영
+        if(isSelectionMode) { btn.classList.add('active'); bulkBar.style.display = 'block'; updateBulkBar(); } else { btn.classList.remove('active'); bulkBar.style.display = 'none'; }
+        renderMemos(); 
     }
-
-    function toggleSelectCard(id) {
-        if(selectedIds.has(id)) selectedIds.delete(id);
-        else selectedIds.add(id);
-        renderMemos();
-        updateBulkBar();
-    }
-
-    function updateBulkBar() {
-        document.getElementById('selectedCount').innerText = selectedIds.size;
-    }
-
+    function toggleSelectCard(id) { if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id); renderMemos(); updateBulkBar(); }
+    function updateBulkBar() { document.getElementById('selectedCount').innerText = selectedIds.size; }
     function deleteSelectedMemos() {
-        if(selectedIds.size === 0) return alert("삭제할 항목을 선택해주세요.");
-        if(!confirm(`선택한 ${selectedIds.size}개의 항목을 정말 삭제하시겠습니까?`)) return;
-
+        if(selectedIds.size === 0) return alert("항목 선택 필요");
+        if(!confirm(`선택한 ${selectedIds.size}개 항목 삭제?`)) return;
         const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
-        
-        selectedIds.forEach(id => store.delete(id));
-        
-        tx.oncomplete = () => {
-            alert("삭제되었습니다.");
-            toggleSelectMode(); // 삭제 후 일반 모드로 복귀
-            renderMemos();
-            renderCalendar();
-        };
+        selectedIds.forEach(id => tx.objectStore(STORE_NAME).delete(id));
+        tx.oncomplete = () => { alert("삭제됨"); toggleSelectMode(); renderMemos(); renderCalendar(); };
     }
 
     function switchTab(tab) {
@@ -349,12 +345,40 @@
         if(tab === 'list') renderMemos();
     }
 
+    // 날짜 포맷 변환 (YYYY. MM. DD. <-> YYYY-MM-DD)
+    function strToInputDate(str) {
+        // "2025. 12. 15." -> "2025-12-15"
+        if(!str) return "";
+        const parts = str.split('. ');
+        if(parts.length < 3) return "";
+        const y = parts[0];
+        const m = parts[1].padStart(2, '0');
+        const d = parts[2].replace('.', '').padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+    function inputDateToStr(val) {
+        // "2025-12-15" -> "2025. 12. 15."
+        if(!val) return new Date().toLocaleDateString('ko-KR');
+        const d = new Date(val);
+        return d.toLocaleDateString('ko-KR'); 
+    }
+
+    // 빈 날짜 클릭 시 작성 탭으로 이동
+    function openWriteWithDate(y, m, d) {
+        const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        document.getElementById('inputDate').value = dateStr;
+        switchTab('write');
+    }
+
     async function saveNewMemo() {
         const title = document.getElementById('inputTitle').value;
         const rawText = document.getElementById('inputContent').value;
         const tag = document.getElementById('inputTag').value; 
         const link = document.getElementById('inputLink').value;
+        const dateVal = document.getElementById('inputDate').value; // 날짜 입력값
+
         if(!title && !rawText) return alert('내용 필요');
+        
         let finalContent = rawText.replace(/\n/g, "<br>");
         const files = document.getElementById('inputImage').files;
         if(files.length > 0) {
@@ -367,7 +391,7 @@
         const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
         store.add({
             id: Date.now(),
-            dateStr: new Date().toLocaleDateString('ko-KR'),
+            dateStr: inputDateToStr(dateVal), // 선택한 날짜로 저장
             title: title || "무제",
             tag: tag, content: finalContent, link: link
         }).onsuccess = () => {
@@ -376,6 +400,8 @@
             document.getElementById('inputContent').value = "";
             document.getElementById('inputLink').value = "";
             document.getElementById('inputImage').value = "";
+            // 날짜는 오늘로 리셋
+            document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
             switchTab('calendar'); renderCalendar();
         };
     }
@@ -383,7 +409,7 @@
     function transferToEdit() { const id = Number(document.getElementById('viewIdHidden').value); closeViewModal(); openEditPopup(id); }
     function deleteFromView() {
         const id = Number(document.getElementById('viewIdHidden').value);
-        if(confirm('삭제하시겠습니까?')) {
+        if(confirm('삭제?')) {
             db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(id).onsuccess = () => {
                 alert('삭제됨'); closeViewModal(); renderMemos(); renderCalendar();
             };
@@ -395,6 +421,10 @@
             if(!m) return;
             document.getElementById('editId').value = m.id;
             document.getElementById('editTitle').value = m.title;
+            
+            // 날짜 세팅
+            document.getElementById('editDate').value = strToInputDate(m.dateStr);
+
             if(!myTags.includes(m.tag)) { 
                 const opt = document.createElement('option'); opt.value = m.tag; opt.innerText = m.tag;
                 document.getElementById('editTag').appendChild(opt);
@@ -427,6 +457,7 @@
         const tag = document.getElementById('editTag').value;
         const link = document.getElementById('editLink').value;
         const oldImages = document.getElementById('editOldImages').value;
+        const dateVal = document.getElementById('editDate').value; // 수정된 날짜
         
         let finalContent = rawText.replace(/\n/g, "<br>");
         if(oldImages) finalContent += oldImages;
@@ -440,8 +471,14 @@
             }
         }
         
-        const original = await getMemo(id);
-        const updatedMemo = { id: id, dateStr: original.dateStr, title: title, tag: tag, content: finalContent, link: link };
+        const updatedMemo = { 
+            id: id, 
+            dateStr: inputDateToStr(dateVal), // 날짜 업데이트
+            title: title, 
+            tag: tag, 
+            content: finalContent, 
+            link: link 
+        };
         
         db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(updatedMemo).onsuccess = () => {
             alert('수정되었습니다!'); closeEditPopup(); renderMemos(); renderCalendar();
@@ -449,27 +486,38 @@
     }
     function closeEditPopup() { document.getElementById('editPopup').style.display = 'none'; }
 
-    // === 목록 렌더링 수정 (선택 모드 지원) ===
+    // 날짜 비교 유틸
+    function parseDateStr(str) {
+        // "2025. 12. 15." -> Date Object
+        return new Date(strToInputDate(str));
+    }
+
     async function renderMemos() {
         const list = document.getElementById('memoList'); list.innerHTML='';
         const memos = await getAll();
         const filter = document.getElementById('listFilter').value;
         const key = document.getElementById('searchInput').value;
+        const startVal = document.getElementById('filterStartDate').value;
+        const endVal = document.getElementById('filterEndDate').value;
+        
         memos.sort((a,b) => b.id - a.id);
         
         memos.forEach(m => {
             if(filter !== 'all' && m.tag !== filter) return;
             if(key && !m.title.includes(key) && !m.content.includes(key)) return;
             
+            // 날짜 범위 필터링
+            if(startVal || endVal) {
+                const mDate = parseDateStr(m.dateStr);
+                if(startVal && mDate < new Date(startVal)) return;
+                if(endVal && mDate > new Date(endVal)) return;
+            }
+            
             let summary = m.content.replace(/<[^>]*>?/gm, '').substring(0, 40) + "...";
             let hasImg = m.content.includes('<img') ? '📷' : '';
-            
-            // 선택 모드 상태 확인
             const isSelected = selectedIds.has(m.id);
             const selectClass = isSelected ? 'selected' : '';
             const modeClass = isSelectionMode ? 'selection-mode' : '';
-            
-            // 클릭 동작 분기: 선택 모드면 toggleSelectCard, 아니면 openViewModal
             const clickAction = isSelectionMode ? `toggleSelectCard(${m.id})` : `openViewModal(${m.id})`;
 
             list.innerHTML += `
@@ -507,7 +555,14 @@
             if(dayMemos.length > limit) pcEvents += `<div class="more-items">+${dayMemos.length - limit} 더보기</div>`;
 
             div.innerHTML = `<span class="day-num">${d}</span>${dayMemos.length>0?'<div class="dot"></div>':''}<div class="cal-events-pc">${pcEvents}</div>`;
-            div.onclick = () => showDayMemos(targetStr, memos);
+            
+            // 클릭 이벤트 분기: 메모가 없으면 -> 작성 탭 (날짜 지정), 있으면 -> 목록 표시
+            if (dayMemos.length === 0) {
+                div.onclick = () => openWriteWithDate(y, m+1, d);
+            } else {
+                div.onclick = () => showDayMemos(targetStr, memos);
+            }
+            
             grid.appendChild(div);
         }
     }
