@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v11.9</title>
+    <title>JDM Archive v12.0</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; }
@@ -64,7 +64,6 @@
         .btn-select-mode { background: #2c3e50; }
         .btn-select-mode.active { background: var(--accent-color); box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); }
         
-        /* 날짜 필터 스타일 (추가됨) */
         .date-filter-row { display: flex; gap: 5px; align-items: center; }
         .date-filter-row input[type="date"] { margin-bottom: 0; font-size: 0.9rem; padding: 8px; }
 
@@ -108,7 +107,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v11.9</h1>
+    <h1>JDM Archive v12.0</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -146,7 +145,11 @@
 
     <div id="tab-write" class="tab-content">
         <div style="background:var(--card-bg); padding:25px; border-radius:16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            <h3 style="margin-top:0; color:var(--primary-color);">📝 새 기록 작성</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--primary-color);">📝 새 기록 작성</h3>
+                <button onclick="switchTab('calendar')" style="border:none; background:none; font-size:2rem; cursor:pointer; color:#aaa; line-height:1;">×</button>
+            </div>
+            
             <input type="text" id="inputTitle" placeholder="제목">
             
             <div style="display:flex; gap:10px; margin-bottom:12px;">
@@ -209,10 +212,8 @@
         </div>
         <input type="hidden" id="editId">
         <input type="hidden" id="editOldImages">
-        
         <label>제목</label>
         <input type="text" id="editTitle">
-        
         <div style="display:flex; gap:10px; margin-bottom:15px;">
             <div style="flex:1;">
                 <label>날짜 (수정 가능)</label>
@@ -223,7 +224,6 @@
                 <select id="editTag" style="margin-bottom:0;"></select>
             </div>
         </div>
-
         <label>내용</label>
         <textarea id="editContent" style="height:250px; line-height:1.5;"></textarea>
         <div id="editImagePreviewArea" style="background:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:15px; display:none;">
@@ -296,7 +296,6 @@
 
     function initApp() { 
         updateTagSelects(); 
-        // 오늘 날짜로 inputDate 기본값 설정
         document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
         renderCalendar(); 
         renderMemos(); 
@@ -345,9 +344,7 @@
         if(tab === 'list') renderMemos();
     }
 
-    // 날짜 포맷 변환 (YYYY. MM. DD. <-> YYYY-MM-DD)
     function strToInputDate(str) {
-        // "2025. 12. 15." -> "2025-12-15"
         if(!str) return "";
         const parts = str.split('. ');
         if(parts.length < 3) return "";
@@ -357,13 +354,11 @@
         return `${y}-${m}-${d}`;
     }
     function inputDateToStr(val) {
-        // "2025-12-15" -> "2025. 12. 15."
         if(!val) return new Date().toLocaleDateString('ko-KR');
         const d = new Date(val);
         return d.toLocaleDateString('ko-KR'); 
     }
 
-    // 빈 날짜 클릭 시 작성 탭으로 이동
     function openWriteWithDate(y, m, d) {
         const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         document.getElementById('inputDate').value = dateStr;
@@ -375,7 +370,7 @@
         const rawText = document.getElementById('inputContent').value;
         const tag = document.getElementById('inputTag').value; 
         const link = document.getElementById('inputLink').value;
-        const dateVal = document.getElementById('inputDate').value; // 날짜 입력값
+        const dateVal = document.getElementById('inputDate').value;
 
         if(!title && !rawText) return alert('내용 필요');
         
@@ -391,7 +386,7 @@
         const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
         store.add({
             id: Date.now(),
-            dateStr: inputDateToStr(dateVal), // 선택한 날짜로 저장
+            dateStr: inputDateToStr(dateVal), 
             title: title || "무제",
             tag: tag, content: finalContent, link: link
         }).onsuccess = () => {
@@ -400,7 +395,6 @@
             document.getElementById('inputContent').value = "";
             document.getElementById('inputLink').value = "";
             document.getElementById('inputImage').value = "";
-            // 날짜는 오늘로 리셋
             document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
             switchTab('calendar'); renderCalendar();
         };
@@ -421,10 +415,7 @@
             if(!m) return;
             document.getElementById('editId').value = m.id;
             document.getElementById('editTitle').value = m.title;
-            
-            // 날짜 세팅
             document.getElementById('editDate').value = strToInputDate(m.dateStr);
-
             if(!myTags.includes(m.tag)) { 
                 const opt = document.createElement('option'); opt.value = m.tag; opt.innerText = m.tag;
                 document.getElementById('editTag').appendChild(opt);
@@ -457,7 +448,7 @@
         const tag = document.getElementById('editTag').value;
         const link = document.getElementById('editLink').value;
         const oldImages = document.getElementById('editOldImages').value;
-        const dateVal = document.getElementById('editDate').value; // 수정된 날짜
+        const dateVal = document.getElementById('editDate').value; 
         
         let finalContent = rawText.replace(/\n/g, "<br>");
         if(oldImages) finalContent += oldImages;
@@ -473,7 +464,7 @@
         
         const updatedMemo = { 
             id: id, 
-            dateStr: inputDateToStr(dateVal), // 날짜 업데이트
+            dateStr: inputDateToStr(dateVal), 
             title: title, 
             tag: tag, 
             content: finalContent, 
@@ -486,11 +477,7 @@
     }
     function closeEditPopup() { document.getElementById('editPopup').style.display = 'none'; }
 
-    // 날짜 비교 유틸
-    function parseDateStr(str) {
-        // "2025. 12. 15." -> Date Object
-        return new Date(strToInputDate(str));
-    }
+    function parseDateStr(str) { return new Date(strToInputDate(str)); }
 
     async function renderMemos() {
         const list = document.getElementById('memoList'); list.innerHTML='';
@@ -506,7 +493,6 @@
             if(filter !== 'all' && m.tag !== filter) return;
             if(key && !m.title.includes(key) && !m.content.includes(key)) return;
             
-            // 날짜 범위 필터링
             if(startVal || endVal) {
                 const mDate = parseDateStr(m.dateStr);
                 if(startVal && mDate < new Date(startVal)) return;
@@ -556,13 +542,11 @@
 
             div.innerHTML = `<span class="day-num">${d}</span>${dayMemos.length>0?'<div class="dot"></div>':''}<div class="cal-events-pc">${pcEvents}</div>`;
             
-            // 클릭 이벤트 분기: 메모가 없으면 -> 작성 탭 (날짜 지정), 있으면 -> 목록 표시
             if (dayMemos.length === 0) {
                 div.onclick = () => openWriteWithDate(y, m+1, d);
             } else {
                 div.onclick = () => showDayMemos(targetStr, memos);
             }
-            
             grid.appendChild(div);
         }
     }
