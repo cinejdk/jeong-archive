@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v12.1</title>
+    <title>JDM Archive v12.2</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; }
@@ -107,7 +107,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v12.1</h1>
+    <h1>JDM Archive v12.2</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -344,24 +344,35 @@
         if(tab === 'list') renderMemos();
     }
 
-    // === [중요] 날짜 변환 로직 (String 기반으로 변경) ===
+    // 날짜 포맷 변환 (핵심)
     function strToInputDate(str) {
         if(!str) return "";
-        // 숫자만 추출해서 YYYY-MM-DD 형식으로 맞춤
-        const digits = str.replace(/\D/g, '');
-        if(digits.length !== 8) return "";
+        const digits = str.replace(/\D/g, ''); 
+        if(digits.length < 8) {
+            const parts = str.match(/\d+/g);
+            if(!parts || parts.length < 3) return "";
+            const y = parts[0];
+            const m = parts[1].padStart(2,'0');
+            const d = parts[2].padStart(2,'0');
+            return `${y}-${m}-${d}`;
+        }
         return `${digits.slice(0,4)}-${digits.slice(4,6)}-${digits.slice(6,8)}`;
     }
     
     function inputDateToStr(val) {
         if(!val) return "";
-        const parts = val.split('-'); // YYYY-MM-DD
-        return `${parts[0]}. ${parts[1]}. ${parts[2]}.`;
+        const parts = val.split('-'); 
+        return `${parts[0]}. ${Number(parts[1])}. ${Number(parts[2])}.`;
     }
     
-    function normalizeDate(d) {
-        if(!d) return "";
-        return d.replace(/\D/g, ''); // 모든 비숫자 제거
+    function normalizeDate(str) {
+        if(!str) return "";
+        const parts = str.match(/\d+/g);
+        if(!parts || parts.length < 3) return "";
+        const y = parts[0];
+        const m = parts[1].padStart(2,'0');
+        const d = parts[2].padStart(2,'0');
+        return `${y}${m}${d}`;
     }
 
     function openWriteWithDate(y, m, d) {
@@ -467,6 +478,7 @@
             }
         }
         
+        const original = await getMemo(id);
         const updatedMemo = { 
             id: id, 
             dateStr: inputDateToStr(dateVal), 
@@ -482,15 +494,11 @@
     }
     function closeEditPopup() { document.getElementById('editPopup').style.display = 'none'; }
 
-    // 날짜 비교 유틸 (문자열 기반)
     function checkDateRange(targetStr, start, end) {
-        // targetStr: 2025. 12. 15.
-        // start, end: 2025-12-01
         if(!targetStr) return false;
         const targetNum = parseInt(normalizeDate(targetStr));
         const startNum = start ? parseInt(start.replace(/-/g, '')) : 0;
         const endNum = end ? parseInt(end.replace(/-/g, '')) : 99999999;
-        
         return targetNum >= startNum && targetNum <= endNum;
     }
 
@@ -508,7 +516,6 @@
             if(filter !== 'all' && m.tag !== filter) return;
             if(key && !m.title.includes(key) && !m.content.includes(key)) return;
             
-            // 날짜 범위 필터링 (강력해진 버전)
             if(startVal || endVal) {
                 if(!checkDateRange(m.dateStr, startVal, endVal)) return;
             }
@@ -541,7 +548,6 @@
         for(let i=0; i<first; i++) grid.innerHTML += `<div></div>`;
         const memos = await getAll();
         for(let d=1; d<=last; d++) {
-            // 날짜 비교 (숫자만 추출해서 비교)
             const targetStr = `${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
             const dayMemos = memos.filter(memo => normalizeDate(memo.dateStr) === targetStr);
             
@@ -568,7 +574,6 @@
     }
 
     function showDayMemos(targetKey, memos) {
-        // targetKey는 20251215 형식
         const target = memos.filter(m => normalizeDate(m.dateStr) === targetKey);
         const box = document.getElementById('calendarMemos');
         if(target.length === 0) { box.innerHTML = `<p>일정이 없습니다.</p>`; } else {
