@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v11.1</title>
+    <title>JDM Archive v11.2</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { 
@@ -38,7 +38,6 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: var(--card-bg); padding: 15px; border-radius: 16px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
         .day-header { text-align: center; font-size: 0.85rem; color: #888; padding-bottom: 10px; font-weight: 600; }
         
-        /* 모바일 기본 셀 스타일 */
         .cal-day { 
             aspect-ratio: 1; 
             display: flex; 
@@ -59,13 +58,11 @@
         .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; display: block; }
         .cal-events-pc { display: none; width: 100%; margin-top: 5px; padding: 0 2px; box-sizing: border-box; }
 
-        /* === PC 화면 대응 (768px 이상) === */
         @media (min-width: 768px) {
             .calendar-grid { gap: 10px; padding: 20px; }
             .cal-day { aspect-ratio: auto; min-height: 100px; align-items: flex-start; padding: 8px; border: 1px solid #eee; }
             .dot { display: none; } 
             .cal-events-pc { display: block; }
-            
             .cal-event-item {
                 font-size: 0.75rem;
                 background: #f1f3f5;
@@ -106,11 +103,9 @@
         .search-bar-area select { width: 30%; margin-bottom: 0; cursor: pointer; }
         .search-bar-area input { width: 70%; margin-bottom: 0; }
 
-        /* 모달 스타일 */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(4px); }
         .modal-content { background:white; width:90%; max-width:550px; padding:30px; border-radius:20px; max-height:85vh; overflow-y:auto; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .close-btn { position: absolute; top: 20px; right: 20px; font-size: 2rem; border: none; background: none; cursor: pointer; color: #aaa; line-height: 1; }
-        
         .view-body { line-height: 1.7; white-space: pre-wrap; font-size: 1.05rem; color: #333; margin: 20px 0; }
         .view-body img { max-width: 100%; border-radius: 10px; margin: 15px 0; display:block; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 
@@ -132,7 +127,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v11.1</h1>
+    <h1>JDM Archive v11.2</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -171,8 +166,8 @@
             
             <input type="text" id="inputTitle" placeholder="제목을 입력하세요">
             
-            <label style="font-size:0.85rem; color:#666; font-weight:bold; margin-left:5px;">태그 (선택하거나 직접 입력)</label>
-            <input type="text" id="inputTag" list="tagOptions" placeholder="태그를 선택하거나 입력하세요 (예: #일반)">
+            <label style="font-size:0.85rem; color:#666; font-weight:bold; margin-left:5px;">태그 (직접 입력 가능)</label>
+            <input type="text" id="inputTagSmart" list="tagOptions" placeholder="#태그를 입력하거나 선택하세요" autocomplete="off">
             <datalist id="tagOptions">
                 <option value="#일반">
                 <option value="#업무">
@@ -279,7 +274,8 @@
     async function saveMemo() {
         const title = document.getElementById('inputTitle').value;
         const rawText = document.getElementById('inputContent').value;
-        const tag = document.getElementById('inputTag').value; // 입력된 태그 값 그대로 가져옴
+        // 변경된 ID (inputTagSmart) 사용
+        const tag = document.getElementById('inputTagSmart').value; 
         const link = document.getElementById('inputLink').value;
         const editId = document.getElementById('editModeId').value;
         const oldImages = document.getElementById('hiddenOldImages').value; 
@@ -304,7 +300,7 @@
             id: editId ? Number(editId) : Date.now(),
             dateStr: editId ? (await getMemo(Number(editId))).dateStr : new Date().toLocaleDateString('ko-KR'),
             title: title || "무제",
-            tag: tag, // 태그 저장
+            tag: tag || "#일반",
             content: finalContent,
             link: link
         };
@@ -324,8 +320,8 @@
             if(!m) return;
             document.getElementById('editModeId').value = m.id;
             document.getElementById('inputTitle').value = m.title;
-            // 태그 값을 입력창에 넣어줌 (공백 제거)
-            document.getElementById('inputTag').value = (m.tag || '#일반').trim();
+            // 변경된 ID에 값 할당
+            document.getElementById('inputTagSmart').value = (m.tag || '#일반').trim();
             
             const imgRegex = /<img[^>]*>/g;
             const images = m.content.match(imgRegex) || [];
@@ -367,7 +363,7 @@
         document.getElementById('editModeId').value = "";
         document.getElementById('inputTitle').value = "";
         document.getElementById('inputContent').value = "";
-        document.getElementById('inputTag').value = ""; // 태그 초기화
+        document.getElementById('inputTagSmart').value = ""; // 초기화
         document.getElementById('inputLink').value = "";
         document.getElementById('inputImage').value = "";
         document.getElementById('existingImagesArea').style.display = 'none';
