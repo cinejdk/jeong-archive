@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v11.6</title>
+    <title>JDM Archive v11.8</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; }
@@ -28,6 +28,7 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: var(--card-bg); padding: 15px; border-radius: 16px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
         .day-header { text-align: center; font-size: 0.85rem; color: #888; padding-bottom: 10px; font-weight: 600; }
         .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; border-radius: 10px; font-size: 0.95rem; cursor: pointer; padding-top: 8px; transition: background 0.2s; border: 1px solid transparent; }
+        .cal-day:hover { background: #f8f9fa; }
         .cal-day.today { background: #e8f4fd; color: var(--primary-color); font-weight: bold; border: 1px solid #bbdefb; }
         .cal-day.has-memo .day-num { font-weight: bold; color: var(--primary-color); }
         .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; display: block; }
@@ -36,38 +37,53 @@
             .calendar-grid { gap: 10px; padding: 20px; }
             .cal-day { aspect-ratio: auto; min-height: 100px; align-items: flex-start; padding: 8px; border: 1px solid #eee; }
             .dot { display: none; } .cal-events-pc { display: block; }
-            .cal-event-item { font-size: 0.75rem; background: #f1f3f5; color: #495057; padding: 3px 6px; border-radius: 4px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; border-left: 3px solid var(--accent-color); }
+            .cal-event-item { font-size: 0.75rem; background: #f1f3f5; color: #495057; padding: 3px 6px; border-radius: 4px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; border-left: 3px solid var(--accent-color); cursor:pointer;}
+            .cal-event-item:hover { background:#e9ecef; }
+            .more-items { font-size: 0.75rem; color: #888; text-align: right; padding-right: 5px; margin-top: 2px; }
         }
 
         /* 메모 카드 */
-        .memo-card { background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 15px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid #eee; }
-        .list-action-bar { margin-top: 15px; padding-top: 12px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 8px; }
-        .btn-mini { padding: 6px 14px; font-size: 0.85rem; border: none; border-radius: 6px; cursor: pointer; color: white; text-decoration: none; display:inline-block; }
-        .btn-edit { background: #f39c12; } .btn-del { background: #e74c3c; } .btn-link { background: #3498db; }
+        .memo-card { background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 15px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid #eee; cursor: pointer; }
+        .memo-card:active { transform: scale(0.98); }
+        /* 선택 모드일 때 카드 스타일 */
+        .memo-card.selected { border: 2px solid var(--accent-color); background: #fff5f5; }
+        .check-circle { position: absolute; top: 15px; right: 15px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #ddd; background: white; display: none; }
+        .memo-card.selection-mode .check-circle { display: block; }
+        .memo-card.selected .check-circle { background: var(--accent-color); border-color: var(--accent-color); }
+        .memo-card.selected .check-circle::after { content: '✔'; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 14px; }
 
         /* 입력 폼 */
         input, textarea, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; }
-        .btn-save { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 6px rgba(44, 62, 80, 0.2); }
+        .btn-save { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         
         .search-bar-area { display: flex; gap: 5px; margin-bottom: 20px; align-items: center; }
         .search-bar-area select { flex-grow: 1; margin-bottom: 0; } 
         .search-bar-area input { flex-grow: 2; margin-bottom: 0; }
-        .btn-tag-config { background: #95a5a6; color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
+        .icon-btn { background: #95a5a6; color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; min-width: 45px; }
+        .btn-select-mode { background: #2c3e50; }
+        .btn-select-mode.active { background: var(--accent-color); box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); }
+
+        /* 하단 선택 삭제 바 */
+        #bulkDeleteBar { position: fixed; bottom: var(--nav-height); left: 0; width: 100%; background: var(--accent-color); color: white; padding: 15px; text-align: center; font-weight: bold; cursor: pointer; display: none; z-index: 900; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
 
         /* 모달 공통 */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(4px); }
         .modal-content { background:white; width:90%; max-width:550px; padding:30px; border-radius:20px; max-height:85vh; overflow-y:auto; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 2rem; border: none; background: none; cursor: pointer; color: #aaa; line-height: 1; }
+        .close-btn { font-size: 2rem; border: none; background: none; cursor: pointer; color: #aaa; line-height: 1; margin-left: 10px;}
         
-        /* 태그 관리 모달 */
         .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
         .tag-item { background: #f1f3f5; padding: 8px 12px; border-radius: 20px; display: flex; align-items: center; gap: 5px; font-size: 0.9rem; }
         .tag-del-btn { color: #e74c3c; font-weight: bold; cursor: pointer; margin-left: 5px; }
 
-        /* 수정 전용 팝업 */
+        /* 수정 팝업 */
         #editPopup { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#f0f2f5; z-index:3000; overflow-y:auto; padding-bottom: 50px;}
         .edit-container { max-width:800px; margin:20px auto; padding:20px; background:white; border-radius:15px; box-shadow:0 0 20px rgba(0,0,0,0.1); }
         .edit-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px; }
+
+        .modal-actions { display: flex; align-items: center; gap: 10px; }
+        .action-btn { padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; border: none; color: white; font-weight: bold; }
+        .btn-edit-modal { background: #f39c12; }
+        .btn-del-modal { background: #e74c3c; }
 
         .view-body { line-height: 1.7; white-space: pre-wrap; font-size: 1.05rem; }
         .view-body img { max-width: 100%; border-radius: 10px; margin: 15px 0; display:block; }
@@ -90,7 +106,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v11.6</h1>
+    <h1>JDM Archive v11.8</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -107,10 +123,11 @@
 
     <div id="tab-list" class="tab-content">
         <div class="search-bar-area">
-            <button class="btn-tag-config" onclick="openTagManager()" title="태그 관리">⚙️</button>
+            <button class="icon-btn btn-tag-config" onclick="openTagManager()" title="태그 관리">⚙️</button>
+            <button class="icon-btn btn-select-mode" id="selectModeBtn" onclick="toggleSelectMode()" title="선택 모드 (삭제)">✅</button>
             <select id="listFilter" onchange="renderMemos()">
                 <option value="all">전체보기</option>
-                </select>
+            </select>
             <input type="text" id="searchInput" placeholder="검색어..." onkeyup="renderMemos()">
         </div>
         <div id="memoList"></div>
@@ -122,7 +139,6 @@
             <input type="text" id="inputTitle" placeholder="제목">
             <label style="font-size:0.85rem; color:#666; font-weight:bold;">태그 선택</label>
             <select id="inputTag"></select>
-            
             <textarea id="inputContent" style="height:250px; line-height:1.5;" placeholder="내용을 입력하세요."></textarea>
             <input type="text" id="inputLink" placeholder="관련 링크 (URL)">
             <div style="margin:20px 0;">
@@ -146,16 +162,21 @@
     </div>
 </div>
 
+<div id="bulkDeleteBar" onclick="deleteSelectedMemos()">
+    🗑️ 선택한 항목 삭제하기 (<span id="selectedCount">0</span>)
+</div>
+
 <div id="tagManagerModal" class="modal">
     <div class="modal-content">
-        <button class="close-btn" onclick="closeTagManager()">×</button>
-        <h2 style="color:#2c3e50;">⚙️ 태그 관리</h2>
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+            <h2 style="margin:0;">⚙️ 태그 관리</h2>
+            <button class="close-btn" onclick="closeTagManager()">×</button>
+        </div>
         <div id="tagListDisplay" class="tag-list"></div>
         <div style="display:flex; gap:5px;">
             <input type="text" id="newTagInput" placeholder="#새태그" style="margin:0;">
             <button class="btn-save" onclick="addNewTag()" style="padding:10px; width:auto;">추가</button>
         </div>
-        <p style="font-size:0.8rem; color:#888; margin-top:10px;">여기서 추가한 태그는 필터, 작성, 수정 목록에 모두 적용됩니다.</p>
     </div>
 </div>
 
@@ -170,7 +191,8 @@
         <label>제목</label>
         <input type="text" id="editTitle">
         <label>태그</label>
-        <select id="editTag"></select> <label>내용</label>
+        <select id="editTag"></select>
+        <label>내용</label>
         <textarea id="editContent" style="height:250px; line-height:1.5;"></textarea>
         <div id="editImagePreviewArea" style="background:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:15px; display:none;">
             <p style="margin:0 0 5px 0; font-size:0.8rem; color:#666;">기존 사진 (유지됨)</p>
@@ -189,10 +211,17 @@
 
 <div id="viewModal" class="modal">
     <div class="modal-content">
-        <button class="close-btn" onclick="closeViewModal()">×</button>
-        <div style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
-            <span id="viewTag" style="color:white; background:var(--accent-color); padding:5px 10px; border-radius:6px; font-size:0.85rem; font-weight:bold;"></span>
-            <span id="viewDate" style="color:#888; font-size:0.95rem; margin-left:10px;"></span>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:15px;">
+            <div>
+                <span id="viewTag" style="color:white; background:var(--accent-color); padding:5px 10px; border-radius:6px; font-size:0.85rem; font-weight:bold;"></span>
+                <span id="viewDate" style="color:#888; font-size:0.95rem; margin-left:10px;"></span>
+            </div>
+            <div class="modal-actions">
+                <input type="hidden" id="viewIdHidden">
+                <button class="action-btn btn-edit-modal" onclick="transferToEdit()">수정</button>
+                <button class="action-btn btn-del-modal" onclick="deleteFromView()">삭제</button>
+                <button class="close-btn" onclick="closeViewModal()">×</button>
+            </div>
         </div>
         <h2 id="viewTitle" style="margin-top:0; color:#2c3e50; line-height:1.3;"></h2>
         <div id="viewBody" class="view-body"></div>
@@ -213,19 +242,22 @@
     const STORE_NAME = 'memos';
     let db;
     let currDate = new Date();
-    // 초기 태그 목록
     let myTags = JSON.parse(localStorage.getItem('myTags')) || ['#일반','#업무','#아이디어','#건강','#현장','#AI','#심리'];
+    
+    // 선택 모드 관련 변수
+    let isSelectionMode = false;
+    let selectedIds = new Set();
 
     function getPassword() { return localStorage.getItem('appPass') || "0403"; }
     function checkPass() {
         if(document.getElementById('passInput').value === getPassword()) {
             document.getElementById('loginOverlay').style.opacity = '0';
             setTimeout(() => { document.getElementById('loginOverlay').style.display = 'none'; }, 300);
-        } else { alert('비밀번호가 일치하지 않습니다.'); document.getElementById('passInput').value=''; }
+        } else { alert('비밀번호가 틀렸습니다.'); document.getElementById('passInput').value=''; }
     }
     function changePassword() {
-        const cur = prompt("현재 비밀번호를 입력하세요:"); if(cur!==getPassword()) return alert("틀렸습니다.");
-        const newP = prompt("새로운 비밀번호:"); if(newP) { localStorage.setItem('appPass', newP); alert("변경 완료."); }
+        const cur = prompt("현재 비밀번호:"); if(cur!==getPassword()) return alert("틀렸습니다.");
+        const newP = prompt("새 비밀번호:"); if(newP) { localStorage.setItem('appPass', newP); alert("변경 완료."); }
     }
 
     const request = indexedDB.open(DB_NAME, 1);
@@ -233,54 +265,78 @@
     request.onsuccess = e => { db = e.target.result; initApp(); };
 
     function initApp() { 
-        updateTagSelects(); // 태그 목록 UI 업데이트
+        updateTagSelects(); 
         renderCalendar(); 
         renderMemos(); 
     }
 
-    // === 태그 관리 로직 ===
-    function openTagManager() {
-        renderTagListModal();
-        document.getElementById('tagManagerModal').style.display = 'flex';
-    }
+    // === 태그 관리 ===
+    function openTagManager() { renderTagListModal(); document.getElementById('tagManagerModal').style.display = 'flex'; }
     function closeTagManager() { document.getElementById('tagManagerModal').style.display = 'none'; }
-    
     function renderTagListModal() {
-        const div = document.getElementById('tagListDisplay');
-        div.innerHTML = myTags.map(t => `<span class="tag-item">${t} <span class="tag-del-btn" onclick="removeTag('${t}')">×</span></span>`).join('');
+        document.getElementById('tagListDisplay').innerHTML = myTags.map(t => `<span class="tag-item">${t} <span class="tag-del-btn" onclick="removeTag('${t}')">×</span></span>`).join('');
     }
     function addNewTag() {
         const val = document.getElementById('newTagInput').value.trim();
         if(!val) return;
-        if(!myTags.includes(val)) {
-            myTags.push(val);
-            saveTags();
-            document.getElementById('newTagInput').value = '';
-            renderTagListModal();
-            updateTagSelects();
-        }
+        if(!myTags.includes(val)) { myTags.push(val); saveTags(); document.getElementById('newTagInput').value = ''; renderTagListModal(); updateTagSelects(); }
     }
-    function removeTag(tag) {
-        if(!confirm(`'${tag}' 태그를 목록에서 삭제합니까?`)) return;
-        myTags = myTags.filter(t => t !== tag);
-        saveTags();
-        renderTagListModal();
-        updateTagSelects();
-    }
+    function removeTag(tag) { if(confirm('삭제합니까?')) { myTags = myTags.filter(t => t !== tag); saveTags(); renderTagListModal(); updateTagSelects(); } }
     function saveTags() { localStorage.setItem('myTags', JSON.stringify(myTags)); }
-    
     function updateTagSelects() {
-        // 1. 작성창
-        const writeSel = document.getElementById('inputTag');
-        writeSel.innerHTML = myTags.map(t => `<option value="${t}">${t}</option>`).join('');
-        // 2. 수정창
-        const editSel = document.getElementById('editTag');
-        editSel.innerHTML = myTags.map(t => `<option value="${t}">${t}</option>`).join('');
-        // 3. 필터창
-        const filterSel = document.getElementById('listFilter');
-        const currentFilter = filterSel.value;
-        filterSel.innerHTML = `<option value="all">전체보기</option>` + myTags.map(t => `<option value="${t}">${t}</option>`).join('');
-        filterSel.value = currentFilter; // 필터 유지
+        const opts = myTags.map(t => `<option value="${t}">${t}</option>`).join('');
+        document.getElementById('inputTag').innerHTML = opts;
+        document.getElementById('editTag').innerHTML = opts;
+        const curFilter = document.getElementById('listFilter').value;
+        document.getElementById('listFilter').innerHTML = `<option value="all">전체보기</option>` + opts;
+        document.getElementById('listFilter').value = curFilter;
+    }
+
+    // === 선택 모드 & 일괄 삭제 로직 ===
+    function toggleSelectMode() {
+        isSelectionMode = !isSelectionMode;
+        selectedIds.clear(); // 모드 전환 시 선택 초기화
+        
+        const btn = document.getElementById('selectModeBtn');
+        const bulkBar = document.getElementById('bulkDeleteBar');
+        
+        if(isSelectionMode) {
+            btn.classList.add('active');
+            bulkBar.style.display = 'block';
+            updateBulkBar();
+        } else {
+            btn.classList.remove('active');
+            bulkBar.style.display = 'none';
+        }
+        renderMemos(); // 목록 다시 그려서 체크박스/스타일 반영
+    }
+
+    function toggleSelectCard(id) {
+        if(selectedIds.has(id)) selectedIds.delete(id);
+        else selectedIds.add(id);
+        renderMemos();
+        updateBulkBar();
+    }
+
+    function updateBulkBar() {
+        document.getElementById('selectedCount').innerText = selectedIds.size;
+    }
+
+    function deleteSelectedMemos() {
+        if(selectedIds.size === 0) return alert("삭제할 항목을 선택해주세요.");
+        if(!confirm(`선택한 ${selectedIds.size}개의 항목을 정말 삭제하시겠습니까?`)) return;
+
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        
+        selectedIds.forEach(id => store.delete(id));
+        
+        tx.oncomplete = () => {
+            alert("삭제되었습니다.");
+            toggleSelectMode(); // 삭제 후 일반 모드로 복귀
+            renderMemos();
+            renderCalendar();
+        };
     }
 
     function switchTab(tab) {
@@ -293,15 +349,12 @@
         if(tab === 'list') renderMemos();
     }
 
-    // === 신규 저장 ===
     async function saveNewMemo() {
         const title = document.getElementById('inputTitle').value;
         const rawText = document.getElementById('inputContent').value;
         const tag = document.getElementById('inputTag').value; 
         const link = document.getElementById('inputLink').value;
-
-        if(!title && !rawText) return alert('내용을 입력해주세요.');
-
+        if(!title && !rawText) return alert('내용 필요');
         let finalContent = rawText.replace(/\n/g, "<br>");
         const files = document.getElementById('inputImage').files;
         if(files.length > 0) {
@@ -311,46 +364,44 @@
                 finalContent += `<img src="${imgData}"><br>`;
             }
         }
-
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
-        const memoData = {
+        const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
+        store.add({
             id: Date.now(),
             dateStr: new Date().toLocaleDateString('ko-KR'),
             title: title || "무제",
-            tag: tag,
-            content: finalContent,
-            link: link
-        };
-
-        store.add(memoData).onsuccess = () => {
+            tag: tag, content: finalContent, link: link
+        }).onsuccess = () => {
             alert('저장되었습니다!');
             document.getElementById('inputTitle').value = "";
             document.getElementById('inputContent').value = "";
             document.getElementById('inputLink').value = "";
             document.getElementById('inputImage').value = "";
-            switchTab('calendar');
-            renderCalendar();
+            switchTab('calendar'); renderCalendar();
         };
     }
 
-    // === 수정 팝업 ===
+    function transferToEdit() { const id = Number(document.getElementById('viewIdHidden').value); closeViewModal(); openEditPopup(id); }
+    function deleteFromView() {
+        const id = Number(document.getElementById('viewIdHidden').value);
+        if(confirm('삭제하시겠습니까?')) {
+            db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(id).onsuccess = () => {
+                alert('삭제됨'); closeViewModal(); renderMemos(); renderCalendar();
+            };
+        }
+    }
+
     function openEditPopup(id) {
         getMemo(id).then(m => {
             if(!m) return;
             document.getElementById('editId').value = m.id;
             document.getElementById('editTitle').value = m.title;
-            
-            // 만약 저장된 태그가 현재 목록에 없으면 임시 추가
-            if(!myTags.includes(m.tag)) {
-                const opt = document.createElement('option');
-                opt.value = m.tag; opt.innerText = m.tag;
+            if(!myTags.includes(m.tag)) { 
+                const opt = document.createElement('option'); opt.value = m.tag; opt.innerText = m.tag;
                 document.getElementById('editTag').appendChild(opt);
             }
             document.getElementById('editTag').value = m.tag;
-            
             document.getElementById('editLink').value = m.link;
-
+            
             const imgRegex = /<img[^>]*>/g;
             const images = m.content.match(imgRegex) || [];
             let onlyText = m.content.replace(imgRegex, "").replace(/<br\s*\/?>/gi, "\n").replace(/<div>/gi, "\n").replace(/<\/div>/gi, "").replace(/&nbsp;/gi, " ").replace(/<[^>]*>/g, "").trim();
@@ -365,7 +416,6 @@
                 imgArea.style.display = 'none';
                 document.getElementById('editOldImages').value = "";
             }
-            
             document.getElementById('editPopup').style.display = 'block';
         });
     }
@@ -377,12 +427,10 @@
         const tag = document.getElementById('editTag').value;
         const link = document.getElementById('editLink').value;
         const oldImages = document.getElementById('editOldImages').value;
-
-        if(!title && !rawText) return alert('내용이 없습니다.');
-
+        
         let finalContent = rawText.replace(/\n/g, "<br>");
         if(oldImages) finalContent += oldImages;
-
+        
         const files = document.getElementById('editImageFile').files;
         if(files.length > 0) {
             finalContent += "<br>";
@@ -391,45 +439,48 @@
                 finalContent += `<img src="${imgData}"><br>`;
             }
         }
-
+        
         const original = await getMemo(id);
-        const updatedMemo = {
-            id: id,
-            dateStr: original.dateStr, 
-            title: title,
-            tag: tag,
-            content: finalContent,
-            link: link
-        };
-
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        tx.objectStore(STORE_NAME).put(updatedMemo).onsuccess = () => {
-            alert('수정되었습니다!');
-            closeEditPopup();
-            renderMemos(); 
-            renderCalendar();
+        const updatedMemo = { id: id, dateStr: original.dateStr, title: title, tag: tag, content: finalContent, link: link };
+        
+        db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(updatedMemo).onsuccess = () => {
+            alert('수정되었습니다!'); closeEditPopup(); renderMemos(); renderCalendar();
         };
     }
-
     function closeEditPopup() { document.getElementById('editPopup').style.display = 'none'; }
 
-    // === 기본 함수들 ===
-    function getMemo(id) { return new Promise(r => db.transaction(STORE_NAME).objectStore(STORE_NAME).get(id).onsuccess = e => r(e.target.result)); }
-    function deleteMemo(id) { if(confirm('정말 삭제?')) { db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(id).onsuccess = () => { renderMemos(); renderCalendar(); }; } }
-
+    // === 목록 렌더링 수정 (선택 모드 지원) ===
     async function renderMemos() {
         const list = document.getElementById('memoList'); list.innerHTML='';
         const memos = await getAll();
         const filter = document.getElementById('listFilter').value;
         const key = document.getElementById('searchInput').value;
         memos.sort((a,b) => b.id - a.id);
+        
         memos.forEach(m => {
             if(filter !== 'all' && m.tag !== filter) return;
             if(key && !m.title.includes(key) && !m.content.includes(key)) return;
+            
             let summary = m.content.replace(/<[^>]*>?/gm, '').substring(0, 40) + "...";
             let hasImg = m.content.includes('<img') ? '📷' : '';
-            let linkBtn = m.link ? `<a href="${m.link}" target="_blank" class="btn-mini btn-link" onclick="event.stopPropagation()">🔗 링크</a>` : '';
-            list.innerHTML += `<div class="memo-card"><div onclick="openViewModal(${m.id})" style="cursor:pointer;"><div style="display:flex; justify-content:space-between; color:#888; font-size:0.8rem; margin-bottom:5px;"><span>${m.dateStr}</span><span style="color:var(--accent-color); font-weight:bold;">${m.tag||''}</span></div><h3 style="margin:5px 0; font-size:1.1rem; color:#2c3e50;">${m.title} <span style="font-size:0.8rem;">${hasImg}</span></h3><p style="color:#666; font-size:0.9rem; margin:0;">${summary}</p></div><div class="list-action-bar">${linkBtn}<button class="btn-mini btn-edit" onclick="openEditPopup(${m.id})">수정</button><button class="btn-mini btn-del" onclick="deleteMemo(${m.id})">삭제</button></div></div>`;
+            
+            // 선택 모드 상태 확인
+            const isSelected = selectedIds.has(m.id);
+            const selectClass = isSelected ? 'selected' : '';
+            const modeClass = isSelectionMode ? 'selection-mode' : '';
+            
+            // 클릭 동작 분기: 선택 모드면 toggleSelectCard, 아니면 openViewModal
+            const clickAction = isSelectionMode ? `toggleSelectCard(${m.id})` : `openViewModal(${m.id})`;
+
+            list.innerHTML += `
+            <div class="memo-card ${selectClass} ${modeClass}" onclick="${clickAction}">
+                <div class="check-circle"></div>
+                <div style="display:flex; justify-content:space-between; color:#888; font-size:0.8rem; margin-bottom:5px;">
+                    <span>${m.dateStr}</span><span style="color:var(--accent-color); font-weight:bold;">${m.tag||''}</span>
+                </div>
+                <h3 style="margin:5px 0; font-size:1.1rem; color:#2c3e50;">${m.title} <span style="font-size:0.8rem;">${hasImg}</span></h3>
+                <p style="color:#666; font-size:0.9rem; margin:0;">${summary}</p>
+            </div>`;
         });
     }
 
@@ -446,15 +497,20 @@
             const dayMemos = memos.filter(memo => normalizeDate(memo.dateStr).includes(targetStr));
             const div = document.createElement('div');
             div.className = 'cal-day' + (dayMemos.length>0 ? ' has-memo' : '');
-            if(y===today.getFullYear() && m===today.getMonth() && d===today.getDate()) div.classList.add('today');
+            if(y===new Date().getFullYear() && m===new Date().getMonth() && d===new Date().getDate()) div.classList.add('today');
+            
             let pcEvents = '';
-            dayMemos.slice(0, 4).forEach(dm => { pcEvents += `<div class="cal-event-item">${dm.title}</div>`; });
+            const limit = 3;
+            dayMemos.slice(0, limit).forEach(dm => { 
+                pcEvents += `<div class="cal-event-item" onclick="event.stopPropagation(); openViewModal(${dm.id})">${dm.title}</div>`; 
+            });
+            if(dayMemos.length > limit) pcEvents += `<div class="more-items">+${dayMemos.length - limit} 더보기</div>`;
+
             div.innerHTML = `<span class="day-num">${d}</span>${dayMemos.length>0?'<div class="dot"></div>':''}<div class="cal-events-pc">${pcEvents}</div>`;
             div.onclick = () => showDayMemos(targetStr, memos);
             grid.appendChild(div);
         }
     }
-    const today = new Date(); // 오늘 날짜 변수 추가
 
     function showDayMemos(targetKey, memos) {
         const target = memos.filter(m => normalizeDate(m.dateStr).includes(targetKey));
@@ -467,6 +523,7 @@
     async function openViewModal(id) {
         const m = await getMemo(id);
         if(!m) return;
+        document.getElementById('viewIdHidden').value = m.id;
         document.getElementById('viewTitle').innerText = m.title;
         document.getElementById('viewDate').innerText = m.dateStr;
         document.getElementById('viewTag').innerText = m.tag || '#일반';
@@ -475,19 +532,15 @@
         document.getElementById('viewModal').style.display = 'flex';
     }
     function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+    
+    function getMemo(id) { return new Promise(r => db.transaction(STORE_NAME).objectStore(STORE_NAME).get(id).onsuccess = e => r(e.target.result)); }
     function getAll() { return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result)); }
     function compressImage(file) { return new Promise(r => { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); let w=img.width, h=img.height; if(w>1024) { h*=1024/w; w=1024; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); r(c.toDataURL('image/jpeg',0.7)); }; img.src = e.target.result; }; reader.readAsDataURL(file); }); }
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
     function normalizeDate(d) { return d.replace(/[.\-\s]/g, ''); }
     function backupData() { getAll().then(memos => { if(memos.length==0) return alert('데이터 없음'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(memos)],{type:'application/json'})); a.download = `JDM_Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }); }
     function resetApp() { if(confirm('정말 초기화?')) { db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{ alert('초기화 완료'); location.reload(); }; } }
-    
-    function restoreData(input) {
-        const file = input.files[0]; if(!file) return;
-        const reader = new FileReader();
-        reader.onload = e => { try { let data = JSON.parse(e.target.result); if (!Array.isArray(data)) { if(data.memos) data = data.memos; else data = [data]; } const tx = db.transaction(STORE_NAME, 'readwrite'); data.forEach(i => tx.objectStore(STORE_NAME).put(i)); tx.oncomplete = () => { alert('복원 완료!'); location.reload(); }; } catch(err) { alert('파일 오류'); } };
-        reader.readAsText(file);
-    }
+    function restoreData(input) { const file = input.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = e => { try { let data = JSON.parse(e.target.result); if (!Array.isArray(data)) { if(data.memos) data = data.memos; else data = [data]; } const tx = db.transaction(STORE_NAME, 'readwrite'); data.forEach(i => tx.objectStore(STORE_NAME).put(i)); tx.oncomplete = () => { alert('복원 완료!'); location.reload(); }; } catch(err) { alert('파일 오류'); } }; reader.readAsText(file); }
 </script>
 </body>
 </html>
