@@ -6,84 +6,147 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v10.2</title>
+    <title>JDM Archive v11.0</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
-        :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f4f6f7; --nav-height: 65px; }
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); }
+        :root { 
+            --primary-color: #2c3e50; 
+            --accent-color: #c0392b; 
+            --bg-color: #f0f2f5; 
+            --card-bg: #ffffff;
+            --nav-height: 65px; 
+        }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); -webkit-font-smoothing: antialiased; }
         
-        /* 헤더 디자인 변경 (업데이트 확인용: 배경 남색, 글자 흰색) */
-        header { background: var(--primary-color); padding: 15px; border-bottom: 1px solid #1a252f; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; color: white; }
-        header h1 { margin: 0; font-size: 1.5rem; flex-grow: 1; text-align: center; margin-left: 40px; color:white; }
+        /* 헤더: 깔끔한 남색 디자인 (버전 확인용) */
+        header { background: var(--primary-color); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; color: white; }
+        header h1 { margin: 0; font-size: 1.4rem; font-weight: 700; flex-grow: 1; text-align: center; margin-left: 40px; letter-spacing: -0.5px; }
         
-        .container { max-width: 800px; margin: 0 auto; padding: 15px; }
-        .tab-content { display: none; } .tab-content.active { display: block; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; } 
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* 암호 잠금 */
+        /* 암호 잠금 화면 */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        #loginOverlay input { width: 200px; padding: 15px; font-size: 1.5rem; text-align: center; border-radius: 10px; border: none; margin-top: 20px; letter-spacing: 5px; }
-        #loginOverlay button { margin-top: 15px; padding: 10px 30px; background: #c0392b; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; }
+        #loginOverlay h2 { font-size: 2rem; margin-bottom: 20px; }
+        #loginOverlay input { width: 220px; padding: 15px; font-size: 1.5rem; text-align: center; border-radius: 12px; border: none; margin-top: 10px; letter-spacing: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        #loginOverlay button { margin-top: 20px; padding: 12px 40px; background: #c0392b; color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
+        #loginOverlay button:active { transform: scale(0.95); }
 
-        /* 공통 스타일 */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: white; padding: 10px; border-radius: 12px; }
-        .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; border-radius: 8px; font-size: 0.9rem; cursor: pointer; padding-top: 5px; }
-        .cal-day.today { background: #e8f4fd; color: var(--primary-color); font-weight: bold; }
-        .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; }
+        /* === 달력 스타일 (반응형 핵심) === */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: var(--card-bg); padding: 15px; border-radius: 16px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
+        .day-header { text-align: center; font-size: 0.85rem; color: #888; padding-bottom: 10px; font-weight: 600; }
         
+        /* 모바일 기본 셀 스타일 */
+        .cal-day { 
+            aspect-ratio: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; 
+            border-radius: 10px; 
+            font-size: 0.95rem; 
+            cursor: pointer; 
+            padding-top: 8px; 
+            transition: background 0.2s; 
+            border: 1px solid transparent;
+        }
+        .cal-day:hover { background: #f8f9fa; }
+        .cal-day.today { background: #e8f4fd; color: var(--primary-color); font-weight: bold; border: 1px solid #bbdefb; }
+        .cal-day.has-memo .day-num { font-weight: bold; color: var(--primary-color); }
+
+        /* 점 (모바일용) */
+        .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; display: block; }
+        /* PC용 타이틀 리스트 (기본 숨김) */
+        .cal-events-pc { display: none; width: 100%; margin-top: 5px; padding: 0 2px; box-sizing: border-box; }
+
+        /* === PC 화면 대응 (768px 이상) === */
+        @media (min-width: 768px) {
+            .calendar-grid { gap: 10px; padding: 20px; }
+            .cal-day { aspect-ratio: auto; min-height: 100px; align-items: flex-start; padding: 8px; border: 1px solid #eee; }
+            .dot { display: none; } /* PC에선 점 숨김 */
+            .cal-events-pc { display: block; } /* PC에선 리스트 보임 */
+            
+            .cal-event-item {
+                font-size: 0.75rem;
+                background: #f1f3f5;
+                color: #495057;
+                padding: 3px 6px;
+                border-radius: 4px;
+                margin-bottom: 3px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-align: left;
+                border-left: 3px solid var(--accent-color);
+            }
+        }
+
         /* 메모 카드 스타일 */
-        .memo-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .list-action-bar { margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 8px; }
-        .btn-mini { padding: 5px 12px; font-size: 0.85rem; border: none; border-radius: 5px; cursor: pointer; color: white; text-decoration: none; display:inline-block;}
+        .memo-card { background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 15px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid #eee; }
+        .memo-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .list-action-bar { margin-top: 15px; padding-top: 12px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 8px; }
+        
+        .btn-mini { padding: 6px 14px; font-size: 0.85rem; border: none; border-radius: 6px; cursor: pointer; color: white; text-decoration: none; display:inline-block; transition: opacity 0.2s; }
+        .btn-mini:hover { opacity: 0.9; }
         .btn-edit { background: #f39c12; }
         .btn-del { background: #e74c3c; }
         .btn-link { background: #3498db; }
 
-        input, textarea, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-        .btn-save { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
+        /* 입력 폼 스타일 */
+        input, textarea, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; transition: border 0.2s; }
+        input:focus, textarea:focus, select:focus { border-color: var(--primary-color); outline: none; }
+        
+        .btn-save { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 6px rgba(44, 62, 80, 0.2); transition: transform 0.1s; }
+        .btn-save:active { transform: scale(0.98); }
         
         /* 기존 이미지 미리보기 영역 */
-        #existingImagesArea { display:none; margin-bottom:15px; background:#f9f9f9; padding:10px; border-radius:8px; border:1px dashed #ccc; }
-        #existingImagesArea img { max-width: 100px; max-height: 100px; margin-right: 5px; border-radius: 5px; border: 1px solid #ddd; }
+        #existingImagesArea { display:none; margin-bottom:15px; background:#fafafa; padding:15px; border-radius:10px; border:1px dashed #ccc; }
+        #existingImagesArea img { max-width: 80px; max-height: 80px; margin-right: 8px; border-radius: 6px; border: 1px solid #eee; object-fit: cover; }
 
         /* 검색 및 필터 영역 */
-        .search-bar-area { display: flex; gap: 5px; margin-bottom: 15px; }
-        .search-bar-area select { width: 35%; margin-bottom: 0; }
-        .search-bar-area input { width: 65%; margin-bottom: 0; }
+        .search-bar-area { display: flex; gap: 8px; margin-bottom: 20px; }
+        .search-bar-area select { width: 30%; margin-bottom: 0; cursor: pointer; }
+        .search-bar-area input { width: 70%; margin-bottom: 0; }
 
-        /* 모달 및 기타 */
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(2px); }
-        .modal-content { background:white; width:85%; max-width:500px; padding:25px; border-radius:15px; max-height:80vh; overflow-y:auto; position: relative; }
-        .close-btn { position: absolute; top: 15px; right: 15px; font-size: 1.8rem; border: none; background: none; cursor: pointer; color: #999; }
-        .view-body img { max-width: 100%; border-radius: 8px; margin: 10px 0; display:block; }
-        .view-body { line-height: 1.6; white-space: pre-wrap; font-size: 1rem; color: #333; }
+        /* 모달 스타일 */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(4px); }
+        .modal-content { background:white; width:90%; max-width:550px; padding:30px; border-radius:20px; max-height:85vh; overflow-y:auto; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 2rem; border: none; background: none; cursor: pointer; color: #aaa; line-height: 1; }
+        
+        .view-body { line-height: 1.7; white-space: pre-wrap; font-size: 1.05rem; color: #333; margin: 20px 0; }
+        .view-body img { max-width: 100%; border-radius: 10px; margin: 15px 0; display:block; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: white; display: flex; border-top: 1px solid #eee; z-index: 1000; }
-        .nav-item { flex: 1; text-align: center; padding: 8px; color: #999; font-size: 0.8rem; cursor: pointer; }
+        /* 하단 네비게이션 */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: white; display: flex; border-top: 1px solid #eee; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { flex: 1; text-align: center; padding: 10px; color: #999; font-size: 0.75rem; cursor: pointer; transition: color 0.2s; }
         .nav-item.active { color: var(--primary-color); font-weight: bold; }
-        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 3px; }
+        .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 <div id="loginOverlay">
     <div style="text-align:center;">
-        <h2 style="margin-bottom:10px;">🔒 JDM Archive</h2>
-        <p>비밀번호를 입력하세요</p>
+        <h2>🔒 JDM Archive</h2>
+        <p style="opacity:0.8;">Access Verification</p>
         <input type="password" id="passInput" maxlength="4" placeholder="****">
         <br>
-        <button onclick="checkPass()">접 속</button>
+        <button onclick="checkPass()">ENTER</button>
     </div>
 </div>
 
 <header>
-    <h1>JDM Archive v10.2</h1>
-    <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:white;">🔒</button>
+    <h1>JDM Archive v11.0</h1>
+    <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);" title="비밀번호 변경">🔒</button>
 </header>
 
 <div class="container">
     <div id="tab-calendar" class="tab-content active">
-        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:15px; border-radius:12px; margin-bottom:10px;">
-            <button onclick="changeMonth(-1)" style="border:none; background:none; font-size:1.5rem;">◀</button>
-            <h2 id="currentMonth" style="margin:0;"></h2>
-            <button onclick="changeMonth(1)" style="border:none; background:none; font-size:1.5rem;">▶</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:15px; border-radius:12px; margin-bottom:15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <button onclick="changeMonth(-1)" style="border:none; background:none; font-size:1.5rem; cursor:pointer; color:var(--primary-color);">◀</button>
+            <h2 id="currentMonth" style="margin:0; font-size:1.3rem; color:var(--primary-color);"></h2>
+            <button onclick="changeMonth(1)" style="border:none; background:none; font-size:1.5rem; cursor:pointer; color:var(--primary-color);">▶</button>
         </div>
         <div id="calendarGrid" class="calendar-grid"></div>
         <div id="calendarMemos" style="margin-top:20px; text-align:center; color:#888;"></div>
@@ -101,17 +164,17 @@
                 <option value="#AI">#AI</option>
                 <option value="#심리">#심리</option>
             </select>
-            <input type="text" id="searchInput" placeholder="검색어..." onkeyup="renderMemos()">
+            <input type="text" id="searchInput" placeholder="제목 또는 내용 검색..." onkeyup="renderMemos()">
         </div>
         <div id="memoList"></div>
     </div>
 
     <div id="tab-write" class="tab-content">
-        <div style="background:white; padding:20px; border-radius:12px;">
-            <h3 id="writeModeTitle">📝 새 기록 작성</h3>
+        <div style="background:var(--card-bg); padding:25px; border-radius:16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <h3 id="writeModeTitle" style="margin-top:0; color:var(--primary-color);">📝 새 기록 작성</h3>
             <input type="hidden" id="editModeId">
             
-            <input type="text" id="inputTitle" placeholder="제목">
+            <input type="text" id="inputTitle" placeholder="제목을 입력하세요">
             <select id="inputTag">
                 <option value="#일반">#일반</option>
                 <option value="#업무">#업무</option>
@@ -122,33 +185,36 @@
                 <option value="#심리">#심리</option>
             </select>
             
-            <textarea id="inputContent" style="height:200px" placeholder="내용을 입력하세요"></textarea>
+            <textarea id="inputContent" style="height:250px; line-height:1.5;" placeholder="내용을 자유롭게 입력하세요."></textarea>
 
             <div id="existingImagesArea">
-                <span style="font-size:0.8rem; color:#666; display:block; margin-bottom:5px;">📂 기존 첨부 사진 (유지됩니다)</span>
-                <div id="existingImagesPreview"></div>
+                <span style="font-size:0.85rem; color:#666; display:block; margin-bottom:8px; font-weight:bold;">📂 기존 첨부 사진 (삭제되지 않음)</span>
+                <div id="existingImagesPreview" style="display:flex; flex-wrap:wrap;"></div>
                 <input type="hidden" id="hiddenOldImages">
             </div>
             
-            <input type="text" id="inputLink" placeholder="관련 링크 (URL)">
+            <input type="text" id="inputLink" placeholder="관련 링크 (URL) - 선택사항">
             
-            <label style="display:block; margin-bottom:5px; font-weight:bold;">📸 사진 추가</label>
-            <input type="file" id="inputImage" accept="image/*" multiple style="padding:10px; background:#eee; width:100%; margin-bottom:20px;">
+            <div style="margin:20px 0;">
+                <label style="display:block; margin-bottom:8px; font-weight:bold; color:#555;">📸 사진 추가 (여러 장 가능)</label>
+                <input type="file" id="inputImage" accept="image/*" multiple style="padding:12px; background:#f8f9fa; width:100%;">
+            </div>
             
-            <button id="btnSaveAction" class="btn-save" onclick="saveMemo()">저 장</button>
-            <button id="btnCancelEdit" class="btn-save" style="background:#95a5a6; margin-top:10px; display:none;" onclick="cancelEdit()">작성 취소</button>
+            <button id="btnSaveAction" class="btn-save" onclick="saveMemo()">저 장 하 기</button>
+            <button id="btnCancelEdit" class="btn-save" style="background:#95a5a6; margin-top:12px; display:none;" onclick="cancelEdit()">작성 취소</button>
         </div>
     </div>
 
     <div id="tab-data" class="tab-content">
-        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
-            <h3>💾 데이터 관리</h3>
-             <div style="background:#fff3cd; padding:15px; border-radius:10px; margin-bottom:15px; border:2px solid #ffc107;">
-                <strong style="color:#d35400;">📂 파일로 복원</strong>
-                <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%; margin-top:5px;">
+        <div style="background:var(--card-bg); padding:25px; border-radius:16px; text-align:center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <h3 style="color:var(--primary-color);">💾 데이터 센터</h3>
+             <div style="background:#fff3cd; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #ffc107; text-align:left;">
+                <strong style="color:#d35400; font-size:1.1rem;">📂 백업 파일로 복원</strong>
+                <p style="margin:5px 0 10px 0; color:#666; font-size:0.9rem;">이전에 저장해둔 JDM_Backup 파일을 선택하세요.</p>
+                <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%;">
             </div>
-            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:10px;">📤 전체 백업</button>
-            <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 전체 초기화</button>
+            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:12px;">📤 전체 데이터 백업 (저장)</button>
+            <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 앱 초기화 (데이터 삭제)</button>
         </div>
     </div>
 </div>
@@ -156,14 +222,14 @@
 <div id="viewModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeViewModal()">×</button>
-        <div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
-            <span id="viewTag" style="color:white; background:var(--accent-color); padding:3px 8px; border-radius:4px; font-size:0.8rem;"></span>
-            <span id="viewDate" style="color:#888; font-size:0.9rem; margin-left:10px;"></span>
+        <div style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
+            <span id="viewTag" style="color:white; background:var(--accent-color); padding:5px 10px; border-radius:6px; font-size:0.85rem; font-weight:bold;"></span>
+            <span id="viewDate" style="color:#888; font-size:0.95rem; margin-left:10px;"></span>
         </div>
-        <h2 id="viewTitle" style="margin-top:0; color:#2c3e50;"></h2>
+        <h2 id="viewTitle" style="margin-top:0; color:#2c3e50; line-height:1.3;"></h2>
         <div id="viewBody" class="view-body"></div>
-        <div id="viewLink" style="margin-top:20px;"></div>
-        <button class="btn-save" onclick="closeViewModal()" style="background:#999; margin-top:20px;">닫 기</button>
+        <div id="viewLink" style="margin-top:25px;"></div>
+        <button class="btn-save" onclick="closeViewModal()" style="background:#999; margin-top:25px;">닫 기</button>
     </div>
 </div>
 
@@ -175,39 +241,40 @@
 </nav>
 
 <script>
-    // === 기본 설정 ===
+    // === [핵심 로직] ===
     const DB_NAME = 'JeongArchiveDB_v9';
     const STORE_NAME = 'memos';
     let db;
     let currDate = new Date();
 
-    // === 암호 관련 ===
+    // 1. 비밀번호 시스템
     function getPassword() { return localStorage.getItem('appPass') || "0403"; }
     function checkPass() {
         if(document.getElementById('passInput').value === getPassword()) {
-            document.getElementById('loginOverlay').style.display = 'none';
-        } else { alert('비밀번호가 틀렸습니다.'); document.getElementById('passInput').value=''; }
+            document.getElementById('loginOverlay').style.opacity = '0';
+            setTimeout(() => { document.getElementById('loginOverlay').style.display = 'none'; }, 300);
+        } else { alert('비밀번호가 일치하지 않습니다.'); document.getElementById('passInput').value=''; }
     }
     function changePassword() {
-        const cur = prompt("현재 비밀번호:"); if(cur!==getPassword()) return alert("오류");
-        const newP = prompt("새 비밀번호:"); if(newP) { localStorage.setItem('appPass', newP); alert("변경 완료"); }
+        const cur = prompt("현재 비밀번호를 입력하세요:"); if(cur!==getPassword()) return alert("현재 비밀번호가 틀립니다.");
+        const newP = prompt("새로운 비밀번호를 입력하세요:"); if(newP) { localStorage.setItem('appPass', newP); alert("비밀번호가 변경되었습니다."); }
     }
 
-    // === DB 초기화 ===
+    // 2. DB 초기화
     const request = indexedDB.open(DB_NAME, 1);
     request.onupgradeneeded = e => { db = e.target.result; if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:'id'}); };
     request.onsuccess = e => { db = e.target.result; initApp(); };
 
     function initApp() { renderCalendar(); renderMemos(); }
 
-    // === 탭 전환 ===
+    // 3. 탭 전환 애니메이션
     function switchTab(tab) {
         document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
         document.getElementById('tab-'+tab).classList.add('active');
         
-        const idx = ['calendar','list','write','data'].indexOf(tab);
-        document.querySelectorAll('.nav-item')[idx].classList.add('active');
+        const tabs = ['calendar','list','write','data'];
+        document.querySelectorAll('.nav-item')[tabs.indexOf(tab)].classList.add('active');
 
         if(tab === 'write') {
             if(!document.getElementById('editModeId').value) resetWriteForm();
@@ -217,7 +284,7 @@
         }
     }
 
-    // === 데이터 저장/수정 ===
+    // 4. 저장 및 수정 (외계어 방지 + 줄바꿈 처리)
     async function saveMemo() {
         const title = document.getElementById('inputTitle').value;
         const rawText = document.getElementById('inputContent').value;
@@ -226,8 +293,9 @@
         const editId = document.getElementById('editModeId').value;
         const oldImages = document.getElementById('hiddenOldImages').value; 
 
-        if(!title && !rawText) return alert('내용을 입력하세요.');
+        if(!title && !rawText) return alert('내용을 입력해주세요.');
 
+        // 줄바꿈 처리: 엔터(\n)를 <br>로 변환해서 저장
         let finalContent = rawText.replace(/\n/g, "<br>");
         if(oldImages) finalContent += oldImages;
 
@@ -236,84 +304,70 @@
             finalContent += "<br>";
             for(let i=0; i<files.length; i++) {
                 const imgData = await compressImage(files[i]);
-                finalContent += `<img src="${imgData}" style="max-width:100%; border-radius:8px; margin-top:5px;"><br>`;
+                finalContent += `<img src="${imgData}"><br>`;
             }
         }
 
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
 
-        if (editId) {
-            store.get(Number(editId)).onsuccess = (e) => {
-                const data = e.target.result;
-                data.title = title; data.tag = tag; data.content = finalContent; data.link = link;
-                store.put(data).onsuccess = () => {
-                    alert('수정되었습니다.');
-                    resetWriteForm();
-                    switchTab('list');
-                };
-            };
-        } else {
-            const memo = {
-                id: Date.now(),
-                dateStr: new Date().toLocaleDateString('ko-KR'), 
-                title: title || "무제",
-                tag: tag, content: finalContent, link: link
-            };
-            store.add(memo).onsuccess = () => {
-                alert('저장되었습니다.');
-                resetWriteForm();
-                switchTab('calendar');
-            };
-        }
+        const memoData = {
+            id: editId ? Number(editId) : Date.now(),
+            dateStr: editId ? (await getMemo(Number(editId))).dateStr : new Date().toLocaleDateString('ko-KR'),
+            title: title || "무제",
+            tag: tag,
+            content: finalContent,
+            link: link
+        };
+
+        store.put(memoData).onsuccess = () => {
+            alert(editId ? '수정되었습니다.' : '저장되었습니다.');
+            resetWriteForm();
+            switchTab(editId ? 'list' : 'calendar');
+            renderCalendar();
+        };
     }
 
-    // === 수정 모드 진입 ===
+    function getMemo(id) { return new Promise(r => db.transaction(STORE_NAME).objectStore(STORE_NAME).get(id).onsuccess = e => r(e.target.result)); }
+
+    // 5. 수정 모드 진입 (사람이 읽을 수 있게 변환)
     function editMemoDirect(id) {
-        db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get(id).onsuccess = (e) => {
-            const m = e.target.result;
+        getMemo(id).then(m => {
             if(!m) return;
-            
             document.getElementById('editModeId').value = m.id;
             document.getElementById('inputTitle').value = m.title;
             document.getElementById('inputTag').value = m.tag || '#일반';
             
+            // HTML -> 텍스트 변환 (이미지 분리)
             const imgRegex = /<img[^>]*>/g;
             const images = m.content.match(imgRegex) || [];
-            
-            let onlyText = m.content.replace(imgRegex, "");
-            onlyText = onlyText.replace(/<br\s*\/?>/gi, "\n");
-            onlyText = onlyText.replace(/<div>/gi, "\n");
-            onlyText = onlyText.replace(/<\/div>/gi, "");
-            onlyText = onlyText.replace(/&nbsp;/gi, " ");
-            onlyText = onlyText.replace(/<[^>]*>/g, "");
-            onlyText = onlyText.trim();
+            let onlyText = m.content.replace(imgRegex, "")
+                                    .replace(/<br\s*\/?>/gi, "\n")
+                                    .replace(/<div>/gi, "\n")
+                                    .replace(/<\/div>/gi, "")
+                                    .replace(/&nbsp;/gi, " ")
+                                    .replace(/<[^>]*>/g, "").trim();
 
             document.getElementById('inputContent').value = onlyText;
             
+            // 이미지 미리보기 처리
             const imgArea = document.getElementById('existingImagesArea');
-            const imgPreview = document.getElementById('existingImagesPreview');
-            const hiddenInput = document.getElementById('hiddenOldImages');
-            
             if(images.length > 0) {
                 imgArea.style.display = 'block';
-                imgPreview.innerHTML = images.join(" ");
-                hiddenInput.value = images.join("");     
+                document.getElementById('existingImagesPreview').innerHTML = images.join("");
+                document.getElementById('hiddenOldImages').value = images.join("");     
             } else {
                 imgArea.style.display = 'none';
-                imgPreview.innerHTML = "";
-                hiddenInput.value = "";
+                document.getElementById('hiddenOldImages').value = "";
             }
 
             document.getElementById('inputLink').value = m.link;
-
             document.getElementById('writeModeTitle').innerText = "📝 기록 수정하기";
             document.getElementById('btnSaveAction').innerText = "수정 완료";
             document.getElementById('btnSaveAction').style.background = "#f39c12"; 
             document.getElementById('btnCancelEdit').style.display = "block";
-
             switchTab('write');
-        };
+        });
     }
 
     function deleteMemo(id) {
@@ -334,47 +388,41 @@
         document.getElementById('hiddenOldImages').value = "";
         
         document.getElementById('writeModeTitle').innerText = "📝 새 기록 작성";
-        document.getElementById('btnSaveAction').innerText = "저 장";
+        document.getElementById('btnSaveAction').innerText = "저 장 하 기";
         document.getElementById('btnSaveAction').style.background = "#2c3e50";
         document.getElementById('btnCancelEdit').style.display = "none";
     }
 
     function cancelEdit() { resetWriteForm(); switchTab('list'); }
 
-    // === 목록 렌더링 (초강력 필터 적용) ===
+    // 6. 목록 렌더링 (공백 무시 강력 필터)
     async function renderMemos() {
         const list = document.getElementById('memoList'); list.innerHTML='';
         const memos = await getAll();
         
-        const filter = document.getElementById('listFilter').value;
+        const filter = document.getElementById('listFilter').value.replace(/\s+/g, '');
         const key = document.getElementById('searchInput').value;
         
         memos.sort((a,b) => b.id - a.id);
         
         memos.forEach(m => {
-            // 태그 매칭 로직 (모든 공백 제거 후 비교)
-            const rawTag = m.tag || '#일반';
-            const cleanTag = rawTag.replace(/\s+/g, ''); // DB에 저장된 태그 공백제거
-            const cleanFilter = filter.replace(/\s+/g, ''); // 필터 선택값 공백제거
-
-            if(cleanFilter !== 'all' && cleanTag !== cleanFilter) return;
+            const cleanTag = (m.tag || '#일반').replace(/\s+/g, '');
+            if(filter !== 'all' && cleanTag !== filter) return;
             if(key && !m.title.includes(key) && !m.content.includes(key)) return;
 
-            let summary = m.content.replace(/<[^>]*>?/gm, '');
-            if(summary.length > 35) summary = summary.substring(0, 35) + "...";
+            let summary = m.content.replace(/<[^>]*>?/gm, '').substring(0, 40) + (m.content.length > 40 ? "..." : "");
             let hasImg = m.content.includes('<img') ? '📷' : '';
-            
             let linkBtn = m.link ? `<a href="${m.link}" target="_blank" class="btn-mini btn-link" onclick="event.stopPropagation()">🔗 링크</a>` : '';
 
             list.innerHTML += `
             <div class="memo-card">
-                <div onclick="openViewModal(${m.id})">
-                    <div style="display:flex; justify-content:space-between; color:#666; font-size:0.8rem;">
+                <div onclick="openViewModal(${m.id})" style="cursor:pointer;">
+                    <div style="display:flex; justify-content:space-between; color:#888; font-size:0.8rem; margin-bottom:5px;">
                         <span>${m.dateStr}</span>
-                        <span style="color:var(--accent-color); font-weight:bold;">${rawTag}</span>
+                        <span style="color:var(--accent-color); font-weight:bold;">${m.tag || '#일반'}</span>
                     </div>
-                    <h3 style="margin:8px 0; font-size:1.1rem; color:#2c3e50;">${m.title} ${hasImg}</h3>
-                    <p style="color:#555; font-size:0.9rem; margin-bottom:5px;">${summary}</p>
+                    <h3 style="margin:5px 0; font-size:1.1rem; color:#2c3e50;">${m.title} <span style="font-size:0.8rem;">${hasImg}</span></h3>
+                    <p style="color:#666; font-size:0.9rem; margin:0;">${summary}</p>
                 </div>
                 <div class="list-action-bar">
                     ${linkBtn}
@@ -385,60 +433,104 @@
         });
     }
 
-    // === 기타 기능들 ===
-    async function openViewModal(id) {
+    // 7. 달력 렌더링 (PC 타이틀 표시 기능 추가됨)
+    async function renderCalendar() {
+        const y = currDate.getFullYear(), m = currDate.getMonth();
+        document.getElementById('currentMonth').innerText = `${y}년 ${m+1}월`;
+        const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
+        
+        ['일','월','화','수','목','금','토'].forEach(d => 
+            grid.innerHTML += `<div class="day-header">${d}</div>`
+        );
+        
+        const first = new Date(y,m,1).getDay(), last = new Date(y,m+1,0).getDate();
+        for(let i=0; i<first; i++) grid.innerHTML += `<div></div>`;
+        
         const memos = await getAll();
-        const m = memos.find(x => x.id === id);
+        
+        for(let d=1; d<=last; d++) {
+            const targetStr = normalizeDate(`${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`);
+            
+            // 해당 날짜의 메모 찾기
+            const dayMemos = memos.filter(memo => normalizeDate(memo.dateStr).includes(targetStr));
+            
+            const div = document.createElement('div');
+            div.className = 'cal-day' + (dayMemos.length>0 ? ' has-memo' : '');
+            
+            // 오늘 날짜 표시
+            const today = new Date();
+            if(y===today.getFullYear() && m===today.getMonth() && d===today.getDate()) div.classList.add('today');
+            
+            // 모바일용 점
+            const dotHtml = dayMemos.length > 0 ? `<div class="dot"></div>` : '';
+            
+            // PC용 제목 리스트 (최대 3개까지만 표시)
+            let pcEvents = '';
+            dayMemos.slice(0, 4).forEach(dm => {
+                pcEvents += `<div class="cal-event-item">${dm.title}</div>`;
+            });
+            if(dayMemos.length > 4) pcEvents += `<div class="cal-event-item" style="background:none; color:#888;">+${dayMemos.length-4} 더보기</div>`;
+
+            div.innerHTML = `
+                <span class="day-num">${d}</span>
+                ${dotHtml}
+                <div class="cal-events-pc">${pcEvents}</div>
+            `;
+            
+            div.onclick = () => showDayMemos(targetStr, memos);
+            grid.appendChild(div);
+        }
+    }
+
+    // 8. 기타 유틸리티
+    function showDayMemos(targetKey, memos) {
+        const target = memos.filter(m => normalizeDate(m.dateStr).includes(targetKey));
+        const box = document.getElementById('calendarMemos');
+        if(target.length === 0) {
+            box.innerHTML = `<p>일정이 없습니다.</p>`;
+        } else {
+            box.innerHTML = `<div style="text-align:left; background:#fff; padding:15px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+                <strong style="display:block; margin-bottom:10px; color:#2c3e50;">${target.length}건의 기록</strong>
+                ${target.map(m => `<div onclick="openViewModal(${m.id})" style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
+                    <span style="color:var(--accent-color); font-size:0.8rem; font-weight:bold;">${m.tag||''}</span> ${m.title}
+                </div>`).join('')}
+            </div>`;
+        }
+    }
+
+    async function openViewModal(id) {
+        const m = await getMemo(id);
         if(!m) return;
         document.getElementById('viewTitle').innerText = m.title;
         document.getElementById('viewDate').innerText = m.dateStr;
         document.getElementById('viewTag').innerText = m.tag || '#일반';
         document.getElementById('viewBody').innerHTML = m.content;
-        document.getElementById('viewLink').innerHTML = m.link ? `<a href="${m.link}" target="_blank">🔗 링크 열기</a>` : '';
+        document.getElementById('viewLink').innerHTML = m.link ? `<a href="${m.link}" target="_blank" style="display:block; background:#f1f5f9; padding:12px; border-radius:8px; text-decoration:none; color:#2980b9; font-weight:bold; text-align:center;">🔗 관련 링크 바로가기</a>` : '';
         document.getElementById('viewModal').style.display = 'flex';
     }
     function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
-
     function getAll() { return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result)); }
     function compressImage(file) { return new Promise(r => { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); let w=img.width, h=img.height; if(w>1024) { h*=1024/w; w=1024; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); r(c.toDataURL('image/jpeg',0.7)); }; img.src = e.target.result; }; reader.readAsDataURL(file); }); }
-    
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
     function normalizeDate(d) { return d.replace(/[.\-\s]/g, ''); }
-    async function renderCalendar() {
-        const y = currDate.getFullYear(), m = currDate.getMonth();
-        document.getElementById('currentMonth').innerText = `${y}년 ${m+1}월`;
-        const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
-        '일월화수목금토'.split('').forEach(d=>grid.innerHTML+=`<div style="text-align:center; font-size:0.8rem; color:#888;">${d}</div>`);
-        const first = new Date(y,m,1).getDay(), last = new Date(y,m+1,0).getDate();
-        for(let i=0; i<first; i++) grid.innerHTML+=`<div></div>`;
-        const memos = await getAll();
-        for(let d=1; d<=last; d++) {
-            const targetStr = normalizeDate(`${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`);
-            const has = memos.some(x => normalizeDate(x.dateStr).includes(targetStr));
-            const div = document.createElement('div'); div.className = 'cal-day' + (has ? ' has-memo' : '');
-            const today = new Date(); if(y===today.getFullYear() && m===today.getMonth() && d===today.getDate()) div.classList.add('today');
-            div.innerHTML = `<span>${d}</span>${has?'<div class="dot"></div>':''}`;
-            div.onclick = () => showDayMemos(targetStr, memos);
-            grid.appendChild(div);
-        }
-    }
-    function showDayMemos(targetKey, memos) {
-        const target = memos.filter(m => normalizeDate(m.dateStr).includes(targetKey));
-        const box = document.getElementById('calendarMemos');
-        box.innerHTML = target.length ? target.map(m=>`<div style="background:#fff; padding:10px; margin-bottom:5px; border:1px solid #eee;"><b>${m.title}</b></div>`).join('') : '<p>기록 없음</p>';
-    }
-
     function backupData() { getAll().then(memos => { if(memos.length==0) return alert('데이터 없음'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(memos)],{type:'application/json'})); a.download = `JDM_Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }); }
-    function resetApp() { if(confirm('전체 초기화?')) { db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{ alert('초기화 완료'); location.reload(); }; } }
+    function resetApp() { if(confirm('정말 초기화하시겠습니까? 모든 데이터가 삭제됩니다.')) { db.transaction(STORE_NAME,'readwrite').objectStore(STORE_NAME).clear().onsuccess=()=>{ alert('초기화 완료'); location.reload(); }; } }
     
     function restoreData(input) {
         const file = input.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = e => {
-            const data = JSON.parse(e.target.result);
-            const tx = db.transaction(STORE_NAME, 'readwrite');
-            (Array.isArray(data)?data:[data]).forEach(i => tx.objectStore(STORE_NAME).put(i));
-            tx.oncomplete = () => { alert('복원 완료'); location.reload(); };
+            try {
+                let data = JSON.parse(e.target.result);
+                if (!Array.isArray(data)) {
+                    if(data.memos) data = data.memos;
+                    else if(typeof data === 'object') data = Object.values(data);
+                    else data = [data];
+                }
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                data.forEach(i => tx.objectStore(STORE_NAME).put(i));
+                tx.oncomplete = () => { alert('데이터 복원 완료!'); location.reload(); };
+            } catch(err) { alert('파일 형식이 올바르지 않습니다.'); }
         };
         reader.readAsText(file);
     }
