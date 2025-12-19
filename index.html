@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v12.4</title>
+    <title>JDM Archive v13.0</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; }
@@ -53,7 +53,28 @@
         .memo-card.selected .check-circle::after { content: '✔'; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 14px; }
 
         /* 입력 폼 */
-        input, textarea, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; }
+        input, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; }
+        
+        /* [NEW] 리치 에디터 스타일 (div contenteditable) */
+        .rich-editor {
+            width: 100%;
+            min-height: 250px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            background: #fff;
+            line-height: 1.6;
+            outline: none;
+        }
+        .rich-editor:focus { border-color: var(--primary-color); }
+        .rich-editor img { max-width: 100%; border-radius: 8px; margin: 10px 0; display: block; }
+        .rich-editor:empty:before { content: attr(placeholder); color: #aaa; display: block; }
+
         .btn-save { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         
         .search-bar-area { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
@@ -108,7 +129,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v12.4</h1>
+    <h1>JDM Archive v13.0</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -164,11 +185,13 @@
                 </div>
             </div>
 
-            <textarea id="inputContent" style="height:250px; line-height:1.5;" placeholder="내용을 입력하세요."></textarea>
+            <div id="inputContent" class="rich-editor" contenteditable="true" placeholder="내용을 입력하세요. 사진은 하단 버튼으로 추가하면 커서 위치에 들어갑니다."></div>
+            
             <input type="text" id="inputLink" placeholder="관련 링크 (URL)">
+            
             <div style="margin:20px 0;">
-                <label style="display:block; margin-bottom:8px; font-weight:bold; color:#555;">📸 사진 추가</label>
-                <input type="file" id="inputImage" accept="image/*" multiple style="padding:12px; background:#f8f9fa; width:100%;">
+                <label style="display:block; margin-bottom:8px; font-weight:bold; color:#555;">📸 사진 추가 (본문에 삽입됨)</label>
+                <input type="file" id="inputImage" accept="image/*" multiple style="padding:12px; background:#f8f9fa; width:100%;" onchange="insertImageToEditor(this, 'inputContent')">
             </div>
             <button class="btn-save" onclick="saveNewMemo()">저 장 하 기</button>
         </div>
@@ -212,9 +235,10 @@
             <button onclick="closeEditPopup()" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">✖</button>
         </div>
         <input type="hidden" id="editId">
-        <input type="hidden" id="editOldImages">
+        
         <label>제목</label>
         <input type="text" id="editTitle">
+        
         <div style="display:flex; gap:10px; margin-bottom:15px;">
             <div style="flex:1;">
                 <label>날짜 (수정 가능)</label>
@@ -225,16 +249,16 @@
                 <select id="editTag" style="margin-bottom:0;"></select>
             </div>
         </div>
-        <label>내용</label>
-        <textarea id="editContent" style="height:250px; line-height:1.5;"></textarea>
-        <div id="editImagePreviewArea" style="background:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:15px; display:none;">
-            <p style="margin:0 0 5px 0; font-size:0.8rem; color:#666;">기존 사진 (유지됨)</p>
-            <div id="editImagePreview" style="display:flex; flex-wrap:wrap;"></div>
-        </div>
+        
+        <label>내용 (사진 편집 가능)</label>
+        <div id="editContent" class="rich-editor" contenteditable="true"></div>
+        
         <label>링크</label>
         <input type="text" id="editLink">
-        <label>사진 추가</label>
-        <input type="file" id="editImageFile" accept="image/*" multiple style="padding:10px; background:#eee; width:100%; margin-bottom:20px;">
+        
+        <label>사진 추가 (커서 위치에 삽입)</label>
+        <input type="file" id="editImageFile" accept="image/*" multiple style="padding:10px; background:#eee; width:100%; margin-bottom:20px;" onchange="insertImageToEditor(this, 'editContent')">
+        
         <div style="display:flex; gap:10px;">
             <button class="btn-save" style="background:#f39c12; flex:2;" onclick="saveEditedMemo()">수정 완료</button>
             <button class="btn-save" style="background:#95a5a6; flex:1;" onclick="closeEditPopup()">취소</button>
@@ -279,7 +303,6 @@
     let myTags = JSON.parse(localStorage.getItem('myTags')) || ['#일반','#업무','#아이디어','#건강','#현장','#AI','#심리'];
     let isSelectionMode = false;
     let selectedIds = new Set();
-    // 마지막으로 선택된 날짜 키 (YYYYMMDD) 저장용
     let currentSelectedDateKey = null;
 
     function getPassword() { return localStorage.getItem('appPass') || "0403"; }
@@ -384,24 +407,39 @@
         switchTab('write');
     }
 
+    // === [NEW] 에디터에 이미지 삽입 함수 ===
+    async function insertImageToEditor(input, editorId) {
+        const files = input.files;
+        if(files.length === 0) return;
+        const editor = document.getElementById(editorId);
+        
+        for(let i=0; i<files.length; i++) {
+            const imgData = await compressImage(files[i]);
+            // 이미지 태그 생성 및 삽입
+            const img = document.createElement('img');
+            img.src = imgData;
+            editor.appendChild(img);
+            // 이미지 뒤에 줄바꿈 추가 (입력 편의)
+            const br = document.createElement('br');
+            editor.appendChild(br);
+        }
+        input.value = ''; // 입력 초기화
+    }
+
     async function saveNewMemo() {
         const title = document.getElementById('inputTitle').value;
-        const rawText = document.getElementById('inputContent').value;
+        // innerHTML을 가져와서 저장 (사진+글)
+        const finalContent = document.getElementById('inputContent').innerHTML;
         const tag = document.getElementById('inputTag').value; 
         const link = document.getElementById('inputLink').value;
         const dateVal = document.getElementById('inputDate').value;
 
-        if(!title && !rawText) return alert('내용 필요');
+        // 내용 체크 (텍스트 또는 이미지가 있는지)
+        const pureText = document.getElementById('inputContent').innerText.trim();
+        const hasImg = finalContent.includes('<img');
+
+        if(!title && !pureText && !hasImg) return alert('내용 필요');
         
-        let finalContent = rawText.replace(/\n/g, "<br>");
-        const files = document.getElementById('inputImage').files;
-        if(files.length > 0) {
-            finalContent += "<br>";
-            for(let i=0; i<files.length; i++) {
-                const imgData = await compressImage(files[i]);
-                finalContent += `<img src="${imgData}"><br>`;
-            }
-        }
         const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
         store.add({
             id: Date.now(),
@@ -411,9 +449,8 @@
         }).onsuccess = () => {
             alert('저장되었습니다!');
             document.getElementById('inputTitle').value = "";
-            document.getElementById('inputContent').value = "";
+            document.getElementById('inputContent').innerHTML = ""; // 내용 초기화
             document.getElementById('inputLink').value = "";
-            document.getElementById('inputImage').value = "";
             document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
             switchTab('calendar'); renderCalendar();
         };
@@ -459,20 +496,9 @@
             document.getElementById('editTag').value = m.tag;
             document.getElementById('editLink').value = m.link;
             
-            const imgRegex = /<img[^>]*>/g;
-            const images = m.content.match(imgRegex) || [];
-            let onlyText = m.content.replace(imgRegex, "").replace(/<br\s*\/?>/gi, "\n").replace(/<div>/gi, "\n").replace(/<\/div>/gi, "").replace(/&nbsp;/gi, " ").replace(/<[^>]*>/g, "").trim();
-            document.getElementById('editContent').value = onlyText;
+            // 리치 에디터에 HTML 그대로 삽입
+            document.getElementById('editContent').innerHTML = m.content;
 
-            const imgArea = document.getElementById('editImagePreviewArea');
-            if(images.length > 0) {
-                imgArea.style.display = 'block';
-                document.getElementById('editImagePreview').innerHTML = images.join("");
-                document.getElementById('editOldImages').value = images.join("");
-            } else {
-                imgArea.style.display = 'none';
-                document.getElementById('editOldImages').value = "";
-            }
             document.getElementById('editPopup').style.display = 'block';
         });
     }
@@ -480,24 +506,13 @@
     async function saveEditedMemo() {
         const id = Number(document.getElementById('editId').value);
         const title = document.getElementById('editTitle').value;
-        const rawText = document.getElementById('editContent').value;
+        // 수정된 HTML 내용 가져오기
+        const finalContent = document.getElementById('editContent').innerHTML;
         const tag = document.getElementById('editTag').value;
         const link = document.getElementById('editLink').value;
-        const oldImages = document.getElementById('editOldImages').value;
         const dateVal = document.getElementById('editDate').value; 
         
-        let finalContent = rawText.replace(/\n/g, "<br>");
-        if(oldImages) finalContent += oldImages;
-        
-        const files = document.getElementById('editImageFile').files;
-        if(files.length > 0) {
-            finalContent += "<br>";
-            for(let i=0; i<files.length; i++) {
-                const imgData = await compressImage(files[i]);
-                finalContent += `<img src="${imgData}"><br>`;
-            }
-        }
-        
+        const original = await getMemo(id);
         const updatedMemo = { 
             id: id, 
             dateStr: inputDateToStr(dateVal), 
