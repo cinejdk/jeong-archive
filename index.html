@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.0</title>
+    <title>JDM Archive v13.1</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; }
@@ -19,7 +19,6 @@
         .tab-content { display: none; animation: fadeIn 0.3s ease; } .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* 암호 잠금 */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #loginOverlay input { width: 220px; padding: 15px; font-size: 1.5rem; text-align: center; border-radius: 12px; border: none; margin-top: 10px; letter-spacing: 5px; }
         #loginOverlay button { margin-top: 20px; padding: 12px 40px; background: #c0392b; color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
@@ -27,15 +26,22 @@
         /* 달력 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: var(--card-bg); padding: 15px; border-radius: 16px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
         .day-header { text-align: center; font-size: 0.85rem; color: #888; padding-bottom: 10px; font-weight: 600; }
+        
         .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; border-radius: 10px; font-size: 0.95rem; cursor: pointer; padding-top: 8px; transition: background 0.2s; border: 1px solid transparent; }
         .cal-day:hover { background: #f8f9fa; }
         .cal-day.today { background: #e8f4fd; color: var(--primary-color); font-weight: bold; border: 1px solid #bbdefb; }
         .cal-day.has-memo .day-num { font-weight: bold; color: var(--primary-color); }
+        
+        /* [NEW] 선택된 날짜 강조 (PC 싱크 맞춤) */
+        .cal-day.active-select { border: 2px solid var(--accent-color); background: #fff5f5; transform: scale(1.02); z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
         .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; display: block; }
         .cal-events-pc { display: none; width: 100%; margin-top: 5px; padding: 0 2px; box-sizing: border-box; }
+        
         @media (min-width: 768px) {
             .calendar-grid { gap: 10px; padding: 20px; }
-            .cal-day { aspect-ratio: auto; min-height: 120px; align-items: flex-start; padding: 8px; border: 1px solid #eee; }
+            /* [NEW] PC 높이 균일화 */
+            .cal-day { aspect-ratio: auto; min-height: 120px; height: 100%; align-items: flex-start; padding: 8px; border: 1px solid #eee; }
             .dot { display: none; } .cal-events-pc { display: block; }
             .cal-event-item { font-size: 0.8rem; background: #f1f3f5; color: #495057; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; border-left: 3px solid var(--accent-color); cursor: pointer; transition: background 0.2s; }
             .cal-event-item:hover { background: #e9ecef; color: #000; }
@@ -52,25 +58,10 @@
         .memo-card.selected .check-circle { background: var(--accent-color); border-color: var(--accent-color); }
         .memo-card.selected .check-circle::after { content: '✔'; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 14px; }
 
-        /* 입력 폼 */
         input, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; }
         
-        /* [NEW] 리치 에디터 스타일 (div contenteditable) */
-        .rich-editor {
-            width: 100%;
-            min-height: 250px;
-            max-height: 500px;
-            overflow-y: auto;
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            background: #fff;
-            line-height: 1.6;
-            outline: none;
-        }
+        /* 리치 에디터 */
+        .rich-editor { width: 100%; min-height: 250px; max-height: 500px; overflow-y: auto; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; line-height: 1.6; outline: none; }
         .rich-editor:focus { border-color: var(--primary-color); }
         .rich-editor img { max-width: 100%; border-radius: 8px; margin: 10px 0; display: block; }
         .rich-editor:empty:before { content: attr(placeholder); color: #aaa; display: block; }
@@ -129,7 +120,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.0</h1>
+    <h1>JDM Archive v13.1</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -171,9 +162,7 @@
                 <h3 style="margin:0; color:var(--primary-color);">📝 새 기록 작성</h3>
                 <button onclick="switchTab('calendar')" style="border:none; background:none; font-size:2rem; cursor:pointer; color:#aaa; line-height:1;">×</button>
             </div>
-            
             <input type="text" id="inputTitle" placeholder="제목">
-            
             <div style="display:flex; gap:10px; margin-bottom:12px;">
                 <div style="flex:1;">
                     <label style="font-size:0.85rem; color:#666; font-weight:bold;">날짜</label>
@@ -184,11 +173,8 @@
                     <select id="inputTag" style="margin-bottom:0;"></select>
                 </div>
             </div>
-
             <div id="inputContent" class="rich-editor" contenteditable="true" placeholder="내용을 입력하세요. 사진은 하단 버튼으로 추가하면 커서 위치에 들어갑니다."></div>
-            
             <input type="text" id="inputLink" placeholder="관련 링크 (URL)">
-            
             <div style="margin:20px 0;">
                 <label style="display:block; margin-bottom:8px; font-weight:bold; color:#555;">📸 사진 추가 (본문에 삽입됨)</label>
                 <input type="file" id="inputImage" accept="image/*" multiple style="padding:12px; background:#f8f9fa; width:100%;" onchange="insertImageToEditor(this, 'inputContent')">
@@ -235,10 +221,8 @@
             <button onclick="closeEditPopup()" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">✖</button>
         </div>
         <input type="hidden" id="editId">
-        
         <label>제목</label>
         <input type="text" id="editTitle">
-        
         <div style="display:flex; gap:10px; margin-bottom:15px;">
             <div style="flex:1;">
                 <label>날짜 (수정 가능)</label>
@@ -249,16 +233,12 @@
                 <select id="editTag" style="margin-bottom:0;"></select>
             </div>
         </div>
-        
         <label>내용 (사진 편집 가능)</label>
         <div id="editContent" class="rich-editor" contenteditable="true"></div>
-        
         <label>링크</label>
         <input type="text" id="editLink">
-        
         <label>사진 추가 (커서 위치에 삽입)</label>
         <input type="file" id="editImageFile" accept="image/*" multiple style="padding:10px; background:#eee; width:100%; margin-bottom:20px;" onchange="insertImageToEditor(this, 'editContent')">
-        
         <div style="display:flex; gap:10px;">
             <button class="btn-save" style="background:#f39c12; flex:2;" onclick="saveEditedMemo()">수정 완료</button>
             <button class="btn-save" style="background:#95a5a6; flex:1;" onclick="closeEditPopup()">취소</button>
@@ -384,13 +364,11 @@
         }
         return `${digits.slice(0,4)}-${digits.slice(4,6)}-${digits.slice(6,8)}`;
     }
-    
     function inputDateToStr(val) {
         if(!val) return "";
         const parts = val.split('-'); 
         return `${parts[0]}. ${Number(parts[1])}. ${Number(parts[2])}.`;
     }
-    
     function normalizeDate(str) {
         if(!str) return "";
         const parts = str.match(/\d+/g);
@@ -407,34 +385,27 @@
         switchTab('write');
     }
 
-    // === [NEW] 에디터에 이미지 삽입 함수 ===
     async function insertImageToEditor(input, editorId) {
         const files = input.files;
         if(files.length === 0) return;
         const editor = document.getElementById(editorId);
-        
         for(let i=0; i<files.length; i++) {
             const imgData = await compressImage(files[i]);
-            // 이미지 태그 생성 및 삽입
             const img = document.createElement('img');
             img.src = imgData;
             editor.appendChild(img);
-            // 이미지 뒤에 줄바꿈 추가 (입력 편의)
             const br = document.createElement('br');
             editor.appendChild(br);
         }
-        input.value = ''; // 입력 초기화
+        input.value = ''; 
     }
 
     async function saveNewMemo() {
         const title = document.getElementById('inputTitle').value;
-        // innerHTML을 가져와서 저장 (사진+글)
         const finalContent = document.getElementById('inputContent').innerHTML;
         const tag = document.getElementById('inputTag').value; 
         const link = document.getElementById('inputLink').value;
         const dateVal = document.getElementById('inputDate').value;
-
-        // 내용 체크 (텍스트 또는 이미지가 있는지)
         const pureText = document.getElementById('inputContent').innerText.trim();
         const hasImg = finalContent.includes('<img');
 
@@ -449,7 +420,7 @@
         }).onsuccess = () => {
             alert('저장되었습니다!');
             document.getElementById('inputTitle').value = "";
-            document.getElementById('inputContent').innerHTML = ""; // 내용 초기화
+            document.getElementById('inputContent').innerHTML = ""; 
             document.getElementById('inputLink').value = "";
             document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
             switchTab('calendar'); renderCalendar();
@@ -495,10 +466,7 @@
             }
             document.getElementById('editTag').value = m.tag;
             document.getElementById('editLink').value = m.link;
-            
-            // 리치 에디터에 HTML 그대로 삽입
             document.getElementById('editContent').innerHTML = m.content;
-
             document.getElementById('editPopup').style.display = 'block';
         });
     }
@@ -506,7 +474,6 @@
     async function saveEditedMemo() {
         const id = Number(document.getElementById('editId').value);
         const title = document.getElementById('editTitle').value;
-        // 수정된 HTML 내용 가져오기
         const finalContent = document.getElementById('editContent').innerHTML;
         const tag = document.getElementById('editTag').value;
         const link = document.getElementById('editLink').value;
@@ -586,7 +553,10 @@
             const dayMemos = memos.filter(memo => normalizeDate(memo.dateStr) === targetStr);
             
             const div = document.createElement('div');
-            div.className = 'cal-day' + (dayMemos.length>0 ? ' has-memo' : '');
+            // [NEW] 선택된 날짜 클래스 추가 로직
+            const isSelected = (currentSelectedDateKey === targetStr);
+            div.className = 'cal-day' + (dayMemos.length>0 ? ' has-memo' : '') + (isSelected ? ' active-select' : '');
+            
             if(y===new Date().getFullYear() && m===new Date().getMonth() && d===new Date().getDate()) div.classList.add('today');
             
             let pcEvents = '';
@@ -610,18 +580,19 @@
         const box = document.getElementById('calendarMemos');
 
         if (currentSelectedDateKey && currentSelectedDateKey.startsWith(currentMonthKey)) {
-            showDayMemos(currentSelectedDateKey, memos);
+            // 목록은 보여주되, 여기서 직접 호출하면 무한 루프 위험이 있으니 렌더링만 놔둠.
+            // 대신 showDayMemos 내부에서 하단 목록 갱신을 담당함.
+            // 여기서는 '목록 유지'를 위해 showDayMemos를 다시 호출하여 하단을 그림.
+            refreshBottomList(currentSelectedDateKey, memos);
         } else {
             box.innerHTML = '';
         }
     }
 
-    function showDayMemos(targetKey, memos) {
-        currentSelectedDateKey = targetKey;
-
+    // [NEW] 하단 목록만 그리는 함수 (재귀 호출 방지)
+    function refreshBottomList(targetKey, memos) {
         const target = memos.filter(m => normalizeDate(m.dateStr) === targetKey);
         const box = document.getElementById('calendarMemos');
-
         const y = targetKey.substring(0, 4);
         const m = targetKey.substring(4, 6);
         const d = targetKey.substring(6, 8);
@@ -643,6 +614,11 @@
         }
         html += `</div>`;
         box.innerHTML = html;
+    }
+
+    function showDayMemos(targetKey, memos) {
+        currentSelectedDateKey = targetKey;
+        renderCalendar(); // 달력을 다시 그려서 선택된 날짜에 빨간 테두리를 입힘
     }
 
     async function openViewModal(id) {
