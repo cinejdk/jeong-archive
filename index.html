@@ -6,16 +6,18 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.2</title>
+    <title>JDM Archive v13.3</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
-        :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; }
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); -webkit-font-smoothing: antialiased; }
-        
+        :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); -webkit-font-smoothing: antialiased; box-sizing: border-box; }
+        *, *:before, *:after { box-sizing: border-box; } /* 모든 요소 테두리 포함 크기 계산 */
+
         header { background: var(--primary-color); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; color: white; }
         header h1 { margin: 0; font-size: 1.4rem; font-weight: 700; flex-grow: 1; text-align: center; margin-left: 40px; letter-spacing: -0.5px; }
         
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        /* [수정] 컨테이너 폭을 더 넓게, 가변적으로 조정 */
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px; }
         .tab-content { display: none; animation: fadeIn 0.3s ease; } .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -23,30 +25,38 @@
         #loginOverlay input { width: 220px; padding: 15px; font-size: 1.5rem; text-align: center; border-radius: 12px; border: none; margin-top: 10px; letter-spacing: 5px; }
         #loginOverlay button { margin-top: 20px; padding: 12px 40px; background: #c0392b; color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
 
-        /* [수정됨] 달력 스타일 - 빈틈없는 격자형 */
+        /* [수정] 달력 스타일 - 테두리 짤림 방지 및 반응형 강화 */
+        .calendar-wrapper {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden; /* 둥근 모서리 밖으로 나가는 선 정리 */
+            border: 1px solid #e0e0e0; /* 전체 외곽선 */
+        }
+
         .calendar-grid { 
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
-            gap: 0; /* 간격 제거 */
-            background: var(--card-bg); 
-            padding: 0; /* 패딩 제거 */
-            border-radius: 12px; 
-            overflow: hidden; /* 모서리 둥글게 */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            border-top: 1px solid #e0e0e0; /* 전체 테두리 보정 */
-            border-left: 1px solid #e0e0e0;
+            width: 100%;
+            /* 내부 선은 셀에게 맡김 */
         }
 
         .day-header { 
             text-align: center; 
             font-size: 0.9rem; 
             color: #555; 
-            padding: 10px 0; 
+            padding: 12px 0; 
             font-weight: 600; 
-            background-color: #f8f9fa; /* 헤더 배경색 추가 */
-            border-right: 1px solid #e0e0e0; /* 격자 선 */
+            background-color: #f8f9fa; 
             border-bottom: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0; /* 세로선 */
         }
+        /* 마지막 헤더의 오른쪽 선 제거 */
+        .day-header:nth-child(7n) { border-right: none; }
+
+        /* 요일 색상 */
+        .day-header.sun { color: var(--holiday-color); }
+        .day-header.sat { color: var(--sat-color); }
         
         .cal-day { 
             aspect-ratio: 1; 
@@ -54,40 +64,57 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: flex-start; 
-            border-radius: 0; /* 네모 반듯하게 */
             font-size: 0.95rem; 
             cursor: pointer; 
-            padding-top: 8px; 
+            padding-top: 6px; 
             transition: background 0.2s; 
-            border-right: 1px solid #e0e0e0; /* 격자 선 */
-            border-bottom: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0; /* 세로선 */
+            border-bottom: 1px solid #e0e0e0; /* 가로선 */
             background: white;
+            position: relative;
         }
+        
+        /* [중요] 7번째 칸(토요일 라인)마다 오른쪽 선 제거 -> 짤림 현상 완벽 해결 */
+        .cal-day:nth-child(7n) { border-right: none; }
+        
+        /* 마지막 줄은 가로선 제거 (선택사항, 깔끔함을 위해 유지해도 됨) */
+        /* .cal-day:nth-last-child(-n+7) { border-bottom: none; } */
+
         .cal-day:hover { background: #fafafa; }
         
-        .cal-day.today { 
-            background: #e3f2fd; 
-            color: var(--primary-color); 
-            font-weight: bold; 
+        .cal-day.today { background: #e3f2fd; }
+        .cal-day.today .day-num { 
+            background: var(--primary-color); 
+            color: white; 
+            padding: 2px 6px; 
+            border-radius: 10px; 
+            font-size: 0.85rem; 
         }
-        .cal-day.has-memo .day-num { font-weight: bold; color: var(--primary-color); }
         
-        /* 선택된 날짜 강조 (내부 테두리로 변경하여 밀림 방지) */
+        .cal-day.has-memo .day-num { font-weight: bold; text-decoration: underline; text-underline-offset: 3px; }
+        
+        /* 선택된 날짜 */
         .cal-day.active-select { 
             background: #fff0f0; 
             box-shadow: inset 0 0 0 2px var(--accent-color);
             z-index: 10; 
         }
 
+        /* [NEW] 공휴일 및 요일 스타일 */
+        .day-num { margin-bottom: 2px; }
+        .holiday-name { font-size: 0.7rem; color: var(--holiday-color); font-weight: bold; margin-bottom: 2px; text-align: center; word-break: keep-all; line-height: 1.1; }
+        
+        .cal-day.sun .day-num, .cal-day.holiday .day-num { color: var(--holiday-color); }
+        .cal-day.sat .day-num { color: var(--sat-color); }
+
         .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; display: block; }
-        .cal-events-pc { display: none; width: 100%; margin-top: 5px; padding: 0 2px; box-sizing: border-box; }
+        .cal-events-pc { display: none; width: 100%; margin-top: 2px; padding: 0 2px; box-sizing: border-box; }
         
         @media (min-width: 768px) {
-            .calendar-grid { padding: 0; }
-            /* PC 높이 균일화 */
+            /* PC 높이 */
             .cal-day { 
                 aspect-ratio: auto; 
-                min-height: 120px; 
+                min-height: 130px; 
                 height: 100%; 
                 align-items: flex-start; 
                 padding: 8px; 
@@ -101,7 +128,6 @@
         /* 메모 카드 */
         .memo-card { background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 15px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid #eee; cursor: pointer; }
         .memo-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .memo-card:active { transform: scale(0.98); }
         .memo-card.selected { border: 2px solid var(--accent-color); background: #fff5f5; }
         .check-circle { position: absolute; top: 15px; right: 15px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #ddd; background: white; display: none; }
         .memo-card.selection-mode .check-circle { display: block; }
@@ -170,7 +196,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.2</h1>
+    <h1>JDM Archive v13.3</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -181,7 +207,11 @@
             <h2 id="currentMonth" style="margin:0; font-size:1.3rem; color:var(--primary-color);"></h2>
             <button onclick="changeMonth(1)" style="border:none; background:none; font-size:1.5rem; cursor:pointer; color:var(--primary-color);">▶</button>
         </div>
-        <div id="calendarGrid" class="calendar-grid"></div>
+        
+        <div class="calendar-wrapper">
+            <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+
         <div id="calendarMemos" style="margin-top:20px; text-align:center; color:#888;"></div>
     </div>
 
@@ -334,6 +364,20 @@
     let isSelectionMode = false;
     let selectedIds = new Set();
     let currentSelectedDateKey = null;
+
+    // [NEW] 공휴일 데이터 (2025~2026 주요 공휴일)
+    const HOLIDAYS = {
+        '2025-01-01': '신정', '2025-01-28': '설날', '2025-01-29': '설날', '2025-01-30': '설날',
+        '2025-03-01': '삼일절', '2025-05-05': '어린이날', '2025-05-06': '석가탄신일',
+        '2025-06-06': '현충일', '2025-08-15': '광복절', '2025-10-03': '개천절',
+        '2025-10-05': '추석', '2025-10-06': '추석', '2025-10-07': '추석', '2025-10-08': '대체공휴일',
+        '2025-10-09': '한글날', '2025-12-25': '성탄절',
+        '2026-01-01': '신정', '2026-02-16': '설날', '2026-02-17': '설날', '2026-02-18': '설날',
+        '2026-03-01': '삼일절', '2026-05-05': '어린이날', '2026-05-24': '석가탄신일',
+        '2026-06-06': '현충일', '2026-08-15': '광복절', '2026-09-24': '추석',
+        '2026-09-25': '추석', '2026-09-26': '추석', '2026-10-03': '개천절',
+        '2026-10-09': '한글날', '2026-12-25': '성탄절'
+    };
 
     function getPassword() { return localStorage.getItem('appPass') || "0403"; }
     function checkPass() {
@@ -594,17 +638,39 @@
         const y = currDate.getFullYear(), m = currDate.getMonth();
         document.getElementById('currentMonth').innerText = `${y}년 ${m+1}월`;
         const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
-        ['일','월','화','수','목','금','토'].forEach(d => grid.innerHTML += `<div class="day-header">${d}</div>`);
+        
+        // [수정] 요일 헤더 그리기 (일요일/토요일 클래스 추가)
+        const days = ['일','월','화','수','목','금','토'];
+        days.forEach((d, idx) => {
+            let className = 'day-header';
+            if(idx === 0) className += ' sun';
+            if(idx === 6) className += ' sat';
+            grid.innerHTML += `<div class="${className}">${d}</div>`;
+        });
+
         const first = new Date(y,m,1).getDay(), last = new Date(y,m+1,0).getDate();
         for(let i=0; i<first; i++) grid.innerHTML += `<div></div>`;
+        
         const memos = await getAll();
+        
         for(let d=1; d<=last; d++) {
+            const dateObj = new Date(y, m, d);
+            const dayOfWeek = dateObj.getDay(); // 0:일, 6:토
             const targetStr = `${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
-            const dayMemos = memos.filter(memo => normalizeDate(memo.dateStr) === targetStr);
+            const isoStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; // 공휴일 키
             
-            const div = document.createElement('div');
+            const dayMemos = memos.filter(memo => normalizeDate(memo.dateStr) === targetStr);
             const isSelected = (currentSelectedDateKey === targetStr);
-            div.className = 'cal-day' + (dayMemos.length>0 ? ' has-memo' : '') + (isSelected ? ' active-select' : '');
+            
+            // [NEW] 공휴일 체크
+            const holidayName = HOLIDAYS[isoStr];
+            let extraClass = '';
+            if(dayOfWeek === 0) extraClass = ' sun';
+            else if(dayOfWeek === 6) extraClass = ' sat';
+            if(holidayName) extraClass += ' holiday'; // 공휴일이면 빨간색 처리
+
+            const div = document.createElement('div');
+            div.className = 'cal-day' + extraClass + (dayMemos.length>0 ? ' has-memo' : '') + (isSelected ? ' active-select' : '');
             
             if(y===new Date().getFullYear() && m===new Date().getMonth() && d===new Date().getDate()) div.classList.add('today');
             
@@ -615,7 +681,10 @@
             });
             if(dayMemos.length > limit) pcEvents += `<div class="more-items">+${dayMemos.length - limit} 더보기</div>`;
 
-            div.innerHTML = `<span class="day-num">${d}</span>${dayMemos.length>0?'<div class="dot"></div>':''}<div class="cal-events-pc">${pcEvents}</div>`;
+            // [NEW] 날짜 아래 공휴일 이름 표시
+            const holidayHtml = holidayName ? `<div class="holiday-name">${holidayName}</div>` : '';
+
+            div.innerHTML = `<span class="day-num">${d}</span>${holidayHtml}${dayMemos.length>0?'<div class="dot"></div>':''}<div class="cal-events-pc">${pcEvents}</div>`;
             
             if (dayMemos.length === 0) {
                 div.onclick = () => openWriteWithDate(y, m+1, d);
