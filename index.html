@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.7</title>
+    <title>JDM Archive v13.10</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
@@ -66,17 +66,9 @@
         input, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; }
         
         .tag-select-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; padding: 5px 0; }
-        .tag-chip-btn {
-            padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: #f8f9fa; color: #555; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
-        }
-        .tag-chip-btn.active {
-            background: var(--primary-color); color: white; border-color: var(--primary-color); font-weight: bold; box-shadow: 0 2px 5px rgba(44, 62, 80, 0.3);
-        }
-        
-        /* [NEW] 고스트 태그(미등록) 스타일 */
-        .tag-chip-btn.ghost {
-            background: #fff0f0; color: #e74c3c; border: 1px dashed #e74c3c; opacity: 0.8;
-        }
+        .tag-chip-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: #f8f9fa; color: #555; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+        .tag-chip-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); font-weight: bold; box-shadow: 0 2px 5px rgba(44, 62, 80, 0.3); }
+        .tag-chip-btn.ghost { background: #fff0f0; color: #e74c3c; border: 1px dashed #e74c3c; opacity: 0.8; }
 
         .card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-left: auto; justify-content: flex-end;}
         .mini-tag { font-size: 0.75rem; background: #e3f2fd; color: var(--sat-color); padding: 2px 8px; border-radius: 12px; font-weight: bold; }
@@ -85,6 +77,19 @@
         .rich-editor:focus { border-color: var(--primary-color); }
         .rich-editor img { max-width: 100%; border-radius: 8px; margin: 10px 0; display: block; }
         .rich-editor:empty:before { content: attr(placeholder); color: #aaa; display: block; }
+
+        /* 파일 첨부 스타일 */
+        .file-attachment {
+            display: inline-block; background-color: #ecf0f1; border: 1px solid #bdc3c7; color: #2c3e50; padding: 8px 12px; border-radius: 8px;
+            text-decoration: none; font-size: 0.9rem; font-weight: bold; margin: 5px 0; user-select: text; transition: background 0.2s;
+        }
+        .file-attachment:hover { background-color: #dfe6e9; }
+
+        /* [NEW] 멀티 링크 스타일 */
+        .link-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
+        .link-row input { margin-bottom: 0; flex-grow: 1; }
+        .btn-del-link { background: #e74c3c; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; flex-shrink: 0; }
+        .btn-add-link { background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; margin-bottom: 15px; display: inline-block; }
 
         .btn-save { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         
@@ -133,7 +138,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.7</h1>
+    <h1>JDM Archive v13.10</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -187,11 +192,16 @@
                 <div id="inputTagContainer" class="tag-select-container"></div>
             </div>
             
-            <div id="inputContent" class="rich-editor" contenteditable="true" placeholder="내용을 입력하세요. 사진은 하단 버튼으로 추가하면 커서 위치에 들어갑니다."></div>
-            <input type="text" id="inputLink" placeholder="관련 링크 (URL)">
+            <div id="inputContent" class="rich-editor" contenteditable="true" placeholder="내용을 입력하세요. 하단 버튼으로 파일 첨부 가능 (최대 10MB)"></div>
+            
+            <label style="font-size:0.85rem; color:#666; font-weight:bold; display:block; margin-bottom:5px;">관련 링크 (다중 입력 가능)</label>
+            <div id="inputLinkContainer"></div>
+            <button class="btn-add-link" onclick="addLinkField('inputLinkContainer')">+ 링크 추가</button>
+
             <div style="margin:20px 0;">
-                <label style="display:block; margin-bottom:8px; font-weight:bold; color:#555;">📸 사진 추가 (본문에 삽입됨)</label>
-                <input type="file" id="inputImage" accept="image/*" multiple style="padding:12px; background:#f8f9fa; width:100%;" onchange="insertImageToEditor(this, 'inputContent')">
+                <label style="display:block; margin-bottom:8px; font-weight:bold; color:#555;">📎 파일 첨부 (모든 형식 / 10MB 제한)</label>
+                <input type="file" id="inputFile" multiple style="padding:12px; background:#f8f9fa; width:100%;" onchange="insertFileToEditor(this, 'inputContent')">
+                <p style="font-size:0.8rem; color:#e74c3c; margin-top:5px;">※ 10MB 이상의 대용량 파일은 구글 드라이브 링크를 권장합니다.</p>
             </div>
             <button class="btn-save" onclick="saveNewMemo()">저 장 하 기</button>
         </div>
@@ -246,12 +256,15 @@
             <label>태그 (다중 선택 가능)</label>
             <div id="editTagContainer" class="tag-select-container"></div>
         </div>
-        <label>내용 (사진 편집 가능)</label>
+        <label>내용 (파일 편집 가능)</label>
         <div id="editContent" class="rich-editor" contenteditable="true"></div>
-        <label>링크</label>
-        <input type="text" id="editLink">
-        <label>사진 추가 (커서 위치에 삽입)</label>
-        <input type="file" id="editImageFile" accept="image/*" multiple style="padding:10px; background:#eee; width:100%; margin-bottom:20px;" onchange="insertImageToEditor(this, 'editContent')">
+        
+        <label style="display:block; margin-top:15px;">관련 링크 (다중 입력 가능)</label>
+        <div id="editLinkContainer"></div>
+        <button class="btn-add-link" onclick="addLinkField('editLinkContainer')">+ 링크 추가</button>
+
+        <label style="display:block; margin-top:10px;">파일 추가 (커서 위치에 삽입)</label>
+        <input type="file" id="editFile" multiple style="padding:10px; background:#eee; width:100%; margin-bottom:20px;" onchange="insertFileToEditor(this, 'editContent')">
         <div style="display:flex; gap:10px;">
             <button class="btn-save" style="background:#f39c12; flex:2;" onclick="saveEditedMemo()">수정 완료</button>
             <button class="btn-save" style="background:#95a5a6; flex:1;" onclick="closeEditPopup()">취소</button>
@@ -333,6 +346,8 @@
     function initApp() { 
         updateTagSelects(); 
         document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
+        // [NEW] 앱 시작 시 기본 링크 필드 1개 생성
+        addLinkField('inputLinkContainer');
         renderCalendar(); 
         renderMemos(); 
     }
@@ -342,7 +357,6 @@
     function renderTagListModal() { document.getElementById('tagListDisplay').innerHTML = myTags.map(t => `<span class="tag-item">${t} <span class="tag-del-btn" onclick="removeTag('${t}')">×</span></span>`).join(''); }
     function addNewTag() { const val = document.getElementById('newTagInput').value.trim(); if(!val) return; if(!myTags.includes(val)) { myTags.push(val); saveTags(); document.getElementById('newTagInput').value = ''; renderTagListModal(); updateTagSelects(); } }
     
-    // [수정] 태그 삭제 로직 강화
     function removeTag(tag) { 
         if(confirm('삭제합니까?')) { 
             myTags = myTags.filter(t => t !== tag); 
@@ -353,34 +367,20 @@
     }
     function saveTags() { localStorage.setItem('myTags', JSON.stringify(myTags)); }
 
-    // [NEW] 태그 선택기 (고스트 태그 처리 포함)
     function renderTagSelector(containerId, selectedSet) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
-        
-        // 1. 정상 등록된 태그 버튼 생성
-        myTags.forEach(tag => {
-            createChip(container, tag, selectedSet, false);
-        });
-
-        // 2. 고스트 태그 탐지 (목록엔 없는데 선택된 태그)
-        selectedSet.forEach(tag => {
-            if (!myTags.includes(tag)) {
-                createChip(container, tag, selectedSet, true);
-            }
-        });
+        myTags.forEach(tag => { createChip(container, tag, selectedSet, false); });
+        selectedSet.forEach(tag => { if (!myTags.includes(tag)) createChip(container, tag, selectedSet, true); });
     }
 
     function createChip(container, tag, selectedSet, isGhost) {
          const btn = document.createElement('span');
-         // 고스트 태그면 빨간 점선 스타일 적용
          btn.className = 'tag-chip-btn' + (selectedSet.has(tag) ? ' active' : '') + (isGhost ? ' ghost' : '');
          btn.innerText = tag + (isGhost ? ' (미등록)' : '');
          btn.onclick = () => {
              if(selectedSet.has(tag)) selectedSet.delete(tag);
              else selectedSet.add(tag);
-             
-             // 고스트 태그를 해제하면 즉시 UI에서 사라짐 (영구 삭제)
              renderTagSelector(container.id, selectedSet); 
          };
          container.appendChild(btn);
@@ -394,6 +394,36 @@
 
         renderTagSelector('inputTagContainer', inputSelectedTags);
         renderTagSelector('editTagContainer', editSelectedTags);
+    }
+
+    // [NEW] 링크 입력 필드 동적 추가
+    function addLinkField(containerId, value = "") {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = 'link-row';
+        div.innerHTML = `
+            <input type="text" class="link-input" placeholder="https://..." value="${value}">
+            <button class="btn-del-link" onclick="this.parentElement.remove()" title="링크 삭제">-</button>
+        `;
+        container.appendChild(div);
+    }
+
+    // [NEW] 링크 입력값 수집 (배열로 반환)
+    function collectLinks(containerId) {
+        const inputs = document.querySelectorAll(`#${containerId} .link-input`);
+        const links = [];
+        inputs.forEach(inp => {
+            const val = inp.value.trim();
+            if(val) links.push(val);
+        });
+        return links;
+    }
+
+    // [NEW] 메모에서 링크 배열 추출 (구 데이터 호환)
+    function getLinksFromMemo(memo) {
+        if(memo.links && Array.isArray(memo.links)) return memo.links;
+        if(memo.link) return [memo.link]; // 기존 단일 링크 호환
+        return [];
     }
 
     function toggleSelectMode() {
@@ -463,19 +493,53 @@
         switchTab('write');
     }
 
-    async function insertImageToEditor(input, editorId) {
+    async function insertFileToEditor(input, editorId) {
         const files = input.files;
         if(files.length === 0) return;
+        const MAX_SIZE = 10 * 1024 * 1024; 
         const editor = document.getElementById(editorId);
+        
         for(let i=0; i<files.length; i++) {
-            const imgData = await compressImage(files[i]);
-            const img = document.createElement('img');
-            img.src = imgData;
-            editor.appendChild(img);
-            const br = document.createElement('br');
-            editor.appendChild(br);
+            const file = files[i];
+            if (file.size > MAX_SIZE) {
+                alert(`[경고] '${file.name}' 파일이 너무 큽니다 (10MB 초과).\n앱 속도 저하의 원인이 되므로, 구글 드라이브 등에 올리시고 링크를 활용하세요.`);
+                continue; 
+            }
+            if (file.type.startsWith('image/')) {
+                const imgData = await compressImage(file);
+                const img = document.createElement('img');
+                img.src = imgData;
+                editor.appendChild(img);
+                editor.appendChild(document.createElement('br'));
+            } else {
+                const fileData = await readFileAsDataURL(file);
+                const link = document.createElement('a');
+                link.href = fileData;
+                link.download = file.name; 
+                link.className = 'file-attachment';
+                link.contentEditable = "false"; 
+                
+                let icon = '📁';
+                if(file.name.includes('.pdf')) icon = '📄';
+                else if(file.name.includes('.hwp')) icon = '📝';
+                else if(file.name.includes('.xls')) icon = '📊';
+                else if(file.name.includes('.zip')) icon = '📦';
+
+                link.innerText = `${icon} ${file.name}`;
+                editor.appendChild(link);
+                editor.appendChild(document.createElement('br'));
+            }
         }
         input.value = ''; 
+    }
+
+    function readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
     }
 
     function getTagsFromMemo(memo) {
@@ -488,12 +552,14 @@
         const title = document.getElementById('inputTitle').value;
         const finalContent = document.getElementById('inputContent').innerHTML;
         const tags = Array.from(inputSelectedTags);
-        const link = document.getElementById('inputLink').value;
+        // [NEW] 다중 링크 수집
+        const links = collectLinks('inputLinkContainer');
         const dateVal = document.getElementById('inputDate').value;
         const pureText = document.getElementById('inputContent').innerText.trim();
         const hasImg = finalContent.includes('<img');
+        const hasFile = finalContent.includes('file-attachment');
 
-        if(!title && !pureText && !hasImg) return alert('내용 필요');
+        if(!title && !pureText && !hasImg && !hasFile) return alert('내용 필요');
         
         const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
         store.add({
@@ -501,12 +567,17 @@
             dateStr: inputDateToStr(dateVal), 
             title: title || "무제",
             tags: tags, 
-            content: finalContent, link: link
+            content: finalContent, 
+            links: links // [NEW] 링크 배열 저장
         }).onsuccess = () => {
             alert('저장되었습니다!');
             document.getElementById('inputTitle').value = "";
             document.getElementById('inputContent').innerHTML = ""; 
-            document.getElementById('inputLink').value = "";
+            
+            // 링크 필드 초기화
+            document.getElementById('inputLinkContainer').innerHTML = "";
+            addLinkField('inputLinkContainer');
+
             document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
             
             inputSelectedTags.clear();
@@ -532,9 +603,12 @@
         if(!m) return;
         const pureText = m.content.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "");
         const tags = getTagsFromMemo(m).join(' ');
+        // [NEW] 공유 시 링크 목록 추가
+        const links = getLinksFromMemo(m).join('\n');
+        
         const shareData = {
             title: m.title,
-            text: `[${m.title}] (${m.dateStr})\n\n${pureText}\n\n${tags}`
+            text: `[${m.title}] (${m.dateStr})\n\n${pureText}\n\n[관련링크]\n${links}\n\n${tags}`
         };
         if (navigator.share) {
             try { await navigator.share(shareData); } catch (err) {}
@@ -554,7 +628,16 @@
             editSelectedTags = new Set(getTagsFromMemo(m));
             renderTagSelector('editTagContainer', editSelectedTags);
 
-            document.getElementById('editLink').value = m.link;
+            // [NEW] 기존 링크 불러오기
+            const links = getLinksFromMemo(m);
+            const container = document.getElementById('editLinkContainer');
+            container.innerHTML = '';
+            if(links.length > 0) {
+                links.forEach(l => addLinkField('editLinkContainer', l));
+            } else {
+                addLinkField('editLinkContainer'); // 없으면 빈 칸 하나
+            }
+
             document.getElementById('editContent').innerHTML = m.content;
             document.getElementById('editPopup').style.display = 'block';
         });
@@ -565,7 +648,8 @@
         const title = document.getElementById('editTitle').value;
         const finalContent = document.getElementById('editContent').innerHTML;
         const tags = Array.from(editSelectedTags);
-        const link = document.getElementById('editLink').value;
+        // [NEW] 링크 배열 수집
+        const links = collectLinks('editLinkContainer');
         const dateVal = document.getElementById('editDate').value; 
         
         const original = await getMemo(id);
@@ -575,7 +659,7 @@
             title: title, 
             tags: tags, 
             content: finalContent, 
-            link: link 
+            links: links // [NEW]
         };
         
         db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(updatedMemo).onsuccess = () => {
@@ -613,6 +697,10 @@
             
             let summary = m.content.replace(/<[^>]*>?/gm, '').substring(0, 40) + "...";
             let hasImg = m.content.includes('<img') ? '📷' : '';
+            let hasFile = m.content.includes('file-attachment') ? '📎' : '';
+            // [NEW] 링크 아이콘
+            const links = getLinksFromMemo(m);
+            let hasLink = links.length > 0 ? `🔗(${links.length})` : '';
             
             const tagsHtml = memoTags.map(t => `<span class="mini-tag">${t}</span>`).join('');
 
@@ -628,7 +716,7 @@
                     <span>${m.dateStr}</span>
                     <div class="card-tags">${tagsHtml}</div>
                 </div>
-                <h3 style="margin:5px 0; font-size:1.1rem; color:#2c3e50;">${m.title} <span style="font-size:0.8rem;">${hasImg}</span></h3>
+                <h3 style="margin:5px 0; font-size:1.1rem; color:#2c3e50;">${m.title} <span style="font-size:0.8rem;">${hasImg}${hasFile}${hasLink}</span></h3>
                 <p style="color:#666; font-size:0.9rem; margin:0;">${summary}</p>
             </div>`;
         });
@@ -746,7 +834,16 @@
         document.getElementById('viewTagList').innerHTML = tagsHtml;
         
         document.getElementById('viewBody').innerHTML = m.content;
-        document.getElementById('viewLink').innerHTML = m.link ? `<a href="${m.link}" target="_blank" style="display:block; background:#f1f5f9; padding:12px; border-radius:8px; text-decoration:none; color:#2980b9; font-weight:bold; text-align:center;">🔗 관련 링크 바로가기</a>` : '';
+        
+        // [NEW] 다중 링크 표시
+        const links = getLinksFromMemo(m);
+        let linkHtml = '';
+        if(links.length > 0) {
+            linkHtml = links.map((l, i) => 
+                `<a href="${l}" target="_blank" style="display:block; background:#f1f5f9; padding:12px; border-radius:8px; text-decoration:none; color:#2980b9; font-weight:bold; margin-bottom:5px;">🔗 관련 링크 ${i+1} 바로가기</a>`
+            ).join('');
+        }
+        document.getElementById('viewLink').innerHTML = linkHtml;
         document.getElementById('viewModal').style.display = 'flex';
     }
     function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
@@ -760,7 +857,7 @@
         getAll().then(memos => { 
             if(memos.length==0 && myTags.length == 0) return alert('데이터 없음'); 
             const backupObj = {
-                version: "v13.7", 
+                version: "v13.10", 
                 savedAt: new Date().toISOString(),
                 memos: memos,
                 tags: myTags 
