@@ -3,343 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JDM Archive v13.13 (Recovery)</title>
+    <title>JDM Archive v13.14 (Universal Fix)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* 긴급 스타일: 가독성과 작동 우선 */
-        :root { --primary-color: #3b82f6; --bg-color: #f3f4f6; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background-color: var(--bg-color); padding: 15px; }
+        :root { --primary-color: #3b82f6; --bg-color: #f3f4f6; --text-color: #1f2937; --card-bg: #ffffff; --border-color: #e5e7eb; --sunday-color: #ef4444; --saturday-color: #3b82f6; }
+        @media (prefers-color-scheme: dark) { :root { --bg-color: #111827; --text-color: #f9fafb; --card-bg: #1f2937; --border-color: #374151; } }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; }
 
-        .version-check { background: red; color: white; padding: 5px; text-align: center; font-weight: bold; margin-bottom: 10px; border-radius: 5px; }
+        /* 복구 센터 스타일 (강조) */
+        .recovery-box { background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 10px; margin-bottom: 20px; color: #333; }
+        .recovery-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        
+        .method-box { background: white; padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid #ddd; }
+        .method-label { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; color: #3b82f6; }
+        
+        .backup-textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: monospace; font-size: 0.8rem; margin-bottom: 5px; }
 
+        /* 기존 스타일 유지 */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .title { font-size: 1.2rem; font-weight: bold; }
-        .nav-btn { background: #ddd; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
+        .title { font-size: 1.3rem; font-weight: bold; }
+        .nav-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-color); padding: 5px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--card-bg); padding: 5px; border-radius: 10px; }
+        .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 0.9rem; }
+        .tab.active { background-color: var(--primary-color); color: white; }
 
-        .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: white; padding: 5px; border-radius: 5px; }
-        .tab { flex: 1; padding: 10px; text-align: center; background: #eee; border-radius: 5px; cursor: pointer; }
-        .tab.active { background: var(--primary-color); color: white; font-weight: bold; }
-
-        /* 달력 스타일 */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #ccc; border: 1px solid #ccc; }
-        .calendar-cell { background: white; min-height: 80px; padding: 2px; cursor: pointer; font-size: 0.8rem; }
-        .date-num { font-weight: bold; margin-bottom: 2px; }
-        .schedule-preview { background: var(--primary-color); color: white; font-size: 0.7rem; padding: 1px 3px; border-radius: 3px; overflow: hidden; white-space: nowrap; margin-top: 2px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border-color); border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; }
+        .calendar-header { background: var(--card-bg); padding: 8px 0; text-align: center; font-weight: bold; font-size: 0.8rem; }
+        .calendar-cell { background: var(--card-bg); min-height: 80px; padding: 4px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+        .date-num { font-size: 0.85rem; font-weight: bold; }
         
-        /* 모바일용 점 표시 */
-        .schedule-dot { width: 6px; height: 6px; background-color: var(--primary-color); border-radius: 50%; margin: 2px auto; display: block; }
-        @media (min-width: 768px) { .schedule-dot { display: none; } }
-        @media (max-width: 767px) { .schedule-preview { display: none; } }
+        .schedule-preview { font-size: 0.7rem; color: white; background: var(--primary-color); padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: none; }
+        .schedule-dot { width: 5px; height: 5px; background: var(--primary-color); border-radius: 50%; margin: 2px auto; }
+        @media (min-width: 768px) { .schedule-preview { display: block; } .schedule-dot { display: none; } }
 
-        .sunday { color: red; } .saturday { color: blue; } .today { background: #eeffff; }
+        .sunday { color: var(--sunday-color); } .saturday { color: var(--saturday-color); } .today { background: rgba(59, 130, 246, 0.1); }
 
-        /* 모달 및 입력창 */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; justify-content: center; align-items: center; }
+        .list-view { display: none; flex-direction: column; gap: 10px; }
+        .list-item { background: var(--card-bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
-        .modal-content { background: white; width: 95%; max-width: 500px; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; }
-        .input-field { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .modal-content { background: var(--card-bg); width: 92%; max-width: 500px; border-radius: 15px; padding: 20px; max-height: 90vh; overflow-y: auto; }
         
-        .btn { width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .input-group { margin-bottom: 15px; }
+        .input-field { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-color); }
+        
+        .link-row { display: flex; gap: 5px; margin-bottom: 5px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; }
         .btn-primary { background: var(--primary-color); color: white; }
         
-        /* 링크 및 파일 스타일 */
-        .link-row { display: flex; gap: 5px; margin-bottom: 5px; }
-        .file-tag { background: #eee; padding: 5px; margin: 5px 0; font-size: 0.8rem; }
-        
-        /* 데이터 복구 영역 (강조) */
-        .recovery-zone { background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 10px; margin-top: 20px; }
-        .real-file-input { display: block; width: 100%; padding: 10px; background: white; border: 1px solid #999; margin-top: 10px; }
+        .fab { position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px; background: var(--primary-color); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 900; cursor: pointer;}
     </style>
 </head>
 <body>
 
-    <div class="version-check">v13.13 (긴급 복구 모드)</div>
-
     <div class="header">
-        <button class="nav-btn" onclick="changeMonth(-1)">Prev</button>
-        <div class="title" id="currentMonth">Loading...</div>
-        <button class="nav-btn" onclick="changeMonth(1)">Next</button>
+        <button class="nav-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+        <div class="title" id="currentMonth"></div>
+        <button class="nav-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
     </div>
 
     <div class="tabs">
         <div class="tab active" onclick="switchTab('calendar')">달력</div>
-        <div class="tab" onclick="switchTab('data')">데이터(복구)</div>
+        <div class="tab" onclick="switchTab('list')">목록</div>
+        <div class="tab" onclick="switchTab('data')">데이터</div>
     </div>
 
     <div id="calendarView" class="calendar-grid"></div>
+    <div id="listView" class="list-view"></div>
 
-    <div id="dataView" style="display: none;">
-        <div class="recovery-zone">
-            <h3>🚑 데이터 복구 센터</h3>
-            <p>1. 아래 <b>[파일 선택]</b>을 눌러 백업파일을 선택하세요.</p>
-            <p>2. 선택 즉시 복구가 시작됩니다.</p>
-            
-            <input type="file" id="restoreInput" class="real-file-input" accept=".json" onchange="restoreDataSafe(this)">
-            
-            <hr style="margin: 20px 0;">
-            <button class="btn" style="background: #666; color: white;" onclick="backupData()">현재 데이터 백업하기</button>
-            <button class="btn" style="background: red; color: white;" onclick="clearAllData()">데이터 초기화</button>
+    <div id="dataView" class="list-view" style="display: none;">
+        
+        <div class="recovery-box">
+            <div class="recovery-title"><i class="fas fa-file-upload"></i> 방법 1. 파일로 복원</div>
+            <div class="method-box">
+                <p style="font-size:0.8rem; margin-bottom:5px;">크롬/삼성인터넷 추천 (네이버앱은 안될 수 있음)</p>
+                <input type="file" id="restoreFile" style="width:100%" accept=".json" onchange="restoreDataFile(this)">
+            </div>
+        </div>
+
+        <div class="recovery-box" style="border-color: #3b82f6; background: #eff6ff;">
+            <div class="recovery-title"><i class="fas fa-paste"></i> 방법 2. 붙여넣기로 복원</div>
+            <div class="method-box">
+                <p style="font-size:0.8rem; margin-bottom:5px;">파일이 안 열리면, 백업 파일 내용을 복사해서 아래에 붙여넣으세요.</p>
+                <textarea id="jsonPasteInput" class="backup-textarea" placeholder=' 여기에 내용을 붙여넣고 [복원하기] 버튼을 누르세요. example: {"2025-10-23": [...]}'></textarea>
+                <button class="btn btn-primary" onclick="restoreDataText()">텍스트로 복원하기</button>
+            </div>
+        </div>
+
+        <div class="data-manage-box" style="margin-top: 20px;">
+            <button class="btn" style="background:#666; color:white" onclick="backupData()">현재 데이터 백업 (파일저장)</button>
+            <button class="btn" style="background:#ef4444; color:white; margin-top:10px;" onclick="clearAllData()">전체 초기화</button>
         </div>
     </div>
 
     <div id="writeModal" class="modal">
         <div class="modal-content">
-            <h3>일정 작성</h3>
-            <input type="date" id="scheduleDate" class="input-field">
-            <input type="text" id="scheduleTitle" class="input-field" placeholder="제목">
-            <textarea id="scheduleContent" class="input-field" style="height: 100px" placeholder="내용"></textarea>
-            
-            <div id="linkContainer"></div>
-            <button class="btn" style="background:#ddd" onclick="addLinkField()">+ 링크 추가</button>
-            
-            <div style="margin-top:10px">파일 첨부:</div>
-            <input type="file" id="fileInput" class="input-field" multiple accept="image/*,.pdf" onchange="handleFileSelect(this)">
-            <div id="filePreviewArea"></div>
-
+            <h3>일정 기록</h3>
+            <div class="input-group"><input type="date" id="scheduleDate" class="input-field"></div>
+            <div class="input-group"><input type="text" id="scheduleTitle" class="input-field" placeholder="제목"></div>
+            <div class="input-group"><textarea id="scheduleContent" class="input-field" style="height:100px" placeholder="내용"></textarea></div>
+            <div class="input-group">
+                <div id="linkContainer"></div>
+                <button type="button" class="btn" style="padding:8px; background:#ccc" onclick="addLinkField()">+ 링크 추가</button>
+            </div>
+            <div class="input-group">
+                <input type="file" id="fileInput" class="input-field" multiple onchange="handleFileSelect(this)">
+                <div id="filePreviewArea"></div>
+            </div>
             <button class="btn btn-primary" onclick="saveSchedule()">저장</button>
-            <button class="btn" style="background: #999; color: white;" onclick="closeModal('writeModal')">닫기</button>
+            <button class="btn" style="background:#999; color:white" onclick="closeModal('writeModal')">닫기</button>
         </div>
     </div>
 
     <div id="viewModal" class="modal">
         <div class="modal-content">
             <h3 id="viewDate"></h3>
-            <h2 id="viewTitle"></h2>
-            <div id="viewContent" style="white-space: pre-wrap; margin: 10px 0; background: #f9f9f9; padding: 10px;"></div>
-            <div id="viewLinks" style="display: flex; flex-direction: column; gap: 5px;"></div>
-            <div id="viewImages" style="margin-top: 10px;"></div>
-            
-            <button class="btn btn-primary" onclick="editCurrentSchedule()">수정/삭제</button>
-            <button class="btn" style="background: #999; color: white;" onclick="closeModal('viewModal')">닫기</button>
+            <h2 id="viewTitle" style="margin:10px 0"></h2>
+            <div id="viewContent" style="white-space: pre-wrap; background:#f9f9f9; padding:10px; border-radius:5px;"></div>
+            <div id="viewLinks" style="margin-top:10px; display:flex; flex-direction:column; gap:5px;"></div>
+            <div id="viewImages" style="margin-top:10px;"></div>
+            <button class="btn btn-primary" onclick="editCurrentSchedule()">수정</button>
+            <button class="btn" style="background:#999; color:white" onclick="closeModal('viewModal')">닫기</button>
         </div>
     </div>
 
-    <div style="position: fixed; bottom: 20px; right: 20px; background: blue; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer;" onclick="openWriteModal()">+</div>
+    <div class="fab" onclick="openWriteModal()">+</div>
 
     <script>
-        // --- 1. 안전 초기화 (Safe Init) ---
         let schedules = {};
         let currentDate = new Date();
         let currentEditId = null;
         let attachedFiles = [];
 
+        // 안전 로딩
         try {
             const saved = localStorage.getItem('jdm_schedules');
             if (saved) schedules = JSON.parse(saved);
-        } catch (e) {
-            console.log("데이터 로드 실패, 빈 상태로 시작");
-            schedules = {};
-        }
+        } catch (e) { schedules = {}; }
 
-        // 실행
         renderCalendar();
 
-        // --- 2. 핵심 기능: 데이터 복구 (강화판) ---
-        function restoreDataSafe(input) {
+        // --- 핵심 복구 로직 1: 파일 (BOM 제거 기능 추가) ---
+        function restoreDataFile(input) {
             const file = input.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const txt = e.target.result;
-                    // BOM 제거 등 텍스트 전처리
-                    const json = JSON.parse(txt);
-                    
-                    if (confirm(`데이터 파일(${file.name})을 읽었습니다.\n복원하시겠습니까?`)) {
-                        schedules = json;
-                        localStorage.setItem('jdm_schedules', JSON.stringify(schedules));
-                        renderCalendar();
-                        alert("✅ 복원 성공! 달력 탭으로 이동합니다.");
-                        switchTab('calendar');
+                    let txt = e.target.result;
+                    // BOM(Byte Order Mark) 제거: 윈도우 메모장이 남긴 투명한 점 제거
+                    if (txt.charCodeAt(0) === 0xFEFF) {
+                        txt = txt.slice(1);
                     }
+                    const data = JSON.parse(txt);
+                    applyRestore(data);
                 } catch (err) {
-                    alert("❌ 파일 형식 오류!\n" + err.message);
+                    alert('파일 형식이 올바르지 않습니다.\n' + err.message);
                 }
             };
-            // 텍스트로 읽기 (가장 안전함)
             reader.readAsText(file);
         }
 
-        // --- 3. 기본 기능 (간소화) ---
-        function renderCalendar() {
+        // --- 핵심 복구 로직 2: 텍스트 붙여넣기 ---
+        function restoreDataText() {
+            const txt = document.getElementById('jsonPasteInput').value.trim();
+            if (!txt) { alert('내용을 붙여넣어 주세요.'); return; }
             try {
-                const year = currentDate.getFullYear();
-                const month = currentDate.getMonth();
-                const el = document.getElementById('currentMonth');
-                if(el) el.innerText = `${year}년 ${month + 1}월`;
+                // 혹시 모르니 여기서도 BOM 제거 시도
+                let cleanTxt = txt;
+                if (cleanTxt.charCodeAt(0) === 0xFEFF) cleanTxt = cleanTxt.slice(1);
                 
-                const grid = document.getElementById('calendarView');
-                grid.innerHTML = '';
-                
-                // 요일
-                ['일','월','화','수','목','금','토'].forEach((d,i) => {
-                    const div = document.createElement('div');
-                    div.style.textAlign = 'center'; div.style.background='#eee'; div.innerText = d;
-                    if(i===0) div.style.color='red'; if(i===6) div.style.color='blue';
-                    grid.appendChild(div);
-                });
-
-                const firstDay = new Date(year, month, 1);
-                const lastDay = new Date(year, month + 1, 0);
-
-                for(let i=0; i<firstDay.getDay(); i++) grid.appendChild(document.createElement('div'));
-
-                for(let i=1; i<=lastDay.getDate(); i++) {
-                    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                    const cell = document.createElement('div');
-                    cell.className = 'calendar-cell';
-                    
-                    let html = `<div class="date-num" style="${new Date(year,month,i).getDay()===0?'color:red':''}">${i}</div>`;
-                    
-                    if(schedules[dateStr]) {
-                        html += `<div class="schedule-dot"></div>`;
-                        // 제목 안전하게 가져오기
-                        let title = schedules[dateStr][0].title || "일정";
-                        html += `<div class="schedule-preview">${title}</div>`;
-                    }
-                    cell.innerHTML = html;
-                    cell.onclick = () => showList(dateStr);
-                    grid.appendChild(cell);
-                }
-            } catch(e) {
-                console.error("렌더링 에러:", e);
+                const data = JSON.parse(cleanTxt);
+                applyRestore(data);
+            } catch (err) {
+                alert('텍스트 형식이 올바르지 않습니다. 정확히 복사했는지 확인해주세요.\n' + err.message);
             }
         }
 
+        function applyRestore(data) {
+            if (confirm('데이터를 복원하시겠습니까? (기존 데이터는 덮어씌워집니다)')) {
+                schedules = data;
+                localStorage.setItem('jdm_schedules', JSON.stringify(schedules));
+                renderCalendar();
+                alert('✅ 복원 완료! 달력 탭으로 이동합니다.');
+                switchTab('calendar');
+            }
+        }
+
+        // --- 기본 기능 ---
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('currentMonth').innerText = `${year}년 ${month + 1}월`;
+            const grid = document.getElementById('calendarView');
+            grid.innerHTML = '';
+            
+            ['일','월','화','수','목','금','토'].forEach((d,i) => {
+                const div = document.createElement('div');
+                div.className = 'calendar-header' + (i===0?' sunday':(i===6?' saturday':''));
+                div.innerText = d;
+                grid.appendChild(div);
+            });
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            for(let i=0; i<firstDay.getDay(); i++) grid.appendChild(document.createElement('div'));
+
+            for(let i=1; i<=lastDay.getDate(); i++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+                if(dateStr === new Date().toISOString().split('T')[0]) cell.classList.add('today');
+                
+                let html = `<div class="date-num ${new Date(year,month,i).getDay()===0?'sunday':''}">${i}</div>`;
+                if(schedules[dateStr]) {
+                    html += `<div class="schedule-dot"></div>`;
+                    let title = schedules[dateStr][0].title || '일정';
+                    html += `<div class="schedule-preview">${title}</div>`;
+                }
+                cell.innerHTML = html;
+                cell.onclick = () => showList(dateStr);
+                grid.appendChild(cell);
+            }
+            renderList();
+        }
+
         function changeMonth(d) { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
-        
         function switchTab(t) {
+            document.querySelectorAll('.tab').forEach((el, idx) => {
+                el.classList.remove('active');
+                if((t==='calendar' && idx===0) || (t==='list' && idx===1) || (t==='data' && idx===2)) el.classList.add('active');
+            });
             document.getElementById('calendarView').style.display = t==='calendar'?'grid':'none';
+            document.getElementById('listView').style.display = t==='list'?'flex':'none';
             document.getElementById('dataView').style.display = t==='data'?'block':'none';
-            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            // 탭 활성화 표시
-            if(t==='calendar') document.querySelectorAll('.tab')[0].classList.add('active');
-            else document.querySelectorAll('.tab')[1].classList.add('active');
         }
-
-        function showList(date) {
-            if(!schedules[date]) { openWriteModal(date); return; }
-            // 1개면 바로보기, 아니면 첫번째꺼 열기 (간소화)
-            openViewModal(date, 0);
+        function renderList() {
+            const l = document.getElementById('listView'); l.innerHTML='';
+            Object.keys(schedules).sort().reverse().forEach(d => {
+                schedules[d].forEach((s,i) => {
+                    const div = document.createElement('div'); div.className='list-item';
+                    div.innerHTML=`<div style="color:#888;font-size:0.8rem">${d}</div><div>${s.title}</div>`;
+                    div.onclick=()=>openViewModal(d,i);
+                    l.appendChild(div);
+                });
+            });
         }
+        function showList(d) { if(!schedules[d]) openWriteModal(d); else openViewModal(d, 0); }
 
-        // 모달 관련
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-        
-        function openWriteModal(date=null) {
+        function openWriteModal(d=null) {
             document.getElementById('writeModal').classList.add('active');
-            document.getElementById('scheduleDate').value = date || new Date().toISOString().split('T')[0];
+            document.getElementById('scheduleDate').value = d || new Date().toISOString().split('T')[0];
             document.getElementById('scheduleTitle').value = '';
             document.getElementById('scheduleContent').value = '';
-            document.getElementById('linkContainer').innerHTML = '';
-            addLinkField();
-            attachedFiles = [];
-            document.getElementById('filePreviewArea').innerHTML = '';
+            document.getElementById('linkContainer').innerHTML = ''; addLinkField();
+            attachedFiles = []; document.getElementById('filePreviewArea').innerHTML='';
             currentEditId = null;
         }
-
         function saveSchedule() {
             const d = document.getElementById('scheduleDate').value;
             const t = document.getElementById('scheduleTitle').value;
             const c = document.getElementById('scheduleContent').value;
-            
-            // 링크 수집
             const links = [];
-            document.querySelectorAll('.link-row').forEach(row => {
-                links.push({
-                    name: row.querySelector('.link-name').value,
-                    url: row.querySelector('.link-url').value
-                });
+            document.querySelectorAll('.link-row').forEach(r => {
+                links.push({ name: r.querySelector('.link-name').value, url: r.querySelector('.link-url').value });
             });
-
             if(!schedules[d]) schedules[d] = [];
-            
-            // 수정모드면 기존 삭제
-            if(currentEditId) {
-                schedules[currentEditId.date].splice(currentEditId.index, 1);
-                if(schedules[currentEditId.date].length===0) delete schedules[currentEditId.date];
-            }
-
-            // 추가
-            schedules[d].push({ title: t, content: c, links: JSON.stringify(links), files: attachedFiles });
+            if(currentEditId) { schedules[currentEditId.date].splice(currentEditId.index,1); if(schedules[currentEditId.date].length===0) delete schedules[currentEditId.date]; }
+            schedules[d].push({ title:t, content:c, links:JSON.stringify(links), files:attachedFiles });
             localStorage.setItem('jdm_schedules', JSON.stringify(schedules));
-            
-            renderCalendar();
-            closeModal('writeModal');
+            renderCalendar(); closeModal('writeModal');
         }
-
-        function openViewModal(date, idx) {
-            const s = schedules[date][idx];
-            currentEditId = {date, index: idx};
-            document.getElementById('viewDate').innerText = date;
-            document.getElementById('viewTitle').innerText = s.title;
-            document.getElementById('viewContent').innerText = s.content;
-            
-            const lBox = document.getElementById('viewLinks');
-            lBox.innerHTML = '';
+        function openViewModal(d, i) {
+            const s = schedules[d][i]; currentEditId = {date:d, index:i};
+            document.getElementById('viewDate').innerText=d; document.getElementById('viewTitle').innerText=s.title;
+            document.getElementById('viewContent').innerText=s.content;
+            const lBox=document.getElementById('viewLinks'); lBox.innerHTML='';
             try {
-                let list = typeof s.links === 'string' ? (s.links.startsWith('[')?JSON.parse(s.links):[{url:s.links}]) : s.links;
-                list.forEach(l => {
-                    if(l.url || l) {
-                        const a = document.createElement('a');
-                        a.href = l.url || l; a.innerText = `🔗 ${l.name || '링크'}`;
-                        a.style.display='block'; a.target='_blank';
-                        lBox.appendChild(a);
-                    }
-                });
+                let list = typeof s.links==='string'?(s.links.startsWith('[')?JSON.parse(s.links):[{url:s.links}]):s.links;
+                list.forEach(l=>{ if(l.url||l) { 
+                    const a=document.createElement('a'); a.href=l.url||l; a.target='_blank'; a.className='btn'; a.style='padding:5px; background:#eff6ff; color:blue; text-align:left; border:1px solid #bfdbfe';
+                    a.innerHTML=`<i class="fas fa-link"></i> ${l.name||'링크'}`; lBox.appendChild(a);
+                }});
             } catch(e){}
-
-            // 이미지
-            const iBox = document.getElementById('viewImages');
-            iBox.innerHTML = '';
-            if(s.files) {
-                s.files.forEach(f => {
-                    if(f.type.startsWith('image')) {
-                        const img = document.createElement('img');
-                        img.src = f.data; img.style.width='100%';
-                        iBox.appendChild(img);
-                    }
-                });
-            }
-
+            const iBox=document.getElementById('viewImages'); iBox.innerHTML='';
+            if(s.files) s.files.forEach(f=>{ if(f.type.startsWith('image')) { const img=document.createElement('img'); img.src=f.data; img.style='width:100%; border-radius:5px; margin-top:5px'; iBox.appendChild(img); }});
             document.getElementById('viewModal').classList.add('active');
         }
-
         function editCurrentSchedule() {
             const s = schedules[currentEditId.date][currentEditId.index];
-            closeModal('viewModal');
-            openWriteModal(currentEditId.date);
-            document.getElementById('scheduleTitle').value = s.title;
-            document.getElementById('scheduleContent').value = s.content;
-            // 링크 및 파일 복원 생략 (빠른 복구를 위해) - 데이터는 보존됨
-            // 수정 후 저장 시 덮어쓰기 주의
+            closeModal('viewModal'); openWriteModal(currentEditId.date);
+            document.getElementById('scheduleTitle').value=s.title; document.getElementById('scheduleContent').value=s.content;
+            document.getElementById('linkContainer').innerHTML='';
+            try { JSON.parse(s.links).forEach(l=>addLinkField(l.name, l.url)); } catch(e){ addLinkField(); }
+            attachedFiles=s.files||[]; 
+            attachedFiles.forEach(f=>document.getElementById('filePreviewArea').innerHTML+=`<span style="font-size:0.8rem; background:#eee; padding:2px 5px; margin-right:5px">${f.name}</span>`);
         }
-
-        // 유틸
-        function addLinkField() {
-            const d = document.createElement('div'); d.className='link-row';
-            d.innerHTML = `<input class="link-name input-field" placeholder="이름" style="width:30%"><input class="link-url input-field" placeholder="URL">`;
+        function addLinkField(n='', u='') {
+            const d=document.createElement('div'); d.className='link-row';
+            d.innerHTML=`<input class="link-name input-field" value="${n}" placeholder="이름" style="width:30%"><input class="link-url input-field" value="${u}" placeholder="URL">`;
             document.getElementById('linkContainer').appendChild(d);
         }
         function handleFileSelect(inp) {
-            // 간단 파일 처리
-            Array.from(inp.files).forEach(f => {
-                const r = new FileReader();
-                r.onload = e => {
-                    attachedFiles.push({name:f.name, type:f.type, data:e.target.result});
-                    document.getElementById('filePreviewArea').innerText += f.name + " ";
-                };
-                r.readAsDataURL(f);
-            });
+            Array.from(inp.files).forEach(f=>{ const r=new FileReader(); r.onload=e=>{ attachedFiles.push({name:f.name, type:f.type, data:e.target.result}); document.getElementById('filePreviewArea').innerHTML+=f.name+" "; }; r.readAsDataURL(f); });
         }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
         function backupData() {
             const b = new Blob([JSON.stringify(schedules)], {type:'application/json'});
-            const u = URL.createObjectURL(b);
-            const a = document.createElement('a'); a.href=u; a.download='JDM_Backup.json'; a.click();
+            const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`JDM_Backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
         }
-        function clearAllData() { localStorage.removeItem('jdm_schedules'); location.reload(); }
+        function clearAllData() { if(confirm('전체 삭제??')) { localStorage.removeItem('jdm_schedules'); location.reload(); } }
     </script>
 </body>
 </html>
