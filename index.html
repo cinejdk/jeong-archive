@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.11</title>
+    <title>JDM Archive v13.12</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
@@ -78,14 +78,12 @@
         .rich-editor img { max-width: 100%; border-radius: 8px; margin: 10px 0; display: block; }
         .rich-editor:empty:before { content: attr(placeholder); color: #aaa; display: block; }
 
-        /* 파일 첨부 스타일 */
         .file-attachment {
             display: inline-block; background-color: #ecf0f1; border: 1px solid #bdc3c7; color: #2c3e50; padding: 8px 12px; border-radius: 8px;
             text-decoration: none; font-size: 0.9rem; font-weight: bold; margin: 5px 0; user-select: text; transition: background 0.2s;
         }
         .file-attachment:hover { background-color: #dfe6e9; }
 
-        /* [NEW] 멀티 링크 스타일 */
         .link-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
         .link-row input { margin-bottom: 0; flex-grow: 1; }
         .btn-del-link { background: #e74c3c; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; flex-shrink: 0; }
@@ -138,7 +136,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.11</h1>
+    <h1>JDM Archive v13.12</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -160,20 +158,23 @@
             <div class="search-row">
                 <button class="icon-btn btn-tag-config" onclick="openTagManager()" title="태그 관리">⚙️</button>
                 <button class="icon-btn btn-select-mode" id="selectModeBtn" onclick="toggleSelectMode()" title="선택 모드 (삭제)">✅</button>
-                <select id="listFilter" onchange="renderMemos()">
+                <select id="listFilter" onchange="renderMemos(true)">
                     <option value="all">전체보기</option>
                 </select>
             </div>
             <div class="search-row">
-                <input type="text" id="searchInput" placeholder="검색어..." onkeyup="renderMemos()">
+                <input type="text" id="searchInput" placeholder="검색어..." onkeyup="renderMemos(true)">
             </div>
             <div class="date-filter-row">
-                <input type="date" id="filterStartDate" onchange="renderMemos()" title="시작일">
+                <input type="date" id="filterStartDate" onchange="renderMemos(true)" title="시작일">
                 <span>~</span>
-                <input type="date" id="filterEndDate" onchange="renderMemos()" title="종료일">
+                <input type="date" id="filterEndDate" onchange="renderMemos(true)" title="종료일">
             </div>
         </div>
         <div id="memoList"></div>
+        <div id="loadMoreContainer" style="text-align:center; margin-top:20px; display:none;">
+            <button onclick="loadMoreMemos()" style="background:#34495e; color:white; border:none; padding:12px 30px; border-radius:20px; font-weight:bold; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.1);">+ 과거 기록 더보기</button>
+        </div>
     </div>
 
     <div id="tab-write" class="tab-content">
@@ -201,7 +202,6 @@
             <div style="margin:20px 0;">
                 <label style="display:block; margin-bottom:8px; font-weight:bold; color:#555;">📎 파일 첨부 (모든 형식 / 10MB 제한)</label>
                 <input type="file" id="inputFile" multiple style="padding:12px; background:#f8f9fa; width:100%;" onchange="insertFileToEditor(this, 'inputContent')">
-                <p style="font-size:0.8rem; color:#e74c3c; margin-top:5px;">※ 10MB 이상의 대용량 파일은 구글 드라이브 링크를 권장합니다.</p>
             </div>
             <button class="btn-save" onclick="saveNewMemo()">저 장 하 기</button>
         </div>
@@ -210,12 +210,23 @@
     <div id="tab-data" class="tab-content">
         <div style="background:var(--card-bg); padding:25px; border-radius:16px; text-align:center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <h3>💾 데이터 센터</h3>
+            
+            <div style="background:#e8f8f5; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #1abc9c; text-align:left;">
+                <strong style="color:#16a085;">📤 데이터 백업 (전체 / 기간별)</strong>
+                <div class="date-filter-row" style="margin: 15px 0;">
+                    <input type="date" id="backupStartDate" title="시작일" style="margin-bottom:0; flex:1;">
+                    <span style="font-weight:bold;">~</span>
+                    <input type="date" id="backupEndDate" title="종료일" style="margin-bottom:0; flex:1;">
+                </div>
+                <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:0;">백업 파일 저장하기</button>
+                <p style="font-size:0.8rem; color:#666; margin-top:10px; margin-bottom:0;">※ 날짜를 비워두시면 '전체 데이터'가 안전하게 백업됩니다.</p>
+            </div>
+
              <div style="background:#fff3cd; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #ffc107; text-align:left;">
                 <strong style="color:#d35400;">📂 백업 파일로 복원</strong>
                 <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%; margin-top:10px;">
-                <p style="font-size:0.8rem; color:#666; margin-top:5px;">※ 메모와 태그 설정이 모두 복원됩니다.</p>
+                <p style="font-size:0.8rem; color:#666; margin-top:5px; margin-bottom:0;">※ 메모와 태그 설정이 모두 복원됩니다.</p>
             </div>
-            <button onclick="backupData()" class="btn-save" style="background:#27ae60; margin-bottom:12px;">📤 전체 데이터 백업</button>
             <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 앱 초기화</button>
         </div>
     </div>
@@ -314,6 +325,11 @@
     let inputSelectedTags = new Set();
     let editSelectedTags = new Set();
 
+    // [NEW] 페이징 관련 변수 설정
+    let currentFilteredMemos = [];
+    let currentRenderPage = 1;
+    const ITEMS_PER_PAGE = 15;
+
     const HOLIDAYS = {
         '2025-01-01': '신정', '2025-01-28': '설날', '2025-01-29': '설날', '2025-01-30': '설날',
         '2025-03-01': '삼일절', '2025-05-05': '어린이날', '2025-05-06': '석가탄신일',
@@ -346,10 +362,9 @@
     function initApp() { 
         updateTagSelects(); 
         document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
-        // [NEW] 앱 시작 시 기본 링크 필드 1개 생성
         addLinkField('inputLinkContainer');
         renderCalendar(); 
-        renderMemos(); 
+        renderMemos(true); 
     }
 
     function openTagManager() { renderTagListModal(); document.getElementById('tagManagerModal').style.display = 'flex'; }
@@ -396,7 +411,6 @@
         renderTagSelector('editTagContainer', editSelectedTags);
     }
 
-    // [NEW] 링크 입력 필드 동적 추가
     function addLinkField(containerId, value = "") {
         const container = document.getElementById(containerId);
         const div = document.createElement('div');
@@ -408,7 +422,6 @@
         container.appendChild(div);
     }
 
-    // [NEW] 링크 입력값 수집 (배열로 반환)
     function collectLinks(containerId) {
         const inputs = document.querySelectorAll(`#${containerId} .link-input`);
         const links = [];
@@ -419,10 +432,9 @@
         return links;
     }
 
-    // [NEW] 메모에서 링크 배열 추출 (구 데이터 호환)
     function getLinksFromMemo(memo) {
         if(memo.links && Array.isArray(memo.links)) return memo.links;
-        if(memo.link) return [memo.link]; // 기존 단일 링크 호환
+        if(memo.link) return [memo.link]; 
         return [];
     }
 
@@ -432,16 +444,18 @@
         const btn = document.getElementById('selectModeBtn');
         const bulkBar = document.getElementById('bulkDeleteBar');
         if(isSelectionMode) { btn.classList.add('active'); bulkBar.style.display = 'block'; updateBulkBar(); } else { btn.classList.remove('active'); bulkBar.style.display = 'none'; }
-        renderMemos(); 
+        
+        // 현재 로딩된 페이지만 다시 렌더링 (속도 유지)
+        renderMemos(false); 
     }
-    function toggleSelectCard(id) { if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id); renderMemos(); updateBulkBar(); }
+    function toggleSelectCard(id) { if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id); renderMemos(false); updateBulkBar(); }
     function updateBulkBar() { document.getElementById('selectedCount').innerText = selectedIds.size; }
     function deleteSelectedMemos() {
         if(selectedIds.size === 0) return alert("항목 선택 필요");
         if(!confirm(`선택한 ${selectedIds.size}개 항목 삭제?`)) return;
         const tx = db.transaction(STORE_NAME, 'readwrite');
         selectedIds.forEach(id => tx.objectStore(STORE_NAME).delete(id));
-        tx.oncomplete = () => { alert("삭제됨"); toggleSelectMode(); renderMemos(); renderCalendar(); };
+        tx.oncomplete = () => { alert("삭제됨"); toggleSelectMode(); renderMemos(true); renderCalendar(); };
     }
 
     function switchTab(tab) {
@@ -452,7 +466,7 @@
         const tabs = ['calendar','list','write','data'];
         document.querySelectorAll('.nav-item')[tabs.indexOf(tab)].classList.add('active');
         
-        if(tab === 'list') renderMemos();
+        if(tab === 'list') renderMemos(true);
         if(tab === 'calendar') {
             currDate = new Date(); 
             renderCalendar();      
@@ -552,7 +566,6 @@
         const title = document.getElementById('inputTitle').value;
         const finalContent = document.getElementById('inputContent').innerHTML;
         const tags = Array.from(inputSelectedTags);
-        // [NEW] 다중 링크 수집
         const links = collectLinks('inputLinkContainer');
         const dateVal = document.getElementById('inputDate').value;
         const pureText = document.getElementById('inputContent').innerText.trim();
@@ -568,13 +581,12 @@
             title: title || "무제",
             tags: tags, 
             content: finalContent, 
-            links: links // [NEW] 링크 배열 저장
+            links: links 
         }).onsuccess = () => {
             alert('저장되었습니다!');
             document.getElementById('inputTitle').value = "";
             document.getElementById('inputContent').innerHTML = ""; 
             
-            // 링크 필드 초기화
             document.getElementById('inputLinkContainer').innerHTML = "";
             addLinkField('inputLinkContainer');
 
@@ -592,7 +604,7 @@
         const id = Number(document.getElementById('viewIdHidden').value);
         if(confirm('삭제?')) {
             db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(id).onsuccess = () => {
-                alert('삭제됨'); closeViewModal(); renderMemos(); renderCalendar();
+                alert('삭제됨'); closeViewModal(); renderMemos(true); renderCalendar();
             };
         }
     }
@@ -603,7 +615,6 @@
         if(!m) return;
         const pureText = m.content.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "");
         const tags = getTagsFromMemo(m).join(' ');
-        // [NEW] 공유 시 링크 목록 추가
         const links = getLinksFromMemo(m).join('\n');
         
         const shareData = {
@@ -628,14 +639,13 @@
             editSelectedTags = new Set(getTagsFromMemo(m));
             renderTagSelector('editTagContainer', editSelectedTags);
 
-            // [NEW] 기존 링크 불러오기
             const links = getLinksFromMemo(m);
             const container = document.getElementById('editLinkContainer');
             container.innerHTML = '';
             if(links.length > 0) {
                 links.forEach(l => addLinkField('editLinkContainer', l));
             } else {
-                addLinkField('editLinkContainer'); // 없으면 빈 칸 하나
+                addLinkField('editLinkContainer'); 
             }
 
             document.getElementById('editContent').innerHTML = m.content;
@@ -648,7 +658,6 @@
         const title = document.getElementById('editTitle').value;
         const finalContent = document.getElementById('editContent').innerHTML;
         const tags = Array.from(editSelectedTags);
-        // [NEW] 링크 배열 수집
         const links = collectLinks('editLinkContainer');
         const dateVal = document.getElementById('editDate').value; 
         
@@ -659,11 +668,11 @@
             title: title, 
             tags: tags, 
             content: finalContent, 
-            links: links // [NEW]
+            links: links 
         };
         
         db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(updatedMemo).onsuccess = () => {
-            alert('수정되었습니다!'); closeEditPopup(); renderMemos(); renderCalendar();
+            alert('수정되었습니다!'); closeEditPopup(); renderMemos(true); renderCalendar();
         };
     }
     function closeEditPopup() { document.getElementById('editPopup').style.display = 'none'; }
@@ -676,8 +685,13 @@
         return targetNum >= startNum && targetNum <= endNum;
     }
 
-    async function renderMemos() {
-        const list = document.getElementById('memoList'); list.innerHTML='';
+    // [NEW] 최적화된 목록 렌더링 (Lazy Load 방식)
+    async function renderMemos(resetPage = true) {
+        if(resetPage) {
+            currentRenderPage = 1;
+            document.getElementById('memoList').innerHTML = '';
+        }
+
         const memos = await getAll();
         const filter = document.getElementById('listFilter').value;
         const key = document.getElementById('searchInput').value;
@@ -686,19 +700,55 @@
         
         memos.sort((a,b) => b.id - a.id);
         
-        memos.forEach(m => {
+        // 필터링된 전체 리스트 확보
+        currentFilteredMemos = memos.filter(m => {
             const memoTags = getTagsFromMemo(m);
-            if(filter !== 'all' && !memoTags.includes(filter)) return;
-            
-            if(key && !m.title.includes(key) && !m.content.includes(key)) return;
+            if(filter !== 'all' && !memoTags.includes(filter)) return false;
+            if(key && !m.title.includes(key) && !m.content.includes(key)) return false;
             if(startVal || endVal) {
-                if(!checkDateRange(m.dateStr, startVal, endVal)) return;
+                if(!checkDateRange(m.dateStr, startVal, endVal)) return false;
             }
-            
+            return true;
+        });
+
+        if(resetPage) {
+            renderMemoPage();
+        } else {
+            // 선택모드(선택/해제) 등 유지 시 전체 현재 페이지까지만 재렌더링
+            document.getElementById('memoList').innerHTML = '';
+            const limit = currentRenderPage * ITEMS_PER_PAGE;
+            const pageMemos = currentFilteredMemos.slice(0, limit);
+            appendMemosToList(pageMemos);
+            updateLoadMoreBtn(limit);
+        }
+    }
+
+    // [NEW] 한 페이지 분량만 DOM에 추가
+    function renderMemoPage() {
+        const startIndex = (currentRenderPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const pageMemos = currentFilteredMemos.slice(startIndex, endIndex);
+        
+        appendMemosToList(pageMemos);
+        updateLoadMoreBtn(endIndex);
+    }
+
+    // [NEW] 더보기 버튼 클릭 시 다음 페이지 렌더링
+    function loadMoreMemos() {
+        currentRenderPage++;
+        renderMemoPage();
+    }
+
+    // [NEW] 실제 목록 생성 함수
+    function appendMemosToList(memosToAppend) {
+        const list = document.getElementById('memoList');
+        let htmlStr = '';
+
+        memosToAppend.forEach(m => {
+            const memoTags = getTagsFromMemo(m);
             let summary = m.content.replace(/<[^>]*>?/gm, '').substring(0, 40) + "...";
             let hasImg = m.content.includes('<img') ? '📷' : '';
             let hasFile = m.content.includes('file-attachment') ? '📎' : '';
-            // [NEW] 링크 아이콘
             const links = getLinksFromMemo(m);
             let hasLink = links.length > 0 ? `🔗(${links.length})` : '';
             
@@ -709,7 +759,7 @@
             const modeClass = isSelectionMode ? 'selection-mode' : '';
             const clickAction = isSelectionMode ? `toggleSelectCard(${m.id})` : `openViewModal(${m.id})`;
 
-            list.innerHTML += `
+            htmlStr += `
             <div class="memo-card ${selectClass} ${modeClass}" onclick="${clickAction}">
                 <div class="check-circle"></div>
                 <div style="display:flex; justify-content:space-between; align-items:center; color:#888; font-size:0.8rem; margin-bottom:5px;">
@@ -720,6 +770,15 @@
                 <p style="color:#666; font-size:0.9rem; margin:0;">${summary}</p>
             </div>`;
         });
+        
+        list.innerHTML += htmlStr;
+    }
+
+    // [NEW] 더보기 버튼 숨김/표시 처리
+    function updateLoadMoreBtn(currentIndex) {
+        const btn = document.getElementById('loadMoreContainer');
+        if (currentIndex < currentFilteredMemos.length) btn.style.display = 'block';
+        else btn.style.display = 'none';
     }
 
     async function renderCalendar() {
@@ -835,7 +894,6 @@
         
         document.getElementById('viewBody').innerHTML = m.content;
         
-        // [NEW] 다중 링크 표시
         const links = getLinksFromMemo(m);
         let linkHtml = '';
         if(links.length > 0) {
@@ -853,20 +911,38 @@
     function compressImage(file) { return new Promise(r => { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); let w=img.width, h=img.height; if(w>1024) { h*=1024/w; w=1024; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); r(c.toDataURL('image/jpeg',0.7)); }; img.src = e.target.result; }; reader.readAsDataURL(file); }); }
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
     
+    // [NEW] 백업 시 기간 설정 가능하도록 변경
     function backupData() { 
         getAll().then(memos => { 
             if(memos.length==0 && myTags.length == 0) return alert('데이터 없음'); 
+            
+            const startVal = document.getElementById('backupStartDate').value;
+            const endVal = document.getElementById('backupEndDate').value;
+            
+            let targetMemos = memos;
+            let dateSuffix = "ALL";
+            
+            if (startVal || endVal) {
+                targetMemos = memos.filter(m => checkDateRange(m.dateStr, startVal, endVal));
+                if(targetMemos.length === 0) return alert('지정된 기간에 저장된 데이터가 없습니다.');
+                
+                const sStr = startVal ? startVal.replace(/-/g, '').slice(2) : "START";
+                const eStr = endVal ? endVal.replace(/-/g, '').slice(2) : "END";
+                dateSuffix = `${sStr}_${eStr}`;
+            } else {
+                dateSuffix = new Date().toISOString().slice(0,10).replace(/-/g, '');
+            }
+            
             const backupObj = {
-                version: "v13.11", 
+                version: "v13.12", 
                 savedAt: new Date().toISOString(),
-                memos: memos,
+                memos: targetMemos,
                 tags: myTags 
             };
             const a = document.createElement('a'); 
             a.href = URL.createObjectURL(new Blob([JSON.stringify(backupObj)],{type:'application/json'})); 
-            a.download = `JDM_Backup_${new Date().toISOString().slice(0,10)}.json`; 
+            a.download = `JDM_Backup_${dateSuffix}.json`; 
             
-            // [수정 완료] 이제 파일 이름이 정상적으로 저장됩니다.
             document.body.appendChild(a); 
             a.click(); 
             document.body.removeChild(a); 
