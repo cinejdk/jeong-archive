@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.18</title>
+    <title>JDM Archive v13.19</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
@@ -136,7 +136,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.18</h1>
+    <h1>JDM Archive v13.19</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -374,44 +374,61 @@
         '2026-10-09': '한글날', '2026-12-25': '성탄절'
     };
 
-    // [v13.18 핵심 수정] 브라우저가 어떻게 켜지든 무조건 방어막 쾅!
+    // [v13.19] 뒤로가기 이벤트 감지 핸들러
+    let popstateHandler = function(e) {
+        const hash = location.hash;
+        
+        const viewModal = document.getElementById('viewModal');
+        const editPopup = document.getElementById('editPopup');
+        const tagModal = document.getElementById('tagManagerModal');
+        
+        if (viewModal.style.display === 'flex' || editPopup.style.display === 'block' || tagModal.style.display === 'flex') {
+            viewModal.style.display = 'none';
+            editPopup.style.display = 'none';
+            tagModal.style.display = 'none';
+            return;
+        }
+
+        if (hash === '#exit' || hash === '') {
+            document.getElementById('exitModal').style.display = 'flex';
+            return;
+        }
+
+        syncUIWithHash(hash);
+    };
+
     function initHistoryTrap() {
         let startHash = location.hash;
         if (startHash === '' || startHash === '#exit') {
             startHash = '#home';
         }
 
-        // 바닥에 무조건 #exit를 깔고 시작
         history.replaceState(null, null, '#exit');
         history.pushState(null, null, startHash);
 
-        window.addEventListener('popstate', (e) => {
-            const hash = location.hash;
-            
-            const viewModal = document.getElementById('viewModal');
-            const editPopup = document.getElementById('editPopup');
-            const tagModal = document.getElementById('tagManagerModal');
-            
-            if (viewModal.style.display === 'flex' || editPopup.style.display === 'block' || tagModal.style.display === 'flex') {
-                viewModal.style.display = 'none';
-                editPopup.style.display = 'none';
-                tagModal.style.display = 'none';
-            }
-
-            // 방어막(#exit)에 닿으면 종료창 띄우기
-            if (hash === '#exit' || hash === '') {
-                document.getElementById('exitModal').style.display = 'flex';
-                return;
-            }
-
-            syncUIWithHash(hash);
-        });
+        window.addEventListener('popstate', popstateHandler);
     }
 
+    // [v13.19 핵심] [예]를 누르면 안전하게 화면을 잠그고 닫기 유도
     function confirmExit(doExit) {
         document.getElementById('exitModal').style.display = 'none';
         if (doExit) {
-            window.open('', '_self').close();
+            // 이벤트 리스너를 해제하여 더 이상 간섭하지 않음
+            window.removeEventListener('popstate', popstateHandler);
+            
+            // 화면을 잠금 화면(종료 화면)으로 완전히 교체해버림
+            document.body.innerHTML = `
+                <div style="display:flex; flex-direction:column; height:100vh; justify-content:center; align-items:center; background:#2c3e50; color:white; text-align:center; padding:20px;">
+                    <h2 style="margin-bottom:10px;">🔒 안전하게 종료되었습니다</h2>
+                    <p style="color:#bdc3c7; line-height:1.6; font-size:1.1rem;">
+                        데이터가 안전하게 보호되었습니다.<br><br>
+                        스마트폰의 <b>홈 버튼</b>을 누르거나<br>
+                        <b>화면을 위로 쓸어올려</b> 창을 닫아주세요.
+                    </p>
+                </div>
+            `;
+            
+            // 진짜 뒤로가기를 한번 실행 (운 좋게 꺼지면 좋고, 아니면 잠금화면 유지)
             setTimeout(() => { history.back(); }, 100);
         } else {
             history.pushState(null, null, '#home');
@@ -448,7 +465,11 @@
         addLinkField('inputLinkContainer');
         renderCalendar(); 
         renderMemos(true); 
-        initHistoryTrap();
+        
+        // 네이버 브라우저가 방어막을 씹어먹는 것을 방지하기 위해 0.3초 딜레이
+        setTimeout(() => {
+            initHistoryTrap();
+        }, 300);
     }
 
     function switchTab(tab) {
@@ -1018,7 +1039,7 @@
             }
             
             const backupObj = {
-                version: "v13.18", 
+                version: "v13.19", 
                 savedAt: new Date().toISOString(),
                 memos: targetMemos,
                 tags: myTags 
