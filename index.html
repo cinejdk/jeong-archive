@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.16</title>
+    <title>JDM Archive v13.17</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
@@ -136,7 +136,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.16</h1>
+    <h1>JDM Archive v13.17</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -305,6 +305,17 @@
     </div>
 </div>
 
+<div id="exitModal" class="modal" style="z-index:4000;">
+    <div class="modal-content" style="text-align:center; max-width:320px; padding:30px 20px;">
+        <h3 style="margin-top:0; color:var(--primary-color);">앱 종료</h3>
+        <p style="color:#666; margin-bottom:25px;">JDM Archive를 종료하시겠습니까?</p>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-save" style="background:#e74c3c; flex:1;" onclick="confirmExit(true)">예 (종료)</button>
+            <button class="btn-save" style="background:#95a5a6; flex:1;" onclick="confirmExit(false)">아니오</button>
+        </div>
+    </div>
+</div>
+
 <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('calendar')"><span class="nav-icon">📅</span>홈</div>
     <div class="nav-item" onclick="switchTab('list')"><span class="nav-icon">📋</span>목록</div>
@@ -363,9 +374,8 @@
         '2026-10-09': '한글날', '2026-12-25': '성탄절'
     };
 
-    // [v13.16 최강자전] 해시(Hash) 기반 SPA 라우팅 적용
+    // [v13.17] 브라우저 알림창 대신 직접 만든 모달창 띄우기
     function initHistoryTrap() {
-        // 앱이 처음 켜질 때, 주소가 깨끗하다면 방어막(#exit)과 홈(#home)을 깐다.
         if (location.hash === '' || location.hash === '#exit') {
             history.replaceState(null, null, '#exit');
             history.pushState(null, null, '#home');
@@ -374,7 +384,6 @@
         window.addEventListener('popstate', (e) => {
             const hash = location.hash;
             
-            // 1. 모달이 열려있다면 무조건 닫는다.
             const viewModal = document.getElementById('viewModal');
             const editPopup = document.getElementById('editPopup');
             const tagModal = document.getElementById('tagManagerModal');
@@ -385,23 +394,30 @@
                 tagModal.style.display = 'none';
             }
 
-            // 2. 뒤로가기를 눌러서 #exit(방어막)에 도달했다면
+            // 뒤로가기 방어막(#exit)에 도달하면, 브라우저 알림창 대신 직접 만든 종료 모달창 띄움
             if (hash === '#exit' || hash === '') {
-                if (confirm("JDM Archive를 종료하시겠습니까?")) {
-                    history.back(); // 진짜 종료
-                } else {
-                    history.pushState(null, null, '#home'); // 취소하면 다시 살림
-                    syncUIWithHash('#home');
-                }
+                document.getElementById('exitModal').style.display = 'flex';
                 return;
             }
 
-            // 3. 그 외의 경우 (정상적으로 탭을 오갈 때)
             syncUIWithHash(hash);
         });
     }
 
-    // 주소창(Hash)에 맞게 화면을 바꿔주는 함수
+    // [NEW] 커스텀 종료 창 버튼 클릭 시 작동하는 함수
+    function confirmExit(doExit) {
+        document.getElementById('exitModal').style.display = 'none';
+        if (doExit) {
+            // [예] 선택: 브라우저 닫기 시도 및 물리적 뒤로가기 강제 실행
+            window.open('', '_self').close();
+            setTimeout(() => { history.back(); }, 100);
+        } else {
+            // [아니오] 선택: 다시 앱으로 돌려보내고 방어막 복구
+            history.pushState(null, null, '#home');
+            syncUIWithHash('#home');
+        }
+    }
+
     function syncUIWithHash(hash) {
         let tab = 'calendar';
         if (hash === '#list') tab = 'list';
@@ -412,7 +428,6 @@
         activateTabUI(tab);
     }
 
-    // 실제 화면 탭을 그리는 함수
     function activateTabUI(tab) {
         window.scrollTo(0, 0); 
         document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
@@ -432,11 +447,9 @@
         addLinkField('inputLinkContainer');
         renderCalendar(); 
         renderMemos(true); 
-        // 앱 구동 시 방어막 켜기
         initHistoryTrap();
     }
 
-    // --- 탭 이동 시 주소창(Hash)도 같이 바꿔주기 ---
     function switchTab(tab) {
         const targetHash = tab === 'calendar' ? '#home' : '#' + tab;
         if (location.hash !== targetHash) {
@@ -450,7 +463,6 @@
         }
     }
 
-    // --- 모달 창 열고 닫을 때 주소창(Hash) 관리 ---
     function openViewModal(id) {
         getMemo(id).then(m => {
             if(!m) return;
@@ -471,7 +483,6 @@
             }
             document.getElementById('viewLink').innerHTML = linkHtml;
             
-            // 모달 열 때 주소에 #modal 추가
             history.pushState(null, null, '#modal');
             document.getElementById('viewModal').style.display = 'flex';
         });
@@ -479,14 +490,13 @@
 
     function closeViewModal() { 
         document.getElementById('viewModal').style.display = 'none'; 
-        // X버튼을 누르면 주소를 뒤로 돌림 (popstate 자동 유발)
         if (location.hash === '#modal') history.back();
     }
 
     function transferToEdit() { 
         const id = Number(document.getElementById('viewIdHidden').value); 
         document.getElementById('viewModal').style.display = 'none';
-        openEditPopup(id, true); // true = View에서 넘어옴
+        openEditPopup(id, true); 
     }
 
     function openEditPopup(id, isTransfer = false) {
@@ -510,7 +520,6 @@
 
             document.getElementById('editContent').innerHTML = m.content;
             
-            // View에서 넘어온 게 아니면 새로 #modal 추가
             if (!isTransfer) history.pushState(null, null, '#modal');
             document.getElementById('editPopup').style.display = 'block';
         });
@@ -532,7 +541,6 @@
         if (location.hash === '#modal') history.back();
     }
 
-    // 삭제 완료 후 X버튼 누른 것과 동일하게 처리
     function deleteFromView() {
         const id = Number(document.getElementById('viewIdHidden').value);
         if(confirm('삭제?')) {
@@ -545,7 +553,6 @@
         }
     }
 
-    // 수정 완료 후 X버튼 누른 것과 동일하게 처리
     async function saveEditedMemo() {
         const id = Number(document.getElementById('editId').value);
         const title = document.getElementById('editTitle').value;
@@ -604,7 +611,6 @@
         };
     }
 
-    // --- 나머지 기능 코드는 이전과 동일합니다 ---
     function renderTagListModal() { document.getElementById('tagListDisplay').innerHTML = myTags.map(t => `<span class="tag-item">${t} <span class="tag-del-btn" onclick="removeTag('${t}')">×</span></span>`).join(''); }
     function addNewTag() { const val = document.getElementById('newTagInput').value.trim(); if(!val) return; if(!myTags.includes(val)) { myTags.push(val); saveTags(); document.getElementById('newTagInput').value = ''; renderTagListModal(); updateTagSelects(); } }
     
@@ -1011,7 +1017,7 @@
             }
             
             const backupObj = {
-                version: "v13.16", 
+                version: "v13.17", 
                 savedAt: new Date().toISOString(),
                 memos: targetMemos,
                 tags: myTags 
