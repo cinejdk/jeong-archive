@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.15</title>
+    <title>JDM Archive v13.16</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
@@ -136,7 +136,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.15</h1>
+    <h1>JDM Archive v13.16</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -313,7 +313,6 @@
 </nav>
 
 <script>
-    // [v13.15] 세션 유지 (링크 튕김 방지)
     window.addEventListener('DOMContentLoaded', () => {
         if(sessionStorage.getItem('jdm_auth') === 'true') {
             document.getElementById('loginOverlay').style.display = 'none';
@@ -364,53 +363,63 @@
         '2026-10-09': '한글날', '2026-12-25': '성탄절'
     };
 
-    // [v13.15 핵심 개선] 무조건 가짜 방어막(Trap)을 생성하는 방식
-    function setupMobileBackButton() {
-        // 앱 진입 시 무조건 가짜 히스토리를 하나 밀어넣음 (Trap)
-        history.pushState({ trap: true }, null, location.href);
+    // [v13.16 최강자전] 해시(Hash) 기반 SPA 라우팅 적용
+    function initHistoryTrap() {
+        // 앱이 처음 켜질 때, 주소가 깨끗하다면 방어막(#exit)과 홈(#home)을 깐다.
+        if (location.hash === '' || location.hash === '#exit') {
+            history.replaceState(null, null, '#exit');
+            history.pushState(null, null, '#home');
+        }
 
-        window.addEventListener('popstate', function(event) {
-            // 사용자가 뒤로가기를 눌러서 Trap이 빠져나갔을 때 실행됨
+        window.addEventListener('popstate', (e) => {
+            const hash = location.hash;
             
-            // 1. 모달(메모창, 수정창, 태그창) 열림 여부 확인
-            const viewOpen = document.getElementById('viewModal').style.display === 'flex';
-            const editOpen = document.getElementById('editPopup').style.display === 'block';
-            const tagOpen = document.getElementById('tagManagerModal').style.display === 'flex';
+            // 1. 모달이 열려있다면 무조건 닫는다.
+            const viewModal = document.getElementById('viewModal');
+            const editPopup = document.getElementById('editPopup');
+            const tagModal = document.getElementById('tagManagerModal');
             
-            if (viewOpen || editOpen || tagOpen) {
-                // 모달만 닫음
-                document.getElementById('viewModal').style.display = 'none';
-                document.getElementById('editPopup').style.display = 'none';
-                document.getElementById('tagManagerModal').style.display = 'none';
-                
-                // 다시 Trap을 심어서 다음 뒤로가기도 방어함
-                history.pushState({ trap: true }, null, location.href);
+            if (viewModal.style.display === 'flex' || editPopup.style.display === 'block' || tagModal.style.display === 'flex') {
+                viewModal.style.display = 'none';
+                editPopup.style.display = 'none';
+                tagModal.style.display = 'none';
+            }
+
+            // 2. 뒤로가기를 눌러서 #exit(방어막)에 도달했다면
+            if (hash === '#exit' || hash === '') {
+                if (confirm("JDM Archive를 종료하시겠습니까?")) {
+                    history.back(); // 진짜 종료
+                } else {
+                    history.pushState(null, null, '#home'); // 취소하면 다시 살림
+                    syncUIWithHash('#home');
+                }
                 return;
             }
 
-            // 2. 현재 탭 확인 (홈이 아니라면)
-            const isHome = document.getElementById('tab-calendar').classList.contains('active');
-            if (!isHome) {
-                // 홈(달력)으로 강제 이동
-                switchTab('calendar');
-                // 다시 Trap 심기
-                history.pushState({ trap: true }, null, location.href);
-                return;
-            }
-
-            // 3. 홈 화면이고 모달도 없을 때 (진짜 종료 유도)
-            if (confirm("JDM Archive를 종료하시겠습니까?")) {
-                // 브라우저 자체 보안 우회 시도
-                window.open('', '_self').close();
-                // 브라우저가 막았다면 진짜 이전 페이지로 강제 탈출
-                setTimeout(() => {
-                    history.back();
-                }, 100);
-            } else {
-                // 취소 시 다시 앱 안에 가둠 (Trap 심기)
-                history.pushState({ trap: true }, null, location.href);
-            }
+            // 3. 그 외의 경우 (정상적으로 탭을 오갈 때)
+            syncUIWithHash(hash);
         });
+    }
+
+    // 주소창(Hash)에 맞게 화면을 바꿔주는 함수
+    function syncUIWithHash(hash) {
+        let tab = 'calendar';
+        if (hash === '#list') tab = 'list';
+        else if (hash === '#write') tab = 'write';
+        else if (hash === '#data') tab = 'data';
+        else if (hash === '#home') tab = 'calendar';
+        
+        activateTabUI(tab);
+    }
+
+    // 실제 화면 탭을 그리는 함수
+    function activateTabUI(tab) {
+        window.scrollTo(0, 0); 
+        document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+        document.getElementById('tab-'+tab).classList.add('active');
+        const tabs = ['calendar','list','write','data'];
+        document.querySelectorAll('.nav-item')[tabs.indexOf(tab)].classList.add('active');
     }
 
     const request = indexedDB.open(DB_NAME, 1);
@@ -423,21 +432,186 @@
         addLinkField('inputLinkContainer');
         renderCalendar(); 
         renderMemos(true); 
-        // [적용됨] 앱 초기화 시 뒤로가기 방어막 가동
-        setupMobileBackButton(); 
+        // 앱 구동 시 방어막 켜기
+        initHistoryTrap();
     }
 
-    function openTagManager() { renderTagListModal(); document.getElementById('tagManagerModal').style.display = 'flex'; }
-    function closeTagManager() { document.getElementById('tagManagerModal').style.display = 'none'; }
+    // --- 탭 이동 시 주소창(Hash)도 같이 바꿔주기 ---
+    function switchTab(tab) {
+        const targetHash = tab === 'calendar' ? '#home' : '#' + tab;
+        if (location.hash !== targetHash) {
+            history.pushState(null, null, targetHash);
+        }
+        activateTabUI(tab);
+        if(tab === 'list') renderMemos(true);
+        if(tab === 'calendar') {
+            currDate = new Date(); 
+            renderCalendar();      
+        }
+    }
+
+    // --- 모달 창 열고 닫을 때 주소창(Hash) 관리 ---
+    function openViewModal(id) {
+        getMemo(id).then(m => {
+            if(!m) return;
+            document.getElementById('viewIdHidden').value = m.id;
+            document.getElementById('viewTitle').innerText = m.title;
+            document.getElementById('viewDate').innerText = m.dateStr;
+            
+            const tagsHtml = getTagsFromMemo(m).map(t => `<span class="mini-tag" style="background:var(--accent-color); color:white; padding:5px 10px; font-size:0.85rem;">${t}</span>`).join('');
+            document.getElementById('viewTagList').innerHTML = tagsHtml;
+            document.getElementById('viewBody').innerHTML = m.content;
+            
+            const links = getLinksFromMemo(m);
+            let linkHtml = '';
+            if(links.length > 0) {
+                linkHtml = links.map((l, i) => 
+                    `<a href="${l}" target="_blank" style="display:block; background:#f1f5f9; padding:12px; border-radius:8px; text-decoration:none; color:#2980b9; font-weight:bold; margin-bottom:5px;">🔗 관련 링크 ${i+1} 바로가기</a>`
+                ).join('');
+            }
+            document.getElementById('viewLink').innerHTML = linkHtml;
+            
+            // 모달 열 때 주소에 #modal 추가
+            history.pushState(null, null, '#modal');
+            document.getElementById('viewModal').style.display = 'flex';
+        });
+    }
+
+    function closeViewModal() { 
+        document.getElementById('viewModal').style.display = 'none'; 
+        // X버튼을 누르면 주소를 뒤로 돌림 (popstate 자동 유발)
+        if (location.hash === '#modal') history.back();
+    }
+
+    function transferToEdit() { 
+        const id = Number(document.getElementById('viewIdHidden').value); 
+        document.getElementById('viewModal').style.display = 'none';
+        openEditPopup(id, true); // true = View에서 넘어옴
+    }
+
+    function openEditPopup(id, isTransfer = false) {
+        getMemo(id).then(m => {
+            if(!m) return;
+            document.getElementById('editId').value = m.id;
+            document.getElementById('editTitle').value = m.title;
+            document.getElementById('editDate').value = strToInputDate(m.dateStr);
+            
+            editSelectedTags = new Set(getTagsFromMemo(m));
+            renderTagSelector('editTagContainer', editSelectedTags);
+
+            const links = getLinksFromMemo(m);
+            const container = document.getElementById('editLinkContainer');
+            container.innerHTML = '';
+            if(links.length > 0) {
+                links.forEach(l => addLinkField('editLinkContainer', l));
+            } else {
+                addLinkField('editLinkContainer'); 
+            }
+
+            document.getElementById('editContent').innerHTML = m.content;
+            
+            // View에서 넘어온 게 아니면 새로 #modal 추가
+            if (!isTransfer) history.pushState(null, null, '#modal');
+            document.getElementById('editPopup').style.display = 'block';
+        });
+    }
+
+    function closeEditPopup() { 
+        document.getElementById('editPopup').style.display = 'none'; 
+        if (location.hash === '#modal') history.back();
+    }
+
+    function openTagManager() { 
+        renderTagListModal(); 
+        history.pushState(null, null, '#modal');
+        document.getElementById('tagManagerModal').style.display = 'flex'; 
+    }
+    
+    function closeTagManager() { 
+        document.getElementById('tagManagerModal').style.display = 'none'; 
+        if (location.hash === '#modal') history.back();
+    }
+
+    // 삭제 완료 후 X버튼 누른 것과 동일하게 처리
+    function deleteFromView() {
+        const id = Number(document.getElementById('viewIdHidden').value);
+        if(confirm('삭제?')) {
+            db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(id).onsuccess = () => {
+                alert('삭제됨'); 
+                document.getElementById('viewModal').style.display = 'none'; 
+                if (location.hash === '#modal') history.back();
+                setTimeout(() => { renderMemos(true); renderCalendar(); }, 100);
+            };
+        }
+    }
+
+    // 수정 완료 후 X버튼 누른 것과 동일하게 처리
+    async function saveEditedMemo() {
+        const id = Number(document.getElementById('editId').value);
+        const title = document.getElementById('editTitle').value;
+        const finalContent = document.getElementById('editContent').innerHTML;
+        const tags = Array.from(editSelectedTags);
+        const links = collectLinks('editLinkContainer');
+        const dateVal = document.getElementById('editDate').value; 
+        
+        const updatedMemo = { 
+            id: id, 
+            dateStr: inputDateToStr(dateVal), 
+            title: title, 
+            tags: tags, 
+            content: finalContent, 
+            links: links 
+        };
+        
+        db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(updatedMemo).onsuccess = () => {
+            alert('수정되었습니다!'); 
+            document.getElementById('editPopup').style.display = 'none'; 
+            if (location.hash === '#modal') history.back();
+            setTimeout(() => { renderMemos(true); renderCalendar(); }, 100);
+        };
+    }
+
+    async function saveNewMemo() {
+        const title = document.getElementById('inputTitle').value;
+        const finalContent = document.getElementById('inputContent').innerHTML;
+        const tags = Array.from(inputSelectedTags);
+        const links = collectLinks('inputLinkContainer');
+        const dateVal = document.getElementById('inputDate').value;
+        const pureText = document.getElementById('inputContent').innerText.trim();
+        const hasImg = finalContent.includes('<img');
+        const hasFile = finalContent.includes('file-attachment');
+
+        if(!title && !pureText && !hasImg && !hasFile) return alert('내용 필요');
+        
+        const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
+        store.add({
+            id: Date.now(),
+            dateStr: inputDateToStr(dateVal), 
+            title: title || "무제",
+            tags: tags, 
+            content: finalContent, 
+            links: links 
+        }).onsuccess = () => {
+            alert('저장되었습니다!');
+            document.getElementById('inputTitle').value = "";
+            document.getElementById('inputContent').innerHTML = ""; 
+            document.getElementById('inputLinkContainer').innerHTML = "";
+            addLinkField('inputLinkContainer');
+            document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
+            inputSelectedTags.clear();
+            renderTagSelector('inputTagContainer', inputSelectedTags);
+            switchTab('calendar'); 
+        };
+    }
+
+    // --- 나머지 기능 코드는 이전과 동일합니다 ---
     function renderTagListModal() { document.getElementById('tagListDisplay').innerHTML = myTags.map(t => `<span class="tag-item">${t} <span class="tag-del-btn" onclick="removeTag('${t}')">×</span></span>`).join(''); }
     function addNewTag() { const val = document.getElementById('newTagInput').value.trim(); if(!val) return; if(!myTags.includes(val)) { myTags.push(val); saveTags(); document.getElementById('newTagInput').value = ''; renderTagListModal(); updateTagSelects(); } }
     
     function removeTag(tag) { 
         if(confirm('삭제합니까?')) { 
             myTags = myTags.filter(t => t !== tag); 
-            saveTags(); 
-            renderTagListModal(); 
-            updateTagSelects(); 
+            saveTags(); renderTagListModal(); updateTagSelects(); 
         } 
     }
     function saveTags() { localStorage.setItem('myTags', JSON.stringify(myTags)); }
@@ -466,7 +640,6 @@
         const curFilter = document.getElementById('listFilter').value;
         document.getElementById('listFilter').innerHTML = `<option value="all">전체보기</option>` + opts;
         document.getElementById('listFilter').value = curFilter;
-
         renderTagSelector('inputTagContainer', inputSelectedTags);
         renderTagSelector('editTagContainer', editSelectedTags);
     }
@@ -475,20 +648,14 @@
         const container = document.getElementById(containerId);
         const div = document.createElement('div');
         div.className = 'link-row';
-        div.innerHTML = `
-            <input type="text" class="link-input" placeholder="https://..." value="${value}">
-            <button class="btn-del-link" onclick="this.parentElement.remove()" title="링크 삭제">-</button>
-        `;
+        div.innerHTML = `<input type="text" class="link-input" placeholder="https://..." value="${value}"><button class="btn-del-link" onclick="this.parentElement.remove()" title="링크 삭제">-</button>`;
         container.appendChild(div);
     }
 
     function collectLinks(containerId) {
         const inputs = document.querySelectorAll(`#${containerId} .link-input`);
         const links = [];
-        inputs.forEach(inp => {
-            const val = inp.value.trim();
-            if(val) links.push(val);
-        });
+        inputs.forEach(inp => { const val = inp.value.trim(); if(val) links.push(val); });
         return links;
     }
 
@@ -516,31 +683,13 @@
         tx.oncomplete = () => { alert("삭제됨"); toggleSelectMode(); renderMemos(true); renderCalendar(); };
     }
 
-    function switchTab(tab) {
-        window.scrollTo(0, 0); 
-        document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
-        document.getElementById('tab-'+tab).classList.add('active');
-        const tabs = ['calendar','list','write','data'];
-        document.querySelectorAll('.nav-item')[tabs.indexOf(tab)].classList.add('active');
-        
-        if(tab === 'list') renderMemos(true);
-        if(tab === 'calendar') {
-            currDate = new Date(); 
-            renderCalendar();      
-        }
-    }
-
     function strToInputDate(str) {
         if(!str) return "";
         const digits = str.replace(/\D/g, ''); 
         if(digits.length < 8) {
             const parts = str.match(/\d+/g);
             if(!parts || parts.length < 3) return "";
-            const y = parts[0];
-            const m = parts[1].padStart(2,'0');
-            const d = parts[2].padStart(2,'0');
-            return `${y}-${m}-${d}`;
+            return `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
         }
         return `${digits.slice(0,4)}-${digits.slice(4,6)}-${digits.slice(6,8)}`;
     }
@@ -553,10 +702,7 @@
         if(!str) return "";
         const parts = str.match(/\d+/g);
         if(!parts || parts.length < 3) return "";
-        const y = parts[0];
-        const m = parts[1].padStart(2,'0');
-        const d = parts[2].padStart(2,'0');
-        return `${y}${m}${d}`;
+        return `${parts[0]}${parts[1].padStart(2,'0')}${parts[2].padStart(2,'0')}`;
     }
 
     function openWriteWithDate(y, m, d) {
@@ -574,7 +720,7 @@
         for(let i=0; i<files.length; i++) {
             const file = files[i];
             if (file.size > MAX_SIZE) {
-                alert(`[경고] '${file.name}' 파일이 너무 큽니다 (10MB 초과).\n앱 속도 저하의 원인이 되므로, 구글 드라이브 등에 올리시고 링크를 활용하세요.`);
+                alert(`[경고] '${file.name}' 파일이 너무 큽니다 (10MB 초과).`);
                 continue; 
             }
             if (file.type.startsWith('image/')) {
@@ -620,53 +766,6 @@
         return [];
     }
 
-    async function saveNewMemo() {
-        const title = document.getElementById('inputTitle').value;
-        const finalContent = document.getElementById('inputContent').innerHTML;
-        const tags = Array.from(inputSelectedTags);
-        const links = collectLinks('inputLinkContainer');
-        const dateVal = document.getElementById('inputDate').value;
-        const pureText = document.getElementById('inputContent').innerText.trim();
-        const hasImg = finalContent.includes('<img');
-        const hasFile = finalContent.includes('file-attachment');
-
-        if(!title && !pureText && !hasImg && !hasFile) return alert('내용 필요');
-        
-        const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
-        store.add({
-            id: Date.now(),
-            dateStr: inputDateToStr(dateVal), 
-            title: title || "무제",
-            tags: tags, 
-            content: finalContent, 
-            links: links 
-        }).onsuccess = () => {
-            alert('저장되었습니다!');
-            document.getElementById('inputTitle').value = "";
-            document.getElementById('inputContent').innerHTML = ""; 
-            
-            document.getElementById('inputLinkContainer').innerHTML = "";
-            addLinkField('inputLinkContainer');
-
-            document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
-            
-            inputSelectedTags.clear();
-            renderTagSelector('inputTagContainer', inputSelectedTags);
-
-            switchTab('calendar'); 
-        };
-    }
-
-    function transferToEdit() { const id = Number(document.getElementById('viewIdHidden').value); closeViewModal(); openEditPopup(id); }
-    function deleteFromView() {
-        const id = Number(document.getElementById('viewIdHidden').value);
-        if(confirm('삭제?')) {
-            db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(id).onsuccess = () => {
-                alert('삭제됨'); closeViewModal(); renderMemos(true); renderCalendar();
-            };
-        }
-    }
-
     async function shareCurrentMemo() {
         const id = Number(document.getElementById('viewIdHidden').value);
         const m = await getMemo(id);
@@ -686,54 +785,6 @@
             navigator.clipboard.writeText(clipText).then(() => { alert('클립보드에 복사되었습니다!\n(카톡 등에 붙여넣기 하세요)'); });
         }
     }
-
-    function openEditPopup(id) {
-        getMemo(id).then(m => {
-            if(!m) return;
-            document.getElementById('editId').value = m.id;
-            document.getElementById('editTitle').value = m.title;
-            document.getElementById('editDate').value = strToInputDate(m.dateStr);
-            
-            editSelectedTags = new Set(getTagsFromMemo(m));
-            renderTagSelector('editTagContainer', editSelectedTags);
-
-            const links = getLinksFromMemo(m);
-            const container = document.getElementById('editLinkContainer');
-            container.innerHTML = '';
-            if(links.length > 0) {
-                links.forEach(l => addLinkField('editLinkContainer', l));
-            } else {
-                addLinkField('editLinkContainer'); 
-            }
-
-            document.getElementById('editContent').innerHTML = m.content;
-            document.getElementById('editPopup').style.display = 'block';
-        });
-    }
-
-    async function saveEditedMemo() {
-        const id = Number(document.getElementById('editId').value);
-        const title = document.getElementById('editTitle').value;
-        const finalContent = document.getElementById('editContent').innerHTML;
-        const tags = Array.from(editSelectedTags);
-        const links = collectLinks('editLinkContainer');
-        const dateVal = document.getElementById('editDate').value; 
-        
-        const original = await getMemo(id);
-        const updatedMemo = { 
-            id: id, 
-            dateStr: inputDateToStr(dateVal), 
-            title: title, 
-            tags: tags, 
-            content: finalContent, 
-            links: links 
-        };
-        
-        db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(updatedMemo).onsuccess = () => {
-            alert('수정되었습니다!'); closeEditPopup(); renderMemos(true); renderCalendar();
-        };
-    }
-    function closeEditPopup() { document.getElementById('editPopup').style.display = 'none'; }
 
     function checkDateRange(targetStr, start, end) {
         if(!targetStr) return false;
@@ -932,30 +983,6 @@
         currentSelectedDateKey = targetKey;
         renderCalendar(); 
     }
-
-    async function openViewModal(id) {
-        const m = await getMemo(id);
-        if(!m) return;
-        document.getElementById('viewIdHidden').value = m.id;
-        document.getElementById('viewTitle').innerText = m.title;
-        document.getElementById('viewDate').innerText = m.dateStr;
-        
-        const tagsHtml = getTagsFromMemo(m).map(t => `<span class="mini-tag" style="background:var(--accent-color); color:white; padding:5px 10px; font-size:0.85rem;">${t}</span>`).join('');
-        document.getElementById('viewTagList').innerHTML = tagsHtml;
-        
-        document.getElementById('viewBody').innerHTML = m.content;
-        
-        const links = getLinksFromMemo(m);
-        let linkHtml = '';
-        if(links.length > 0) {
-            linkHtml = links.map((l, i) => 
-                `<a href="${l}" target="_blank" style="display:block; background:#f1f5f9; padding:12px; border-radius:8px; text-decoration:none; color:#2980b9; font-weight:bold; margin-bottom:5px;">🔗 관련 링크 ${i+1} 바로가기</a>`
-            ).join('');
-        }
-        document.getElementById('viewLink').innerHTML = linkHtml;
-        document.getElementById('viewModal').style.display = 'flex';
-    }
-    function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
     
     function getMemo(id) { return new Promise(r => db.transaction(STORE_NAME).objectStore(STORE_NAME).get(id).onsuccess = e => r(e.target.result)); }
     function getAll() { return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result)); }
@@ -984,7 +1011,7 @@
             }
             
             const backupObj = {
-                version: "v13.15", 
+                version: "v13.16", 
                 savedAt: new Date().toISOString(),
                 memos: targetMemos,
                 tags: myTags 
