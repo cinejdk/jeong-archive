@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.12</title>
+    <title>JDM Archive v13.13</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
@@ -136,7 +136,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.12</h1>
+    <h1>JDM Archive v13.13</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; padding:5px; color:rgba(255,255,255,0.8);">🔒</button>
 </header>
 
@@ -313,6 +313,28 @@
 </nav>
 
 <script>
+    // [NEW 1] 로그인 세션 유지 (링크 이동 후 복귀 시 자동 로그인)
+    window.addEventListener('DOMContentLoaded', () => {
+        if(sessionStorage.getItem('jdm_auth') === 'true') {
+            document.getElementById('loginOverlay').style.display = 'none';
+        }
+    });
+
+    function getPassword() { return localStorage.getItem('appPass') || "0403"; }
+    function checkPass() {
+        if(document.getElementById('passInput').value === getPassword()) {
+            document.getElementById('loginOverlay').style.opacity = '0';
+            setTimeout(() => { document.getElementById('loginOverlay').style.display = 'none'; }, 300);
+            sessionStorage.setItem('jdm_auth', 'true'); // 세션 저장
+        } else { 
+            alert('비밀번호가 틀렸습니다.'); document.getElementById('passInput').value=''; 
+        }
+    }
+    function changePassword() {
+        const cur = prompt("현재 비밀번호:"); if(cur!==getPassword()) return alert("틀렸습니다.");
+        const newP = prompt("새 비밀번호:"); if(newP) { localStorage.setItem('appPass', newP); alert("변경 완료."); }
+    }
+
     const DB_NAME = 'JeongArchiveDB_v9';
     const STORE_NAME = 'memos';
     let db;
@@ -325,7 +347,6 @@
     let inputSelectedTags = new Set();
     let editSelectedTags = new Set();
 
-    // [NEW] 페이징 관련 변수 설정
     let currentFilteredMemos = [];
     let currentRenderPage = 1;
     const ITEMS_PER_PAGE = 15;
@@ -343,16 +364,45 @@
         '2026-10-09': '한글날', '2026-12-25': '성탄절'
     };
 
-    function getPassword() { return localStorage.getItem('appPass') || "0403"; }
-    function checkPass() {
-        if(document.getElementById('passInput').value === getPassword()) {
-            document.getElementById('loginOverlay').style.opacity = '0';
-            setTimeout(() => { document.getElementById('loginOverlay').style.display = 'none'; }, 300);
-        } else { alert('비밀번호가 틀렸습니다.'); document.getElementById('passInput').value=''; }
-    }
-    function changePassword() {
-        const cur = prompt("현재 비밀번호:"); if(cur!==getPassword()) return alert("틀렸습니다.");
-        const newP = prompt("새 비밀번호:"); if(newP) { localStorage.setItem('appPass', newP); alert("변경 완료."); }
+    // [NEW 2] 모바일 뒤로가기 버튼(History API) 완벽 제어
+    function setupMobileBackButton() {
+        history.replaceState({ page: 'base' }, '', '#base');
+        history.pushState({ page: 'main' }, '', '#main');
+
+        window.addEventListener('popstate', function(event) {
+            // 1. 모달 창이 열려있는지 확인
+            const viewOpen = document.getElementById('viewModal').style.display === 'flex';
+            const editOpen = document.getElementById('editPopup').style.display === 'block';
+            const tagOpen = document.getElementById('tagManagerModal').style.display === 'flex';
+            
+            if (viewOpen || editOpen || tagOpen) {
+                // 모달 닫기
+                document.getElementById('viewModal').style.display = 'none';
+                document.getElementById('editPopup').style.display = 'none';
+                document.getElementById('tagManagerModal').style.display = 'none';
+                
+                // 앱 종료 방지를 위해 상태 다시 밀어넣기
+                history.pushState({ page: 'main' }, '', '#main');
+                return;
+            }
+
+            // 2. 다른 탭에 있다면 홈(달력)으로 이동
+            const isHome = document.getElementById('tab-calendar').classList.contains('active');
+            if (!isHome) {
+                switchTab('calendar');
+                history.pushState({ page: 'main' }, '', '#main');
+                return;
+            }
+
+            // 3. 홈 탭이고 모달도 없다면 종료 확인
+            if (confirm("JDM Archive를 종료하시겠습니까?")) {
+                // 실제 브라우저 뒤로가기 실행 (앱 닫힘)
+                history.back(); 
+            } else {
+                // 종료 취소 시 상태 유지
+                history.pushState({ page: 'main' }, '', '#main');
+            }
+        });
     }
 
     const request = indexedDB.open(DB_NAME, 1);
@@ -365,6 +415,7 @@
         addLinkField('inputLinkContainer');
         renderCalendar(); 
         renderMemos(true); 
+        setupMobileBackButton(); // 앱 초기화 시 뒤로가기 제어 가동
     }
 
     function openTagManager() { renderTagListModal(); document.getElementById('tagManagerModal').style.display = 'flex'; }
@@ -444,8 +495,6 @@
         const btn = document.getElementById('selectModeBtn');
         const bulkBar = document.getElementById('bulkDeleteBar');
         if(isSelectionMode) { btn.classList.add('active'); bulkBar.style.display = 'block'; updateBulkBar(); } else { btn.classList.remove('active'); bulkBar.style.display = 'none'; }
-        
-        // 현재 로딩된 페이지만 다시 렌더링 (속도 유지)
         renderMemos(false); 
     }
     function toggleSelectCard(id) { if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id); renderMemos(false); updateBulkBar(); }
@@ -685,7 +734,6 @@
         return targetNum >= startNum && targetNum <= endNum;
     }
 
-    // [NEW] 최적화된 목록 렌더링 (Lazy Load 방식)
     async function renderMemos(resetPage = true) {
         if(resetPage) {
             currentRenderPage = 1;
@@ -700,7 +748,6 @@
         
         memos.sort((a,b) => b.id - a.id);
         
-        // 필터링된 전체 리스트 확보
         currentFilteredMemos = memos.filter(m => {
             const memoTags = getTagsFromMemo(m);
             if(filter !== 'all' && !memoTags.includes(filter)) return false;
@@ -714,7 +761,6 @@
         if(resetPage) {
             renderMemoPage();
         } else {
-            // 선택모드(선택/해제) 등 유지 시 전체 현재 페이지까지만 재렌더링
             document.getElementById('memoList').innerHTML = '';
             const limit = currentRenderPage * ITEMS_PER_PAGE;
             const pageMemos = currentFilteredMemos.slice(0, limit);
@@ -723,7 +769,6 @@
         }
     }
 
-    // [NEW] 한 페이지 분량만 DOM에 추가
     function renderMemoPage() {
         const startIndex = (currentRenderPage - 1) * ITEMS_PER_PAGE;
         const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -733,13 +778,11 @@
         updateLoadMoreBtn(endIndex);
     }
 
-    // [NEW] 더보기 버튼 클릭 시 다음 페이지 렌더링
     function loadMoreMemos() {
         currentRenderPage++;
         renderMemoPage();
     }
 
-    // [NEW] 실제 목록 생성 함수
     function appendMemosToList(memosToAppend) {
         const list = document.getElementById('memoList');
         let htmlStr = '';
@@ -774,7 +817,6 @@
         list.innerHTML += htmlStr;
     }
 
-    // [NEW] 더보기 버튼 숨김/표시 처리
     function updateLoadMoreBtn(currentIndex) {
         const btn = document.getElementById('loadMoreContainer');
         if (currentIndex < currentFilteredMemos.length) btn.style.display = 'block';
@@ -911,7 +953,6 @@
     function compressImage(file) { return new Promise(r => { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); let w=img.width, h=img.height; if(w>1024) { h*=1024/w; w=1024; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); r(c.toDataURL('image/jpeg',0.7)); }; img.src = e.target.result; }; reader.readAsDataURL(file); }); }
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
     
-    // [NEW] 백업 시 기간 설정 가능하도록 변경
     function backupData() { 
         getAll().then(memos => { 
             if(memos.length==0 && myTags.length == 0) return alert('데이터 없음'); 
@@ -934,7 +975,7 @@
             }
             
             const backupObj = {
-                version: "v13.12", 
+                version: "v13.13", 
                 savedAt: new Date().toISOString(),
                 memos: targetMemos,
                 tags: myTags 
