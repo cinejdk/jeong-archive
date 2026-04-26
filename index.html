@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.30</title>
+    <title>JDM Archive v13.31</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
@@ -66,6 +66,7 @@
 
         input, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; }
 
+        /* 3단계 계층형 UI 요소 */
         .tag-breadcrumb { font-size: 0.8rem; color: #888; margin-bottom: 4px; display: block; line-height: 1.4; }
         .tag-breadcrumb span { color: var(--primary-color); font-weight: 600; }
         
@@ -138,7 +139,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.30</h1>
+    <h1>JDM Archive v13.31</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:white;">🔒</button>
 </header>
 
@@ -227,7 +228,7 @@
             <div style="background:#fff3cd; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #ffc107; text-align:left;">
                 <strong style="color:#d35400;">📂 백업 파일로 복원</strong>
                 <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%; margin-top:10px;">
-                <p style="font-size:0.8rem; color:#666; margin-top:5px; margin-bottom:0;">※ 구버전 백업을 불러와도 자동으로 최신 계층 규격에 맞게 변환됩니다.</p>
+                <p style="font-size:0.8rem; color:#666; margin-top:5px; margin-bottom:0;">※ 구버전 백업을 불러와도 자동으로 최신 규격에 맞게 변환됩니다.</p>
             </div>
             <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 앱 초기화</button>
         </div>
@@ -540,7 +541,6 @@
         document.getElementById('listFilter').value = curFilter;
     }
 
-    // --- [v13.30 핵심] 지식 구조 관리 마스터 엔진 ---
     function openTagManager() {
         const display = document.getElementById('tagTreeDisplay');
         display.innerHTML = '';
@@ -589,7 +589,6 @@
         }
     }
 
-    // 1. 대/중분류 이동 기능
     function moveMCat(l, m) {
         const lCats = Object.keys(tagTree);
         let msg = `'${m}'을(를) 어느 대분류로 이동할까요?\n(번호를 입력하세요)\n\n`;
@@ -633,13 +632,12 @@
             tagTree[target.l][target.m].push(t);
             
             saveTagTree(); openTagManager(); updateTagSelectors(); renderMemos(true);
-            alert(`'${t}' 태그가 [${target.m}] 안으로 이동되었습니다.\n(과거에 작성된 메모 경로도 자동 적용됩니다.)`);
+            alert(`'${t}' 태그가 [${target.m}] 안으로 이동되었습니다.`);
         } else {
             alert('잘못된 번호입니다.');
         }
     }
 
-    // 2. 이름 변경 & 연쇄 업데이트
     function renameLCat(oldL) {
         let newL = prompt(`'${oldL}'의 새 대분류 이름을 입력하세요:`, oldL);
         if(newL && newL.trim() && newL.trim() !== oldL) {
@@ -671,12 +669,10 @@
             const allTags = Object.values(tagTree).flatMap(x => Object.values(x).flat());
             if(allTags.includes(newT)) return alert('이미 존재하는 태그입니다.');
             
-            // 1. 트리 업데이트
             const idx = tagTree[l][m].indexOf(oldT);
             if(idx !== -1) tagTree[l][m][idx] = newT;
             saveTagTree();
 
-            // 2. 과거 메모 연쇄 업데이트
             const tx = db.transaction(STORE_NAME, 'readwrite');
             const store = tx.objectStore(STORE_NAME);
             const req = store.getAll();
@@ -717,12 +713,8 @@
     function removeSTag(l, m, t) { if(confirm('이 태그를 계층 목록에서 지우시겠습니까?\n(기존 메모의 데이터는 지워지지 않습니다)')) { tagTree[l][m] = tagTree[l][m].filter(i=>i!==t); saveTagTree(); openTagManager(); updateTagSelectors(); } }
     
     function closeTagManager() { document.getElementById('tagManagerModal').style.display = 'none'; }
-    function saveAndCloseTagManager() {
-        closeTagManager();
-        alert('모든 구조 변경사항이 안전하게 저장 및 적용되었습니다.');
-    }
+    function saveAndCloseTagManager() { closeTagManager(); alert('모든 구조 변경사항이 안전하게 저장 및 적용되었습니다.'); }
 
-    // --- 메모 보기, 쓰기 로직 ---
     async function openViewModal(id) {
         try {
             let m = await getMemo(id);
@@ -848,8 +840,9 @@
         return targetNum >= startNum && targetNum <= endNum;
     }
 
+    // [v13.31 핵심 버그 수정] 화면을 지우는 코드가 무조건 실행되도록 수정!
     async function renderMemos(resetPage = true) {
-        if(resetPage) { currentRenderPage = 1; document.getElementById('memoList').innerHTML = ''; }
+        if(resetPage) { currentRenderPage = 1; }
         const memos = await getAll();
         const filter = document.getElementById('listFilter').value;
         const key = document.getElementById('searchInput').value;
@@ -869,7 +862,7 @@
         const limit = currentRenderPage * ITEMS_PER_PAGE;
         const pageMemos = currentFilteredMemos.slice(0, limit);
         
-        if(resetPage) document.getElementById('memoList').innerHTML = '';
+        let listHtml = '';
         
         pageMemos.forEach(m => {
             let mContent = m.content || "";
@@ -882,9 +875,10 @@
             const pathsHtml = safeTags.map(t => `<span class="mini-tag-path">${getTagPath(t)}</span>`).join(' ');
             
             const isSelected = selectedIds.has(String(m.id));
+            
             const action = isSelectionMode ? `toggleSelectCard('${m.id}')` : `openViewModal('${m.id}')`;
 
-            document.getElementById('memoList').innerHTML += `
+            listHtml += `
             <div class="memo-card ${isSelected?'selected':''} ${isSelectionMode?'selection-mode':''}" onclick="${action}">
                 <div class="check-circle"></div>
                 <div style="display:flex; justify-content:space-between; align-items:center; color:#888; font-size:0.8rem; margin-bottom:5px;">
@@ -896,12 +890,23 @@
             </div>`;
         });
         
+        // 반복문이 끝난 뒤 한 번에 덮어씌움 (속도 증가 & 버그 완벽 해결)
+        document.getElementById('memoList').innerHTML = listHtml;
         document.getElementById('loadMoreContainer').style.display = (limit < currentFilteredMemos.length) ? 'block' : 'none';
     }
 
     function loadMoreMemos() { currentRenderPage++; renderMemos(false); }
 
-    function toggleSelectMode() { isSelectionMode = !isSelectionMode; selectedIds.clear(); const bulk = document.getElementById('bulkDeleteBar'); document.getElementById('selectModeBtn').classList.toggle('active'); bulk.style.display = isSelectionMode ? 'block' : 'none'; document.getElementById('selectedCount').innerText='0'; renderMemos(false); }
+    function toggleSelectMode() { 
+        isSelectionMode = !isSelectionMode; 
+        selectedIds.clear(); 
+        const bulk = document.getElementById('bulkDeleteBar'); 
+        document.getElementById('selectModeBtn').classList.toggle('active'); 
+        bulk.style.display = isSelectionMode ? 'block' : 'none'; 
+        document.getElementById('selectedCount').innerText='0'; 
+        renderMemos(false); 
+    }
+    
     function toggleSelectCard(id) { 
         const strId = String(id);
         if(selectedIds.has(strId)) selectedIds.delete(strId); 
@@ -1016,7 +1021,7 @@
             }
             
             const backupObj = {
-                version: "v13.30", 
+                version: "v13.31", 
                 savedAt: new Date().toISOString(),
                 memos: targetMemos,
                 tagTree: tagTree
