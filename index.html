@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.24</title>
+    <title>JDM Archive v13.25</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
@@ -24,7 +24,7 @@
         #loginOverlay input { width: 220px; padding: 15px; font-size: 1.5rem; text-align: center; border-radius: 12px; border: none; margin-top: 10px; letter-spacing: 5px; }
         #loginOverlay button { margin-top: 20px; padding: 12px 40px; background: #c0392b; color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
 
-        /* 달력 스타일 (PC 이벤트 포함) */
+        /* 달력 스타일 */
         .calendar-wrapper { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e0e0e0; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); width: 100%; }
         .day-header { text-align: center; font-size: 0.9rem; color: #555; padding: 12px 0; font-weight: 600; background-color: #f8f9fa; border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; }
@@ -43,12 +43,14 @@
         .holiday-name { font-size: 0.7rem; color: var(--holiday-color); font-weight: bold; margin-bottom: 2px; text-align: center; word-break: keep-all; line-height: 1.1; }
         .cal-day.sun .day-num, .cal-day.holiday .day-num { color: var(--holiday-color); }
         .cal-day.sat .day-num { color: var(--sat-color); }
+        
         .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; display: block; }
         .cal-events-pc { display: none; width: 100%; margin-top: 2px; padding: 0 2px; box-sizing: border-box; }
         
         @media (min-width: 768px) {
             .cal-day { aspect-ratio: auto; min-height: 130px; height: 100%; align-items: flex-start; padding: 8px; }
-            .dot { display: none; } .cal-events-pc { display: block; }
+            .dot { display: none !important; } 
+            .cal-events-pc { display: block !important; }
             .cal-event-item { font-size: 0.8rem; background: #f1f3f5; color: #495057; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; border-left: 3px solid var(--accent-color); cursor: pointer; transition: background 0.2s; }
             .cal-event-item:hover { background: #e9ecef; color: #000; }
             .more-items { font-size: 0.75rem; color: #888; text-align: right; padding-right: 5px; margin-top: 2px; }
@@ -134,7 +136,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.24</h1>
+    <h1>JDM Archive v13.25</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:white;">🔒</button>
 </header>
 
@@ -223,7 +225,7 @@
             <div style="background:#fff3cd; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #ffc107; text-align:left;">
                 <strong style="color:#d35400;">📂 백업 파일로 복원</strong>
                 <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%; margin-top:10px;">
-                <p style="font-size:0.8rem; color:#666; margin-top:5px; margin-bottom:0;">※ 이전 버전 백업을 불러와도 자동으로 계층 분류가 유지/적용됩니다.</p>
+                <p style="font-size:0.8rem; color:#666; margin-top:5px; margin-bottom:0;">※ 구버전 백업을 불러와도 자동으로 최신 규격에 맞게 변환됩니다.</p>
             </div>
             <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 앱 초기화</button>
         </div>
@@ -310,8 +312,21 @@
 </nav>
 
 <script>
-    // --- 날짜 규격화 함수 (버그 수정의 핵심) ---
-    // 어떤 이상한 날짜 문자열이 들어와도 무조건 YYYYMMDD 8자리로 완벽하게 변환해줍니다.
+    // --- [v13.25 초강력 호환성 모듈] 과거의 어떤 이상한 데이터가 들어와도 안전하게 변환 ---
+    function getTagsFromMemo(m) {
+        if (m.tags && Array.isArray(m.tags)) return m.tags;
+        if (m.tags && typeof m.tags === 'string') return [m.tags];
+        if (m.tag) return [m.tag]; // 구버전(v9 이하) 찌꺼기 완벽 대응
+        return [];
+    }
+
+    function getLinksFromMemo(m) {
+        if (m.links && Array.isArray(m.links)) return m.links;
+        if (m.links && typeof m.links === 'string') return [m.links];
+        if (m.link) return [m.link]; 
+        return [];
+    }
+
     function normalizeDate(str) {
         if(!str) return "";
         const parts = str.match(/\d+/g);
@@ -571,19 +586,24 @@
     function removeSTag(l, m, t) { if(confirm('이 태그를 삭제합니까? (기존 메모는 안전합니다)')) { tagTree[l][m] = tagTree[l][m].filter(i=>i!==t); saveTagTree(); openTagManager(); updateTagSelectors(); } }
     function closeTagManager() { document.getElementById('tagManagerModal').style.display = 'none'; }
 
+    // --- [v13.25] 과거 데이터 호환성을 완벽히 갖춘 모달 오픈 ---
     async function openViewModal(id) {
         getMemo(id).then(m => {
             if(!m) return;
             document.getElementById('viewIdHidden').value = m.id;
             document.getElementById('viewTitle').innerText = m.title;
+            document.getElementById('viewDate').innerText = m.dateStr;
             
-            let pathsHtml = (m.tags||[]).map(t => `<div class="mini-tag-path">${getTagPath(t)}</div>`).join(' ');
+            // 안전한 태그 추출기 사용!
+            const safeTags = getTagsFromMemo(m);
+            let pathsHtml = safeTags.map(t => `<div class="mini-tag-path">${getTagPath(t)}</div>`).join(' ');
             document.getElementById('viewTagPath').innerHTML = pathsHtml;
             
             document.getElementById('viewBody').innerHTML = m.content;
             
-            let links = m.links || [];
-            document.getElementById('viewLink').innerHTML = links.map((l,i) => `<a href="${l}" target="_blank" style="display:block; background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:5px; text-decoration:none; color:#2980b9;">🔗 관련 자료 보기</a>`).join('');
+            // 안전한 링크 추출기 사용!
+            const safeLinks = getLinksFromMemo(m);
+            document.getElementById('viewLink').innerHTML = safeLinks.map((l,i) => `<a href="${l}" target="_blank" style="display:block; background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:5px; text-decoration:none; color:#2980b9;">🔗 관련 자료 보기</a>`).join('');
             
             document.getElementById('viewModal').style.display = 'flex';
         });
@@ -599,13 +619,15 @@
             document.getElementById('editTitle').value = m.title;
             document.getElementById('editDate').value = strToInputDate(m.dateStr);
             
-            editSelectedTags = new Set(m.tags||[]);
+            // 안전한 태그 추출기 사용!
+            editSelectedTags = new Set(getTagsFromMemo(m));
             renderTagSelector('editTagContainer', editSelectedTags);
 
-            const links = m.links || [];
+            // 안전한 링크 추출기 사용!
+            const safeLinks = getLinksFromMemo(m);
             const container = document.getElementById('editLinkContainer');
             container.innerHTML = '';
-            if(links.length > 0) links.forEach(l => addLinkField('editLinkContainer', l));
+            if(safeLinks.length > 0) safeLinks.forEach(l => addLinkField('editLinkContainer', l));
             else addLinkField('editLinkContainer'); 
 
             document.getElementById('editContent').innerHTML = m.content;
@@ -667,7 +689,6 @@
 
     function checkDateRange(targetStr, start, end) {
         if(!targetStr) return false;
-        // [버그 수정] 정교한 normalizeDate를 사용해서 8자리 숫자로 안전하게 변환
         const targetNum = parseInt(normalizeDate(targetStr)); 
         const startNum = start ? parseInt(start.replace(/-/g, '')) : 0;
         const endNum = end ? parseInt(end.replace(/-/g, '')) : 99999999;
@@ -685,8 +706,8 @@
         memos.sort((a,b) => b.id - a.id);
         
         currentFilteredMemos = memos.filter(m => {
-            const tags = m.tags || [];
-            if(filter !== 'all' && !tags.includes(filter)) return false;
+            const safeTags = getTagsFromMemo(m);
+            if(filter !== 'all' && !safeTags.includes(filter)) return false;
             if(key && !m.title.includes(key) && !m.content.includes(key)) return false;
             if(sDate || eDate) if(!checkDateRange(m.dateStr, sDate, eDate)) return false;
             return true;
@@ -695,15 +716,17 @@
         const limit = currentRenderPage * ITEMS_PER_PAGE;
         const pageMemos = currentFilteredMemos.slice(0, limit);
         
+        // [v13.25] 리스트 지워짐 버그 완벽 수정
         if(resetPage) document.getElementById('memoList').innerHTML = '';
-        else document.getElementById('memoList').innerHTML = ''; 
         
         pageMemos.forEach(m => {
             let summary = m.content.replace(/<[^>]*>?/gm, '').substring(0, 40) + "...";
             let hasImg = m.content.includes('<img') ? '📷' : '';
             let hasFile = m.content.includes('file-attachment') ? '📎' : '';
-            let hasLink = (m.links && m.links.length > 0) ? `🔗(${m.links.length})` : '';
-            const pathsHtml = (m.tags||[]).map(t => `<span class="mini-tag-path">${getTagPath(t)}</span>`).join(' ');
+            const safeLinks = getLinksFromMemo(m);
+            let hasLink = safeLinks.length > 0 ? `🔗(${safeLinks.length})` : '';
+            const safeTags = getTagsFromMemo(m);
+            const pathsHtml = safeTags.map(t => `<span class="mini-tag-path">${getTagPath(t)}</span>`).join(' ');
             
             const isSelected = selectedIds.has(m.id);
             const action = isSelectionMode ? `toggleSelectCard(${m.id})` : `openViewModal(${m.id})`;
@@ -747,7 +770,6 @@
         
         const memos = await getAll();
         for(let d=1; d<=last; d++) {
-            // [버그 수정] 정교한 normalizeDate 사용
             const targetStr = `${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
             const isoStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; 
             
@@ -758,7 +780,7 @@
             if(y===new Date().getFullYear() && m===new Date().getMonth() && d===new Date().getDate()) exClass += ' today';
             if(currentSelectedDateKey === targetStr) exClass += ' active-select';
 
-            // [부활] PC 화면에서 달력 안에 메모 제목 표시
+            // PC 화면 이벤트 표시 
             let pcEvents = '';
             const limit = 3;
             dayMemos.slice(0, limit).forEach(dm => { 
@@ -777,7 +799,7 @@
         
         const currentMonthKey = `${y}${String(m+1).padStart(2,'0')}`;
         if (currentSelectedDateKey && currentSelectedDateKey.startsWith(currentMonthKey)) {
-            showDay(currentSelectedDateKey, true); // 리렌더링 시 하단 목록 유지
+            showDay(currentSelectedDateKey, true); 
         } else {
             document.getElementById('calendarMemos').innerHTML = '';
         }
@@ -785,13 +807,11 @@
     
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
     
-    // [부활] 달력 하단에 예쁜 목록 띄워주기
     async function showDay(targetStr, isRefresh = false) {
         currentSelectedDateKey = targetStr;
-        if(!isRefresh) renderCalendar(); // 선택 표시(active-select)를 위해 달력 다시 그림
+        if(!isRefresh) renderCalendar(); 
 
         const memos = await getAll();
-        // [버그 수정] 정교한 normalizeDate 사용
         const target = memos.filter(m => normalizeDate(m.dateStr) === targetStr);
         
         const y = targetStr.substring(0, 4);
@@ -804,7 +824,8 @@
 
         let html = `<div style="text-align:left; background:#fff; padding:15px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.1);"><h3 style="margin:0 0 15px 0; font-size:1.1rem; color:#2c3e50; border-bottom:2px solid var(--accent-color); padding-bottom:8px;">📅 ${fancyDate}</h3>`;
         html += target.map(m => {
-            const pathsHtml = (m.tags||[]).map(t => `<span class="mini-tag-path" style="font-size:0.7rem; padding:2px 6px;">${getTagPath(t)}</span>`).join('');
+            const safeTags = getTagsFromMemo(m);
+            const pathsHtml = safeTags.map(t => `<span class="mini-tag-path" style="font-size:0.7rem; padding:2px 6px;">${getTagPath(t)}</span>`).join('');
             return `<div onclick="openViewModal(${m.id})" style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
                 <div style="margin-bottom:4px;">${pathsHtml}</div>
                 <span style="font-size:1.05rem; font-weight:bold; color:#333;">${m.title}</span>
@@ -833,7 +854,7 @@
             }
             
             const backupObj = {
-                version: "v13.24", 
+                version: "v13.25", 
                 savedAt: new Date().toISOString(),
                 memos: targetMemos,
                 tagTree: tagTree
@@ -890,7 +911,7 @@
     function strToInputDate(str) { const p=str.match(/\d+/g); return p ? `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}` : ''; }
     function inputDateToStr(val) { const p=val.split('-'); return p ? `${p[0]}. ${Number(p[1])}. ${Number(p[2])}.` : ''; }
     function openWriteWithDate(y, m, d) { document.getElementById('inputDate').value = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; switchTab('write'); }
-    async function shareCurrentMemo() { const id = Number(document.getElementById('viewIdHidden').value); const m = await getMemo(id); if(!m) return; const t = m.content.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, ""); const s = {title: m.title, text: `[${m.title}] (${m.dateStr})\n\n${t}\n\n[태그]\n${(m.tags||[]).join(' ')}`}; if(navigator.share) navigator.share(s); else { navigator.clipboard.writeText(`${s.title}\n\n${s.text}`); alert('복사되었습니다.'); } }
+    async function shareCurrentMemo() { const id = Number(document.getElementById('viewIdHidden').value); const m = await getMemo(id); if(!m) return; const t = m.content.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, ""); const safeTags = getTagsFromMemo(m); const s = {title: m.title, text: `[${m.title}] (${m.dateStr})\n\n${t}\n\n[태그]\n${safeTags.join(' ')}`}; if(navigator.share) navigator.share(s); else { navigator.clipboard.writeText(`${s.title}\n\n${s.text}`); alert('복사되었습니다.'); } }
     function compressImage(file) { return new Promise(r => { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); let w=img.width, h=img.height; if(w>1024) { h*=1024/w; w=1024; } c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); r(c.toDataURL('image/jpeg',0.7)); }; img.src = e.target.result; }; reader.readAsDataURL(file); }); }
     async function insertFileToEditor(input, editorId) { const files = input.files; if(files.length === 0) return; const editor = document.getElementById(editorId); for(let i=0; i<files.length; i++) { const file = files[i]; if(file.size > 10*1024*1024) { alert(`크기 초과: ${file.name}`); continue; } if(file.type.startsWith('image/')) { const d = await compressImage(file); const img = document.createElement('img'); img.src = d; editor.appendChild(img); editor.appendChild(document.createElement('br')); } else { const reader = new FileReader(); reader.onload = e => { const a = document.createElement('a'); a.href = e.target.result; a.download = file.name; a.className = 'file-attachment'; a.contentEditable="false"; a.innerText = `📁 ${file.name}`; editor.appendChild(a); editor.appendChild(document.createElement('br')); }; reader.readAsDataURL(file); } } input.value = ''; }
 </script>
