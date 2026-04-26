@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.23</title>
+    <title>JDM Archive v13.24</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
@@ -24,7 +24,7 @@
         #loginOverlay input { width: 220px; padding: 15px; font-size: 1.5rem; text-align: center; border-radius: 12px; border: none; margin-top: 10px; letter-spacing: 5px; }
         #loginOverlay button { margin-top: 20px; padding: 12px 40px; background: #c0392b; color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
 
-        /* 달력 스타일 */
+        /* 달력 스타일 (PC 이벤트 포함) */
         .calendar-wrapper { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e0e0e0; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); width: 100%; }
         .day-header { text-align: center; font-size: 0.9rem; color: #555; padding: 12px 0; font-weight: 600; background-color: #f8f9fa; border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; }
@@ -134,7 +134,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.23</h1>
+    <h1>JDM Archive v13.24</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:white;">🔒</button>
 </header>
 
@@ -171,7 +171,7 @@
         </div>
         <div id="memoList"></div>
         <div id="loadMoreContainer" style="text-align:center; margin-top:20px; display:none;">
-            <button onclick="loadMoreMemos()" style="background:#34495e; color:white; border:none; padding:12px 30px; border-radius:25px; font-weight:bold;">+ 과거 기록 더보기</button>
+            <button onclick="loadMoreMemos()" style="background:#34495e; color:white; border:none; padding:12px 30px; border-radius:25px; font-weight:bold; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.1);">+ 과거 기록 더보기</button>
         </div>
     </div>
 
@@ -223,7 +223,7 @@
             <div style="background:#fff3cd; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #ffc107; text-align:left;">
                 <strong style="color:#d35400;">📂 백업 파일로 복원</strong>
                 <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%; margin-top:10px;">
-                <p style="font-size:0.8rem; color:#666; margin-top:5px; margin-bottom:0;">※ 이전 버전(평면형) 백업을 불러와도 자동으로 계층 분류가 적용됩니다.</p>
+                <p style="font-size:0.8rem; color:#666; margin-top:5px; margin-bottom:0;">※ 이전 버전 백업을 불러와도 자동으로 계층 분류가 유지/적용됩니다.</p>
             </div>
             <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 앱 초기화</button>
         </div>
@@ -240,7 +240,7 @@
             <h2 style="margin:0; color:var(--primary-color);">⚙️ 지식 계층 관리 (대/중/소)</h2>
             <button class="close-btn" onclick="closeTagManager()">×</button>
         </div>
-        <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">※ 카테고리(서랍)를 변경해도 기존 메모의 데이터는 안전하게 유지됩니다.</p>
+        <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">※ 카테고리를 변경해도 기존 메모의 데이터는 안전하게 유지됩니다.</p>
         <div id="tagTreeDisplay"></div>
         <button class="btn-save" onclick="addNewLCat()" style="background:#3498db; margin-top:15px;">+ 대분류 추가</button>
     </div>
@@ -310,7 +310,15 @@
 </nav>
 
 <script>
-    // --- 로그인 세션 유지 (링크 나갔다 와도 유지됨) ---
+    // --- 날짜 규격화 함수 (버그 수정의 핵심) ---
+    // 어떤 이상한 날짜 문자열이 들어와도 무조건 YYYYMMDD 8자리로 완벽하게 변환해줍니다.
+    function normalizeDate(str) {
+        if(!str) return "";
+        const parts = str.match(/\d+/g);
+        if(!parts || parts.length < 3) return "";
+        return `${parts[0]}${parts[1].padStart(2,'0')}${parts[2].padStart(2,'0')}`;
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
         if(sessionStorage.getItem('jdm_auth') === 'true') {
             document.getElementById('loginOverlay').style.display = 'none';
@@ -333,7 +341,6 @@
     let db;
     let currDate = new Date();
     
-    // --- [v13.23] 3단계 계층형 태그 데이터 구조 ---
     let tagTree = {};
     
     function initTagTree() {
@@ -341,7 +348,6 @@
         if (savedTree) {
             tagTree = JSON.parse(savedTree);
         } else {
-            // 최초 접속 시: 1단계 배열형 데이터를 3단계 문헌 분류 구조로 자동 이사시킴
             let oldTags = JSON.parse(localStorage.getItem('myTags')) || [];
             tagTree = {
                 "000 총류 (기본/일반)": { 
@@ -370,7 +376,6 @@
                 }
             };
 
-            // 위 규칙에 없는 기존 잡동사니 태그들은 총류의 '미분류'에 쑤셔넣음
             const flatTreeTags = Object.values(tagTree).flatMap(m => Object.values(m).flat());
             oldTags.forEach(tag => {
                 if(!flatTreeTags.includes(tag)) {
@@ -384,7 +389,6 @@
 
     function saveTagTree() { localStorage.setItem('tagTree_v3', JSON.stringify(tagTree)); }
 
-    // 특정 태그를 주면 '대분류 > 중분류 > #소분류' 문자열을 예쁘게 만들어주는 함수
     function getTagPath(tag) {
         for (let l in tagTree) {
             for (let m in tagTree[l]) {
@@ -405,10 +409,8 @@
     let currentRenderPage = 1;
     const ITEMS_PER_PAGE = 15;
 
-    // 공휴일 데이터
     const HOLIDAYS = { '2025-01-01': '신정', '2025-01-28': '설날', '2025-01-29': '설날', '2025-01-30': '설날', '2025-03-01': '삼일절', '2025-05-05': '어린이날', '2025-05-06': '석가탄신일', '2025-06-06': '현충일', '2025-08-15': '광복절', '2025-10-03': '개천절', '2025-10-05': '추석', '2025-10-06': '추석', '2025-10-07': '추석', '2025-10-08': '대체공휴일', '2025-10-09': '한글날', '2025-12-25': '성탄절', '2026-01-01': '신정', '2026-02-16': '설날', '2026-02-17': '설날', '2026-02-18': '설날', '2026-03-01': '삼일절', '2026-05-05': '어린이날', '2026-05-24': '석가탄신일', '2026-06-06': '현충일', '2026-08-15': '광복절', '2026-09-24': '추석', '2026-09-25': '추석', '2026-09-26': '추석', '2026-10-03': '개천절', '2026-10-09': '한글날', '2026-12-25': '성탄절' };
 
-    // --- DB 초기화 ---
     const request = indexedDB.open(DB_NAME, 1);
     request.onupgradeneeded = e => { db = e.target.result; if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:'id'}); };
     request.onsuccess = e => { db = e.target.result; initApp(); };
@@ -433,12 +435,10 @@
         if(tab === 'calendar') { currDate = new Date(); renderCalendar(); }
     }
 
-    // --- 태그 UI 렌더링 (3단계) ---
     function renderTagSelector(containerId, selectedSet) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
         
-        // 검색용 flat 태그 배열 생성
         const allTags = Object.values(tagTree).flatMap(m => Object.values(m).flat());
         
         for (let l in tagTree) {
@@ -475,7 +475,6 @@
             container.appendChild(lDiv);
         }
 
-        // 미등록 유령 태그 처리
         let ghostTags = [];
         selectedSet.forEach(tag => { if (!allTags.includes(tag)) ghostTags.push(tag); });
         if(ghostTags.length > 0) {
@@ -511,7 +510,6 @@
         document.getElementById('listFilter').value = curFilter;
     }
 
-    // --- 태그 계층 관리자 (수정/삭제/추가) ---
     function openTagManager() {
         const display = document.getElementById('tagTreeDisplay');
         display.innerHTML = '';
@@ -573,22 +571,19 @@
     function removeSTag(l, m, t) { if(confirm('이 태그를 삭제합니까? (기존 메모는 안전합니다)')) { tagTree[l][m] = tagTree[l][m].filter(i=>i!==t); saveTagTree(); openTagManager(); updateTagSelectors(); } }
     function closeTagManager() { document.getElementById('tagManagerModal').style.display = 'none'; }
 
-    // --- 메모 읽기, 생성, 수정 ---
     async function openViewModal(id) {
         getMemo(id).then(m => {
             if(!m) return;
             document.getElementById('viewIdHidden').value = m.id;
             document.getElementById('viewTitle').innerText = m.title;
-            document.getElementById('viewDate').innerText = m.dateStr;
             
-            // 핵심 3: 읽기 창에서 경로 기반 브레드크럼 표시
-            let pathsHtml = (m.tags||[]).map(t => `<div class="mini-tag-path">${getTagPath(t)}</div>`).join('');
+            let pathsHtml = (m.tags||[]).map(t => `<div class="mini-tag-path">${getTagPath(t)}</div>`).join(' ');
             document.getElementById('viewTagPath').innerHTML = pathsHtml;
             
             document.getElementById('viewBody').innerHTML = m.content;
             
             let links = m.links || [];
-            document.getElementById('viewLink').innerHTML = links.map((l,i) => `<a href="${l}" target="_blank" style="display:block; background:#f1f5f9; padding:12px; border-radius:8px; text-decoration:none; color:#2980b9; font-weight:bold; margin-bottom:5px;">🔗 관련 링크 ${i+1} 바로가기</a>`).join('');
+            document.getElementById('viewLink').innerHTML = links.map((l,i) => `<a href="${l}" target="_blank" style="display:block; background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:5px; text-decoration:none; color:#2980b9;">🔗 관련 자료 보기</a>`).join('');
             
             document.getElementById('viewModal').style.display = 'flex';
         });
@@ -645,38 +640,35 @@
     }
 
     async function saveNewMemo() {
-        const title = document.getElementById('inputTitle').value;
-        const finalContent = document.getElementById('inputContent').innerHTML;
-        const tags = Array.from(inputSelectedTags);
-        const links = collectLinks('inputLinkContainer');
-        const dateVal = document.getElementById('inputDate').value;
-        const pureText = document.getElementById('inputContent').innerText.trim();
-
-        if(!title && !pureText && !finalContent.includes('<img') && !finalContent.includes('file-attachment')) return alert('내용을 입력하세요.');
+        const title = document.getElementById('inputTitle').value || "무제";
+        const content = document.getElementById('inputContent').innerHTML;
+        const date = document.getElementById('inputDate').value || new Date().toISOString().split('T')[0];
         
-        db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).add({
-            id: Date.now(), dateStr: inputDateToStr(dateVal), title: title || "무제", tags: tags, content: finalContent, links: links 
+        const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
+        store.add({
+            id: Date.now(),
+            dateStr: inputDateToStr(date),
+            title: title,
+            tags: Array.from(inputSelectedTags),
+            content: content,
+            links: collectLinks('inputLinkContainer')
         }).onsuccess = () => {
-            alert('저장 완료!');
-            document.getElementById('inputTitle').value = "";
-            document.getElementById('inputContent').innerHTML = ""; 
-            document.getElementById('inputLinkContainer').innerHTML = ""; addLinkField('inputLinkContainer');
-            document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
-            inputSelectedTags.clear(); updateTagSelectors(); switchTab('calendar'); 
+            alert('저장 완료');
+            location.reload();
         };
     }
 
+    function collectLinks(cid) { return Array.from(document.querySelectorAll(`#${cid} input`)).map(i=>i.value).filter(v=>v); }
     function addLinkField(cid, val="") { 
-        let d = document.createElement('div'); d.className='link-row'; 
+        let d = document.createElement('div'); d.className='link-row';
         d.innerHTML = `<input type="text" value="${val}" placeholder="https://..." style="margin-bottom:0; flex-grow:1;"> <button class="btn-del-link" onclick="this.parentElement.remove()">-</button>`;
         document.getElementById(cid).appendChild(d);
     }
-    function collectLinks(cid) { return Array.from(document.querySelectorAll(`#${cid} input`)).map(i=>i.value.trim()).filter(v=>v); }
 
-    // --- 리스트 및 달력 렌더링 ---
     function checkDateRange(targetStr, start, end) {
         if(!targetStr) return false;
-        const targetNum = parseInt(targetStr.match(/\d+/g).join('').padEnd(8,'0').slice(0,8));
+        // [버그 수정] 정교한 normalizeDate를 사용해서 8자리 숫자로 안전하게 변환
+        const targetNum = parseInt(normalizeDate(targetStr)); 
         const startNum = start ? parseInt(start.replace(/-/g, '')) : 0;
         const endNum = end ? parseInt(end.replace(/-/g, '')) : 99999999;
         return targetNum >= startNum && targetNum <= endNum;
@@ -701,18 +693,17 @@
         });
 
         const limit = currentRenderPage * ITEMS_PER_PAGE;
-        const pageMemos = currentFilteredMemos.slice(resetPage ? 0 : 0, limit);
-        if(resetPage) document.getElementById('memoList').innerHTML = '';
+        const pageMemos = currentFilteredMemos.slice(0, limit);
         
-        // 다시 그리기 최적화
-        if(!resetPage) document.getElementById('memoList').innerHTML = '';
+        if(resetPage) document.getElementById('memoList').innerHTML = '';
+        else document.getElementById('memoList').innerHTML = ''; 
         
         pageMemos.forEach(m => {
             let summary = m.content.replace(/<[^>]*>?/gm, '').substring(0, 40) + "...";
             let hasImg = m.content.includes('<img') ? '📷' : '';
             let hasFile = m.content.includes('file-attachment') ? '📎' : '';
             let hasLink = (m.links && m.links.length > 0) ? `🔗(${m.links.length})` : '';
-            const pathsHtml = (m.tags||[]).map(t => `<span class="mini-tag-path">${getTagPath(t)}</span>`).join('');
+            const pathsHtml = (m.tags||[]).map(t => `<span class="mini-tag-path">${getTagPath(t)}</span>`).join(' ');
             
             const isSelected = selectedIds.has(m.id);
             const action = isSelectionMode ? `toggleSelectCard(${m.id})` : `openViewModal(${m.id})`;
@@ -723,7 +714,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; color:#888; font-size:0.8rem; margin-bottom:5px;">
                     <span>${m.dateStr}</span>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:8px;">${pathsHtml}</div>
+                <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;">${pathsHtml}</div>
                 <h3 style="margin:0 0 5px 0; font-size:1.1rem; color:#2c3e50;">${m.title} <span style="font-size:0.8rem;">${hasImg}${hasFile}${hasLink}</span></h3>
                 <p style="color:#666; font-size:0.9rem; margin:0;">${summary}</p>
             </div>`;
@@ -756,29 +747,73 @@
         
         const memos = await getAll();
         for(let d=1; d<=last; d++) {
+            // [버그 수정] 정교한 normalizeDate 사용
             const targetStr = `${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
             const isoStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; 
-            const dayMemos = memos.filter(memo => memo.dateStr.replace(/\D/g, '') === targetStr);
+            
+            const dayMemos = memos.filter(memo => normalizeDate(memo.dateStr) === targetStr);
             const holidayName = HOLIDAYS[isoStr];
             let exClass = new Date(y,m,d).getDay()===0?'sun':new Date(y,m,d).getDay()===6?'sat':'';
             if(holidayName) exClass += ' holiday';
             if(y===new Date().getFullYear() && m===new Date().getMonth() && d===new Date().getDate()) exClass += ' today';
+            if(currentSelectedDateKey === targetStr) exClass += ' active-select';
+
+            // [부활] PC 화면에서 달력 안에 메모 제목 표시
+            let pcEvents = '';
+            const limit = 3;
+            dayMemos.slice(0, limit).forEach(dm => { 
+                pcEvents += `<div class="cal-event-item" onclick="event.stopPropagation(); openViewModal(${dm.id})">${dm.title}</div>`; 
+            });
+            if(dayMemos.length > limit) pcEvents += `<div class="more-items">+${dayMemos.length - limit} 더보기</div>`;
             
-            grid.innerHTML += `<div class="cal-day ${exClass} ${dayMemos.length>0?'has-memo':''}" onclick="${dayMemos.length>0?`showDay('${targetStr}')`:`openWriteWithDate(${y},${m+1},${d})`}"><span class="day-num">${d}</span>${holidayName?`<div class="holiday-name">${holidayName}</div>`:''}${dayMemos.length>0?'<div class="dot"></div>':''}</div>`;
+            grid.innerHTML += `
+            <div class="cal-day ${exClass} ${dayMemos.length>0?'has-memo':''}" onclick="${dayMemos.length>0?`showDay('${targetStr}')`:`openWriteWithDate(${y},${m+1},${d})`}">
+                <span class="day-num">${d}</span>
+                ${holidayName?`<div class="holiday-name">${holidayName}</div>`:''}
+                ${dayMemos.length>0?'<div class="dot"></div>':''}
+                <div class="cal-events-pc">${pcEvents}</div>
+            </div>`;
+        }
+        
+        const currentMonthKey = `${y}${String(m+1).padStart(2,'0')}`;
+        if (currentSelectedDateKey && currentSelectedDateKey.startsWith(currentMonthKey)) {
+            showDay(currentSelectedDateKey, true); // 리렌더링 시 하단 목록 유지
+        } else {
+            document.getElementById('calendarMemos').innerHTML = '';
         }
     }
     
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
-    async function showDay(targetStr) {
+    
+    // [부활] 달력 하단에 예쁜 목록 띄워주기
+    async function showDay(targetStr, isRefresh = false) {
+        currentSelectedDateKey = targetStr;
+        if(!isRefresh) renderCalendar(); // 선택 표시(active-select)를 위해 달력 다시 그림
+
         const memos = await getAll();
-        const target = memos.filter(m => m.dateStr.replace(/\D/g, '') === targetStr);
-        let html = `<div style="text-align:left; background:#fff; padding:15px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.1);"><h3 style="margin:0 0 15px 0;">📅 선택된 날짜</h3>`;
-        html += target.map(m => `<div onclick="openViewModal(${m.id})" style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;"><strong>${m.title}</strong></div>`).join('');
+        // [버그 수정] 정교한 normalizeDate 사용
+        const target = memos.filter(m => normalizeDate(m.dateStr) === targetStr);
+        
+        const y = targetStr.substring(0, 4);
+        const m = targetStr.substring(4, 6);
+        const d = targetStr.substring(6, 8);
+        const dateObj = new Date(y, m - 1, d);
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+        const dayName = dayNames[dateObj.getDay()];
+        const fancyDate = `${y}년 ${Number(m)}월 ${Number(d)}일 (${dayName})`;
+
+        let html = `<div style="text-align:left; background:#fff; padding:15px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.1);"><h3 style="margin:0 0 15px 0; font-size:1.1rem; color:#2c3e50; border-bottom:2px solid var(--accent-color); padding-bottom:8px;">📅 ${fancyDate}</h3>`;
+        html += target.map(m => {
+            const pathsHtml = (m.tags||[]).map(t => `<span class="mini-tag-path" style="font-size:0.7rem; padding:2px 6px;">${getTagPath(t)}</span>`).join('');
+            return `<div onclick="openViewModal(${m.id})" style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
+                <div style="margin-bottom:4px;">${pathsHtml}</div>
+                <span style="font-size:1.05rem; font-weight:bold; color:#333;">${m.title}</span>
+            </div>`
+        }).join('');
         html += `</div>`;
         document.getElementById('calendarMemos').innerHTML = html;
     }
 
-    // --- [v13.23 부활] 완벽한 백업 및 복원 기능 ---
     function backupData() { 
         getAll().then(memos => { 
             const startVal = document.getElementById('backupStartDate').value;
@@ -787,7 +822,6 @@
             let targetMemos = memos;
             let dateSuffix = "ALL";
             
-            // 기간 설정이 되어 있으면 해당 기간만 필터링
             if (startVal || endVal) {
                 targetMemos = memos.filter(m => checkDateRange(m.dateStr, startVal, endVal));
                 if(targetMemos.length === 0) return alert('해당 기간에 저장된 데이터가 없습니다.');
@@ -799,10 +833,10 @@
             }
             
             const backupObj = {
-                version: "v13.23", 
+                version: "v13.24", 
                 savedAt: new Date().toISOString(),
                 memos: targetMemos,
-                tagTree: tagTree // 3단계 계층 구조도 함께 백업
+                tagTree: tagTree
             };
             const a = document.createElement('a'); 
             a.href = URL.createObjectURL(new Blob([JSON.stringify(backupObj)],{type:'application/json'})); 
@@ -822,17 +856,14 @@
                 
                 if (data.memos && Array.isArray(data.memos)) {
                     memoList = data.memos;
-                    
-                    // 최신 버전(계층형) 백업 파일인 경우 트리 구조 덮어쓰기
                     if(data.tagTree) {
                         tagTree = data.tagTree;
                         saveTagTree();
                     } else if (data.tags && Array.isArray(data.tags)) {
-                        // 만약 옛날 v13.20 평면형 배열 백업이라면 로컬에 저장만 해둠 (새로고침 시 자동 마이그레이션됨)
                         localStorage.setItem('myTags', JSON.stringify(data.tags));
                     }
                 } else if (Array.isArray(data)) {
-                    memoList = data; // 아주 옛날 버전
+                    memoList = data;
                 } else if (data.memos) {
                     memoList = data.memos;
                 }
@@ -840,7 +871,7 @@
                 const tx = db.transaction(STORE_NAME, 'readwrite'); 
                 memoList.forEach(i => tx.objectStore(STORE_NAME).put(i)); 
                 tx.oncomplete = () => { 
-                    alert('성공적으로 복원되었습니다!\n\n※ 구버전 데이터를 불러오셨다면, 새로고침 시 자동으로 3단계 문헌 분류 구조로 정리됩니다.'); 
+                    alert('성공적으로 복원되었습니다!'); 
                     location.reload(); 
                 }; 
             } catch(err) { 
