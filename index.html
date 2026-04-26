@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v13.29</title>
+    <title>JDM Archive v13.30</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
@@ -66,7 +66,6 @@
 
         input, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; }
 
-        /* 3단계 계층형 UI 요소 */
         .tag-breadcrumb { font-size: 0.8rem; color: #888; margin-bottom: 4px; display: block; line-height: 1.4; }
         .tag-breadcrumb span { color: var(--primary-color); font-weight: 600; }
         
@@ -82,21 +81,12 @@
 
         .mini-tag-path { font-size: 0.75rem; background: #e3f2fd; color: var(--sat-color); padding: 3px 8px; border-radius: 12px; font-weight: bold; margin-bottom: 4px; display: inline-block; border: 1px solid #c8e6c9; }
 
-        /* 에디터 및 뷰어 공통 스타일 (가로 스크롤 방지) */
+        /* 에디터 스타일 (가로 스크롤 방지 & 반응형 이미지) */
         .rich-editor { width: 100%; min-height: 250px; max-height: 500px; overflow-y: auto; overflow-x: hidden; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; line-height: 1.6; outline: none; }
         .rich-editor:focus { border-color: var(--primary-color); }
         .view-body { line-height: 1.7; white-space: pre-wrap; font-size: 1.05rem; overflow-x: hidden; width: 100%; }
 
-        /* 이미지 완벽 반응형 강제 적용 */
-        .rich-editor img, .view-body img { 
-            max-width: 100% !important; 
-            height: auto !important; 
-            border-radius: 8px; 
-            margin: 10px 0; 
-            display: block; 
-            box-sizing: border-box;
-        }
-
+        .rich-editor img, .view-body img { max-width: 100% !important; height: auto !important; border-radius: 8px; margin: 10px 0; display: block; box-sizing: border-box; }
         .rich-editor:empty:before { content: attr(placeholder); color: #aaa; display: block; }
 
         .file-attachment { display: inline-block; background-color: #ecf0f1; border: 1px solid #bdc3c7; color: #2c3e50; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: bold; margin: 5px 0; user-select: text; transition: background 0.2s; }
@@ -148,7 +138,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v13.29</h1>
+    <h1>JDM Archive v13.30</h1>
     <button onclick="changePassword()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:white;">🔒</button>
 </header>
 
@@ -237,7 +227,7 @@
             <div style="background:#fff3cd; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #ffc107; text-align:left;">
                 <strong style="color:#d35400;">📂 백업 파일로 복원</strong>
                 <input type="file" id="restoreInput" onchange="restoreData(this)" style="background:white; border:1px solid #ccc; width:100%; margin-top:10px;">
-                <p style="font-size:0.8rem; color:#666; margin-top:5px; margin-bottom:0;">※ 구버전 백업을 불러와도 자동으로 최신 규격에 맞게 변환됩니다.</p>
+                <p style="font-size:0.8rem; color:#666; margin-top:5px; margin-bottom:0;">※ 구버전 백업을 불러와도 자동으로 최신 계층 규격에 맞게 변환됩니다.</p>
             </div>
             <button onclick="resetApp()" class="btn-save" style="background:#7f8c8d;">⚠️ 앱 초기화</button>
         </div>
@@ -249,14 +239,18 @@
 </div>
 
 <div id="tagManagerModal" class="modal">
-    <div class="modal-content" style="max-width:700px;">
+    <div class="modal-content" style="max-width:700px; padding-bottom:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="margin:0; color:var(--primary-color);">⚙️ 지식 계층 관리 (대/중/소)</h2>
+            <h2 style="margin:0; color:var(--primary-color);">⚙️ 지식 계층 완벽 관리</h2>
             <button class="close-btn" onclick="closeTagManager()">×</button>
         </div>
-        <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">※ 분류 이름이나 태그를 변경하면, 기존에 저장된 메모에도 <strong>자동으로 연쇄 업데이트</strong> 됩니다.</p>
-        <div id="tagTreeDisplay"></div>
-        <button class="btn-save" onclick="addNewLCat()" style="background:#3498db; margin-top:15px;">+ 대분류 추가</button>
+        <p style="font-size:0.85rem; color:#666; margin-bottom:10px; line-height:1.4;">※ 이곳에서 폴더(분류)를 이동하거나 이름을 바꾸면, 기존에 저장된 수백 개의 <b>메모 데이터 위에도 안전하고 일괄적으로 연쇄 업데이트</b> 됩니다!</p>
+        
+        <button class="btn-save" onclick="addNewLCat()" style="background:#3498db; margin-bottom:15px; padding:10px;">+ 새 대분류(최상위 폴더) 추가</button>
+        
+        <div id="tagTreeDisplay" style="max-height: 55vh; overflow-y: auto; padding-right:10px; margin-bottom:15px;"></div>
+        
+        <button class="btn-save" onclick="saveAndCloseTagManager()" style="background:#27ae60; width:100%; padding:14px; font-size:1.1rem;">💾 변경사항 안전하게 적용 및 닫기</button>
     </div>
 </div>
 
@@ -427,7 +421,6 @@
         for (let l in tagTree) {
             for (let m in tagTree[l]) {
                 if (tagTree[l][m].includes(tag)) {
-                    // 유저가 이름을 자유롭게 바꿀 수 있으므로 split 없이 전체를 다 보여줍니다.
                     return `${l} > ${m} > <span>${tag}</span>`;
                 }
             }
@@ -547,7 +540,7 @@
         document.getElementById('listFilter').value = curFilter;
     }
 
-    // --- [v13.29 핵심] 자유로운 이름 변경 모듈 탑재 ---
+    // --- [v13.30 핵심] 지식 구조 관리 마스터 엔진 ---
     function openTagManager() {
         const display = document.getElementById('tagTreeDisplay');
         display.innerHTML = '';
@@ -560,7 +553,7 @@
                     <div style="display:flex; gap:5px;">
                         <button onclick="renameLCat('${l}')" style="border:1px solid #2ecc71; background:#fff; color:#2ecc71; padding:4px 8px; border-radius:6px; font-size:0.8rem; cursor:pointer;">이름변경</button>
                         <button onclick="removeLCat('${l}')" style="border:1px solid #e74c3c; background:#fff; color:#e74c3c; padding:4px 8px; border-radius:6px; font-size:0.8rem; cursor:pointer;">삭제</button>
-                        <button onclick="addNewMCat('${l}')" style="border:1px solid #3498db; background:#fff; color:#3498db; padding:4px 8px; border-radius:6px; font-size:0.8rem; cursor:pointer;">+ 중분류</button>
+                        <button onclick="addNewMCat('${l}')" style="border:1px solid #3498db; background:#fff; color:#3498db; padding:4px 8px; border-radius:6px; font-size:0.8rem; cursor:pointer;">+ 중분류 추가</button>
                     </div>
                 </div>
             `;
@@ -572,6 +565,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                         <span style="font-weight:bold; color:#555; font-size:0.95rem;">📁 ${m}</span>
                         <div style="display:flex; gap:5px;">
+                            <button onclick="moveMCat('${l}','${m}')" style="border:1px solid #9b59b6; background:#fff; color:#9b59b6; padding:2px 6px; border-radius:4px; font-size:0.75rem; cursor:pointer;">🚀다른곳으로 이동</button>
                             <button onclick="renameMCat('${l}','${m}')" style="border:1px solid #2ecc71; background:#fff; color:#2ecc71; padding:2px 6px; border-radius:4px; font-size:0.75rem; cursor:pointer;">이름변경</button>
                             <button onclick="removeMCat('${l}','${m}')" style="border:none; background:none; color:#e74c3c; font-size:0.8rem; cursor:pointer;">삭제</button>
                         </div>
@@ -579,6 +573,7 @@
                     <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;">
                         ${tagTree[l][m].map(t => `
                             <span class="tag-item">${t} 
+                                <span style="cursor:pointer; color:#3498db; margin-left:4px; font-size:0.9rem;" onclick="moveSTag('${l}','${m}','${t}')" title="태그 이동">🔄</span>
                                 <span style="cursor:pointer; color:#f39c12; margin-left:4px; font-size:0.9rem;" onclick="renameSTag('${l}','${m}','${t}')" title="태그 이름 변경">✏️</span>
                                 <span class="tag-del-btn" onclick="removeSTag('${l}','${m}','${t}')" title="태그 삭제">×</span>
                             </span>`).join('')}
@@ -592,10 +587,59 @@
             }
             display.appendChild(block);
         }
-        document.getElementById('tagManagerModal').style.display = 'flex';
     }
 
-    // 이름 변경 관련 함수들
+    // 1. 대/중분류 이동 기능
+    function moveMCat(l, m) {
+        const lCats = Object.keys(tagTree);
+        let msg = `'${m}'을(를) 어느 대분류로 이동할까요?\n(번호를 입력하세요)\n\n`;
+        lCats.forEach((cat, idx) => { msg += `${idx + 1}. ${cat}\n`; });
+        const choice = prompt(msg);
+        if(!choice) return;
+        const targetIdx = parseInt(choice) - 1;
+        if(targetIdx >= 0 && targetIdx < lCats.length) {
+            const targetL = lCats[targetIdx];
+            if(targetL === l) return; 
+            if(tagTree[targetL][m]) return alert('이동하려는 대분류에 이미 같은 이름의 중분류가 있습니다. 이름을 먼저 변경해주세요.');
+            tagTree[targetL][m] = tagTree[l][m]; 
+            delete tagTree[l][m]; 
+            saveTagTree(); openTagManager(); updateTagSelectors(); renderMemos(true);
+            alert(`'${m}'이(가) [${targetL}] 안으로 성공적으로 이동되었습니다.`);
+        } else {
+            alert('잘못된 번호입니다.');
+        }
+    }
+
+    function moveSTag(l, m, t) {
+        let options = [];
+        let msg = `'${t}' 태그를 어느 중분류로 이동할까요?\n(번호를 입력하세요)\n\n`;
+        let count = 1;
+        for(let lCat in tagTree) {
+            for(let mCat in tagTree[lCat]) {
+                options.push({l: lCat, m: mCat});
+                msg += `${count}. ${lCat.split(' ')[1] || lCat} > ${mCat}\n`;
+                count++;
+            }
+        }
+        const choice = prompt(msg);
+        if(!choice) return;
+        const targetIdx = parseInt(choice) - 1;
+        if(targetIdx >= 0 && targetIdx < options.length) {
+            const target = options[targetIdx];
+            if(target.l === l && target.m === m) return;
+            if(tagTree[target.l][target.m].includes(t)) return alert('해당 분류에 이미 같은 태그가 있습니다.');
+            
+            tagTree[l][m] = tagTree[l][m].filter(tag => tag !== t);
+            tagTree[target.l][target.m].push(t);
+            
+            saveTagTree(); openTagManager(); updateTagSelectors(); renderMemos(true);
+            alert(`'${t}' 태그가 [${target.m}] 안으로 이동되었습니다.\n(과거에 작성된 메모 경로도 자동 적용됩니다.)`);
+        } else {
+            alert('잘못된 번호입니다.');
+        }
+    }
+
+    // 2. 이름 변경 & 연쇄 업데이트
     function renameLCat(oldL) {
         let newL = prompt(`'${oldL}'의 새 대분류 이름을 입력하세요:`, oldL);
         if(newL && newL.trim() && newL.trim() !== oldL) {
@@ -603,10 +647,7 @@
             if(tagTree[newL]) return alert('이미 존재하는 분류명입니다.');
             tagTree[newL] = tagTree[oldL];
             delete tagTree[oldL];
-            saveTagTree();
-            openTagManager();
-            updateTagSelectors();
-            renderMemos(true);
+            saveTagTree(); openTagManager(); updateTagSelectors(); renderMemos(true);
         }
     }
 
@@ -617,15 +658,12 @@
             if(tagTree[l][newM]) return alert('이미 존재하는 분류명입니다.');
             tagTree[l][newM] = tagTree[l][oldM];
             delete tagTree[l][oldM];
-            saveTagTree();
-            openTagManager();
-            updateTagSelectors();
-            renderMemos(true);
+            saveTagTree(); openTagManager(); updateTagSelectors(); renderMemos(true);
         }
     }
 
-    async function renameSTag(l, m, oldT) {
-        let newT = prompt(`'${oldT}'의 새 태그명을 입력하세요.\n(※ 기존 메모의 태그도 일괄 업데이트 됩니다!)`, oldT);
+    function renameSTag(l, m, oldT) {
+        let newT = prompt(`'${oldT}'의 새 태그명을 입력하세요.\n(※ 과거에 작성된 모든 관련 메모들도 일괄 자동 업데이트 됩니다!)`, oldT);
         if(newT && newT.trim() && newT.trim() !== oldT) {
             newT = newT.trim();
             if(!newT.startsWith('#')) newT = '#' + newT;
@@ -638,7 +676,7 @@
             if(idx !== -1) tagTree[l][m][idx] = newT;
             saveTagTree();
 
-            // 2. 기존 메모 일괄 연쇄 업데이트
+            // 2. 과거 메모 연쇄 업데이트
             const tx = db.transaction(STORE_NAME, 'readwrite');
             const store = tx.objectStore(STORE_NAME);
             const req = store.getAll();
@@ -655,11 +693,8 @@
                     }
                 });
                 
-                alert(`태그명이 변경되었습니다!\n과거 메모 ${updateCount}건에 자동 적용되었습니다.`);
-                openTagManager();
-                updateTagSelectors();
-                renderMemos(true);
-                renderCalendar();
+                alert(`태그명이 변경되었습니다!\n과거 메모 ${updateCount}건에 자동 반영되었습니다.`);
+                openTagManager(); updateTagSelectors(); renderMemos(true); renderCalendar();
             };
         }
     }
@@ -674,16 +709,20 @@
             const allTags = Object.values(tagTree).flatMap(x => Object.values(x).flat());
             if(allTags.includes(n)) return alert('이미 존재하는 태그입니다.');
             tagTree[l][m].push(n); 
-            saveTagTree(); 
-            openTagManager(); 
-            updateTagSelectors(); 
+            saveTagTree(); openTagManager(); updateTagSelectors(); 
         } 
     }
-    function removeLCat(l) { if(Object.keys(tagTree[l]).length>0) return alert('하위 중분류가 있어서 삭제불가'); if(confirm('삭제?')) { delete tagTree[l]; saveTagTree(); openTagManager(); updateTagSelectors(); } }
-    function removeMCat(l, m) { if(tagTree[l][m].length>0) return alert('하위 태그가 있어서 삭제불가'); if(confirm('삭제?')) { delete tagTree[l][m]; saveTagTree(); openTagManager(); updateTagSelectors(); } }
-    function removeSTag(l, m, t) { if(confirm('이 태그를 삭제합니까? (기존 메모는 안전합니다)')) { tagTree[l][m] = tagTree[l][m].filter(i=>i!==t); saveTagTree(); openTagManager(); updateTagSelectors(); } }
+    function removeLCat(l) { if(Object.keys(tagTree[l]).length>0) return alert('하위 중분류가 있어서 삭제할 수 없습니다. 먼저 중분류를 이동/삭제하세요.'); if(confirm('정말 삭제하시겠습니까?')) { delete tagTree[l]; saveTagTree(); openTagManager(); updateTagSelectors(); } }
+    function removeMCat(l, m) { if(tagTree[l][m].length>0) return alert('안에 태그가 남아있어 삭제할 수 없습니다. 태그를 이동/삭제하세요.'); if(confirm('정말 삭제하시겠습니까?')) { delete tagTree[l][m]; saveTagTree(); openTagManager(); updateTagSelectors(); } }
+    function removeSTag(l, m, t) { if(confirm('이 태그를 계층 목록에서 지우시겠습니까?\n(기존 메모의 데이터는 지워지지 않습니다)')) { tagTree[l][m] = tagTree[l][m].filter(i=>i!==t); saveTagTree(); openTagManager(); updateTagSelectors(); } }
+    
     function closeTagManager() { document.getElementById('tagManagerModal').style.display = 'none'; }
+    function saveAndCloseTagManager() {
+        closeTagManager();
+        alert('모든 구조 변경사항이 안전하게 저장 및 적용되었습니다.');
+    }
 
+    // --- 메모 보기, 쓰기 로직 ---
     async function openViewModal(id) {
         try {
             let m = await getMemo(id);
@@ -843,7 +882,6 @@
             const pathsHtml = safeTags.map(t => `<span class="mini-tag-path">${getTagPath(t)}</span>`).join(' ');
             
             const isSelected = selectedIds.has(String(m.id));
-            
             const action = isSelectionMode ? `toggleSelectCard('${m.id}')` : `openViewModal('${m.id}')`;
 
             document.getElementById('memoList').innerHTML += `
@@ -978,7 +1016,7 @@
             }
             
             const backupObj = {
-                version: "v13.29", 
+                version: "v13.30", 
                 savedAt: new Date().toISOString(),
                 memos: targetMemos,
                 tagTree: tagTree
