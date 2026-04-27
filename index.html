@@ -6,11 +6,11 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v14.0</title>
+    <title>JDM Archive v14.1</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         /* =========================================
-           [v14] CSS 클래스화 및 인라인 스타일 제거
+           [v14.1] CSS 클래스화 및 인라인 스타일 제거
            ========================================= */
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); -webkit-font-smoothing: antialiased; box-sizing: border-box; }
@@ -169,7 +169,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v14.0</h1>
+    <h1>JDM Archive v14.1</h1>
     <button onclick="changePassword()" class="btn-icon">🔒</button>
 </header>
 
@@ -288,7 +288,7 @@
     </div>
 </div>
 
-<!-- 태그 이동 전용 모달 (v14 신규) -->
+<!-- 태그 이동 전용 모달 -->
 <div id="moveTagModal" class="modal" style="z-index: 2500;">
     <div class="modal-content" style="max-width: 400px;">
         <h3 id="moveTagTitle" class="mt-0">폴더 이동</h3>
@@ -364,8 +364,28 @@
 </nav>
 
 <script>
-    // --- [v14] 모바일 뒤로가기 방어 로직 (History API) ---
+    // ============================================================================
+    // [v14.1] 강력한 모바일 뒤로가기 방어 로직 (History API 이중 트랩)
+    // ============================================================================
+    let historyTrapInitialized = false;
+
+    function setupHistoryTrap() {
+        // 로그인 화면이 떠있거나 이미 트랩이 설치되었다면 무시
+        if (historyTrapInitialized || document.getElementById('loginOverlay').style.display !== 'none') return;
+        
+        // 브라우저 정책 우회: 현재 상태를 base로 만들고, 그 위에 main 상태를 쌓아 뒤로가기 공간 확보
+        history.replaceState({ page: 'base' }, null, location.href);
+        history.pushState({ page: 'main' }, null, location.href);
+        historyTrapInitialized = true;
+    }
+
+    // 모바일 브라우저(네이버 등)는 사용자 터치 없이 스크립트로만 pushState를 하면 무시하는 경향이 있음.
+    // 따라서 사용자가 화면을 터치하거나 클릭하는 순간 트랩을 강력하게 주입함.
+    window.addEventListener('click', setupHistoryTrap, { once: true });
+    window.addEventListener('touchstart', setupHistoryTrap, { once: true });
+
     window.addEventListener('popstate', function(event) {
+        // 1단계 방어: 열려있는 모달이 있는지 확인하고 닫기
         const modals = document.querySelectorAll('.modal');
         let isModalOpen = false;
         modals.forEach(m => {
@@ -376,19 +396,30 @@
         });
         
         if (isModalOpen) {
-            history.pushState(null, null, location.href);
+            // 모달을 닫았으므로, 다시 상태를 푸시하여 사용자가 앱 밖으로 튕겨나가지 않게 트랩 복구
+            history.pushState({ page: 'main' }, null, location.href);
             return;
         }
         
-        if (!document.getElementById('tab-calendar').classList.contains('active')) {
+        // 2단계 방어: 현재 탭이 '홈(달력)'이 아니면 홈으로 이동
+        const calendarTab = document.getElementById('tab-calendar');
+        if (!calendarTab.classList.contains('active')) {
             switchTab('calendar');
-            history.pushState(null, null, location.href);
+            history.pushState({ page: 'main' }, null, location.href);
+            return;
+        }
+        
+        // 3단계 방어: 홈 탭이고 모달도 없을 때 최종 종료 확인
+        const exitConfirm = confirm("앱을 종료하시겠습니까?");
+        if (exitConfirm) {
+            // 사용자가 종료를 승인하면, 현재 base 상태에서 한 번 더 뒤로가기를 실행하여 앱을 완전히 빠져나감
+            history.back();
         } else {
-            // 홈 탭에서 뒤로가기 시 앱 종료 허용 또는 한 번 더 방어
-            history.pushState(null, null, location.href);
-            alert("앱을 종료하시려면 브라우저 탭을 닫아주세요.");
+            // 종료를 취소하면 다시 상태를 푸시하여 트랩 복구
+            history.pushState({ page: 'main' }, null, location.href);
         }
     });
+    // ============================================================================
 
     // --- [v13.32] 자가 치유(Auto-Healing) 엔진 ---
     function sanitizeTagTree() {
@@ -417,7 +448,7 @@
     function getLinksFromMemo(m) {
         if (!m) return[];
         if (m.links && Array.isArray(m.links)) return m.links;
-        if (m.links && typeof m.links === 'string') return [m.links];
+        if (m.links && typeof m.links === 'string') return[m.links];
         if (m.link) return [m.link]; 
         return[];
     }
@@ -434,8 +465,8 @@
     window.addEventListener('DOMContentLoaded', () => {
         if(sessionStorage.getItem('jdm_auth') === 'true') {
             document.getElementById('loginOverlay').style.display = 'none';
+            setupHistoryTrap(); // 이미 로그인 상태면 즉시 트랩 설치 시도
         }
-        history.pushState(null, null, location.href); // 초기 History 세팅
     });
     
     function getPassword() { return localStorage.getItem('appPass') || "0403"; }
@@ -443,6 +474,7 @@
         if(document.getElementById('passInput').value === getPassword()) {
             document.getElementById('loginOverlay').style.display = 'none';
             sessionStorage.setItem('jdm_auth', 'true'); 
+            setupHistoryTrap(); // 로그인 성공 시 트랩 설치
         } else { alert('비밀번호가 틀렸습니다.'); }
     }
     function changePassword() {
@@ -451,9 +483,9 @@
     }
 
     // ---[v14] IndexedDB 구조 개편 (Blob 이미지 저장소 추가) ---
-    const DB_NAME = 'JeongArchiveDB_v9'; // 기존 데이터 유지를 위해 DB 이름은 동일하게 유지
+    const DB_NAME = 'JeongArchiveDB_v9'; 
     const STORE_NAME = 'memos';
-    const STORE_IMAGES = 'images'; // 신규 이미지 저장소
+    const STORE_IMAGES = 'images'; 
     let db;
     let currDate = new Date();
     let tagTree = {};
@@ -470,7 +502,7 @@
                 "000 총류 (기본/일반)": { "일반":["#일반", "#생활"], "가족/인생":["#가족", "#인생", "#조언", "#아이디어"] },
                 "200 종교/철학": { "철학":["#철학", "#심리"], "종교": ["#종교", "#불교"] },
                 "300 사회과학": { "경제/금융":["#경제", "#부동산", "#가상자산", "#자산관리", "#재개발재건축", "#FOMO"], "사회/국제":["#사회", "#국제"] },
-                "500 기술과학": { "토목/공설":["#현장", "#어곡천", "#어곡천2공구", "#어곡천3공구", "#건설안전"], "첨단/IT":["#AI", "#기술", "#로봇", "#피지컬AI", "#OpenClaw", "#과학", "#드론"], "생활/의학": ["#건강", "#레시피", "#자동차", "#운동", "#블랙아이스"] },
+                "500 기술과학": { "토목/공설":["#현장", "#어곡천", "#어곡천2공구", "#어곡천3공구", "#건설안전"], "첨단/IT":["#AI", "#기술", "#로봇", "#피지컬AI", "#OpenClaw", "#과학", "#드론"], "생활/의학":["#건강", "#레시피", "#자동차", "#운동", "#블랙아이스"] },
                 "600 예술/여가": { "예술/취미":["#예술", "#music", "#7080", "#영화", "#취미"], "여행": ["#여행"] },
                 "800 언어/문학/역사": { "인문":["#문학", "#책", "#역사", "#English", "#업무"] }
             };
@@ -511,8 +543,7 @@
 
     const HOLIDAYS = { '2025-01-01': '신정', '2025-01-28': '설날', '2025-01-29': '설날', '2025-01-30': '설날', '2025-03-01': '삼일절', '2025-05-05': '어린이날', '2025-05-06': '석가탄신일', '2025-06-06': '현충일', '2025-08-15': '광복절', '2025-10-03': '개천절', '2025-10-05': '추석', '2025-10-06': '추석', '2025-10-07': '추석', '2025-10-08': '대체공휴일', '2025-10-09': '한글날', '2025-12-25': '성탄절', '2026-01-01': '신정', '2026-02-16': '설날', '2026-02-17': '설날', '2026-02-18': '설날', '2026-03-01': '삼일절', '2026-05-05': '어린이날', '2026-05-24': '석가탄신일', '2026-06-06': '현충일', '2026-08-15': '광복절', '2026-09-24': '추석', '2026-09-25': '추석', '2026-09-26': '추석', '2026-10-03': '개천절', '2026-10-09': '한글날', '2026-12-25': '성탄절' };
 
-    // --- [v14] DB 초기화 및 마이그레이션 실행 ---
-    const request = indexedDB.open(DB_NAME, 2); // 버전 2로 업그레이드
+    const request = indexedDB.open(DB_NAME, 2); 
     request.onupgradeneeded = e => { 
         db = e.target.result; 
         if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:'id'}); 
@@ -520,11 +551,10 @@
     };
     request.onsuccess = async e => { 
         db = e.target.result; 
-        await runBase64ToBlobMigration(); // 마이그레이션 실행
+        await runBase64ToBlobMigration(); 
         initApp(); 
     };
 
-    // --- [v14] Base64 -> Blob 마이그레이션 로직 ---
     function base64ToBlob(base64Data, contentType) {
         const sliceSize = 1024;
         const byteCharacters = atob(base64Data);
@@ -595,7 +625,6 @@
         }
     }
 
-    // --- [v14] Blob 이미지 렌더링 로직 ---
     function getImageBlob(id) {
         return new Promise(resolve => {
             const tx = db.transaction(STORE_IMAGES, 'readonly');
@@ -615,7 +644,7 @@
             const imgId = img.getAttribute('src').replace('local-img:', '');
             const blobObj = await getImageBlob(imgId);
             if (blobObj && blobObj.blob) {
-                img.setAttribute('data-local-id', imgId); // 저장 시 복원을 위해 ID 기록
+                img.setAttribute('data-local-id', imgId); 
                 img.src = URL.createObjectURL(blobObj.blob);
             } else {
                 img.alt = "이미지 유실됨";
@@ -791,7 +820,6 @@
         }
     }
 
-    // ---[v14] 직관적인 태그 이동 UI 로직 ---
     let currentMoveTarget = null;
     function openMoveTagModal(type, l, m, t) {
         currentMoveTarget = { type, l, m, t };
@@ -930,7 +958,6 @@
             let pathsHtml = safeTags.map(t => `<div class="mini-tag-path">${getTagPath(t)}</div>`).join(' ');
             document.getElementById('viewTagPath').innerHTML = pathsHtml;
             
-            //[v14] Blob 이미지 렌더링 적용
             document.getElementById('viewBody').innerHTML = await renderContentWithImages(m.content || "");
             
             const safeLinks = getLinksFromMemo(m);
@@ -966,7 +993,6 @@
             if(safeLinks.length > 0) safeLinks.forEach(l => addLinkField('editLinkContainer', l));
             else addLinkField('editLinkContainer'); 
 
-            // [v14] Blob 이미지 렌더링 적용
             document.getElementById('editContent').innerHTML = await renderContentWithImages(m.content || "");
             document.getElementById('editPopup').style.display = 'block';
         } catch(e) {
@@ -988,7 +1014,7 @@
     async function saveEditedMemo() {
         const title = document.getElementById('editTitle').value;
         const rawContent = document.getElementById('editContent').innerHTML;
-        const finalContent = prepareContentForSave(rawContent); // [v14] Blob URL을 다시 local-img ID로 변환
+        const finalContent = prepareContentForSave(rawContent); 
         const tags = Array.from(editSelectedTags);
         const links = collectLinks('editLinkContainer');
         const dateVal = document.getElementById('editDate').value; 
@@ -1008,7 +1034,7 @@
     async function saveNewMemo() {
         const title = document.getElementById('inputTitle').value || "무제";
         const rawContent = document.getElementById('inputContent').innerHTML;
-        const finalContent = prepareContentForSave(rawContent); //[v14]
+        const finalContent = prepareContentForSave(rawContent); 
         const date = document.getElementById('inputDate').value || new Date().toISOString().split('T')[0];
         
         const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
@@ -1227,7 +1253,7 @@
             }
             
             const backupObj = {
-                version: "v14.0", 
+                version: "v14.1", 
                 savedAt: new Date().toISOString(),
                 memos: targetMemos,
                 tagTree: tagTree
