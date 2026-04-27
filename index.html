@@ -6,17 +6,27 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v14.1</title>
+    <title>JDM Archive v14.4</title>
+    
+    <!--[v14.4] 캐시 방지(Cache-Busting) 로직 -->
+    <script>
+        const APP_VERSION = "14.4";
+        if (localStorage.getItem('jdm_version') !== APP_VERSION) {
+            localStorage.setItem('jdm_version', APP_VERSION);
+            if ('URLSearchParams' in window) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('v', APP_VERSION);
+                window.location.replace(url.toString());
+            }
+        }
+    </script>
+
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
-        /* =========================================
-           [v14.1] CSS 클래스화 및 인라인 스타일 제거
-           ========================================= */
         :root { --primary-color: #2c3e50; --accent-color: #c0392b; --bg-color: #f0f2f5; --card-bg: #ffffff; --nav-height: 65px; --holiday-color: #e74c3c; --sat-color: #2980b9; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg-color); color: #333; margin: 0; padding-bottom: var(--nav-height); -webkit-font-smoothing: antialiased; box-sizing: border-box; }
         *, *:before, *:after { box-sizing: border-box; }
 
-        /* 공통 유틸리티 클래스 */
         .flex-row { display: flex; gap: 10px; align-items: center; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
         .flex-col { display: flex; flex-direction: column; gap: 5px; }
@@ -31,8 +41,8 @@
         .w-100 { width: 100%; }
         .border-bottom { border-bottom: 1px solid #eee; padding-bottom: 15px; }
         
-        /* 버튼 스타일 */
         .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.95rem; transition: 0.2s; }
+        .btn:disabled { background: #bdc3c7 !important; cursor: not-allowed; }
         .btn-primary { background: var(--primary-color); color: white; }
         .btn-accent { background: var(--accent-color); color: white; }
         .btn-success { background: #27ae60; color: white; }
@@ -47,25 +57,20 @@
         .btn-icon { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: white; }
         .btn-save-large { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
 
-        /* 폼 요소 */
         input[type="text"], input[type="date"], input[type="password"], select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; }
         .form-label { font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 8px; }
 
-        /* 레이아웃 & 카드 */
         header { background: var(--primary-color); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; color: white; }
         header h1 { margin: 0; font-size: 1.4rem; font-weight: 700; flex-grow: 1; text-align: center; margin-left: 40px; letter-spacing: -0.5px; }
         .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px; }
         .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; }
         
-        /* 탭 시스템 */
         .tab-content { display: none; animation: fadeIn 0.3s ease; } .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* 로그인 오버레이 */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #loginOverlay input { width: 220px; padding: 15px; font-size: 1.5rem; text-align: center; border-radius: 12px; border: none; margin-top: 10px; letter-spacing: 5px; }
 
-        /* 달력 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); width: 100%; }
         .day-header { text-align: center; font-size: 0.9rem; color: #555; padding: 12px 0; font-weight: 600; background-color: #f8f9fa; border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; }
         .day-header:nth-child(7n) { border-right: none; }
@@ -94,7 +99,6 @@
             .more-items { font-size: 0.75rem; color: #888; text-align: right; padding-right: 5px; margin-top: 2px; }
         }
 
-        /* 메모 리스트 */
         .memo-card { background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 15px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid #eee; cursor: pointer; }
         .memo-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .memo-card.selected { border: 2px solid var(--accent-color); background: #fff5f5; }
@@ -103,7 +107,6 @@
         .memo-card.selected .check-circle { background: var(--accent-color); border-color: var(--accent-color); }
         .memo-card.selected .check-circle::after { content: '✔'; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 14px; }
 
-        /* 태그 시스템 */
         .tag-category-group { background: #fff; border: 1px solid #e0e0e0; border-radius: 15px; padding: 15px; margin-bottom: 15px; }
         .l-cat-title { font-size: 1rem; font-weight: 800; color: var(--primary-color); margin-bottom: 12px; border-left: 4px solid var(--accent-color); padding-left: 10px; display: flex; justify-content: space-between; align-items: center; }
         .m-cat-group { margin-left: 10px; margin-bottom: 15px; border-left: 2px dashed #eee; padding-left: 10px; }
@@ -116,14 +119,12 @@
         .tag-item { background: #fff; border:1px solid #ccc; padding: 6px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px; font-size: 0.85rem; }
         .tag-del-btn { color: #e74c3c; font-weight: bold; cursor: pointer; margin-left: 5px; }
 
-        /* 에디터 */
         .rich-editor { width: 100%; min-height: 250px; max-height: 500px; overflow-y: auto; overflow-x: hidden; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; line-height: 1.6; outline: none; }
         .rich-editor:focus { border-color: var(--primary-color); }
         .view-body { line-height: 1.7; white-space: pre-wrap; font-size: 1.05rem; overflow-x: hidden; width: 100%; }
         .rich-editor img, .view-body img { max-width: 100% !important; height: auto !important; border-radius: 8px; margin: 10px 0; display: block; box-sizing: border-box; }
         .rich-editor:empty:before { content: attr(placeholder); color: #aaa; display: block; }
 
-        /* 링크 및 검색 */
         .link-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
         .link-row input { margin-bottom: 0; flex-grow: 1; }
         .btn-del-link { background: #e74c3c; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; flex-shrink: 0; }
@@ -137,7 +138,6 @@
         .date-filter-row { display: flex; gap: 5px; align-items: center; }
         .date-filter-row input[type="date"] { margin-bottom: 0; font-size: 0.9rem; padding: 8px; }
 
-        /* 모달 및 팝업 */
         #bulkDeleteBar { position: fixed; bottom: var(--nav-height); left: 0; width: 100%; background: var(--accent-color); color: white; padding: 15px; text-align: center; font-weight: bold; cursor: pointer; display: none; z-index: 900; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(4px); }
         .modal-content { background:white; width:95%; max-width:650px; padding:25px; border-radius:20px; max-height:90vh; overflow-y:auto; position: relative; }
@@ -145,13 +145,11 @@
         #editPopup { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#f0f2f5; z-index:3000; overflow-y:auto; padding-bottom: 50px;}
         .edit-container { max-width:800px; margin:20px auto; padding:20px; background:white; border-radius:15px; box-shadow:0 0 20px rgba(0,0,0,0.1); }
         
-        /* 하단 네비게이션 */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: white; display: flex; border-top: 1px solid #eee; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { flex: 1; text-align: center; padding: 10px; color: #999; font-size: 0.75rem; cursor: pointer; }
         .nav-item.active { color: var(--primary-color); font-weight: bold; }
         .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
 
-        /* 데이터 센터 박스 */
         .data-box-green { background:#e8f8f5; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #1abc9c; text-align:left; }
         .data-box-yellow { background:#fff3cd; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #ffc107; text-align:left; }
     </style>
@@ -169,7 +167,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v14.1</h1>
+    <h1>JDM Archive v14.4</h1>
     <button onclick="changePassword()" class="btn-icon">🔒</button>
 </header>
 
@@ -229,8 +227,11 @@
                 <div id="inputTagContainer"></div>
             </div>
             
-            <div id="inputContent" class="rich-editor" contenteditable="true" placeholder="내용을 입력하세요. (파일 업로드 기능은 최적화를 위해 제거되었습니다)"></div>
+            <div id="inputContent" class="rich-editor" contenteditable="true" placeholder="내용을 입력하세요."></div>
             
+            <label class="form-label mt-15">📎 이미지 첨부 (자동 최적화)</label>
+            <input type="file" id="inputFile" accept="image/*" multiple style="padding:12px; background:#f8f9fa; width:100%; margin-bottom:15px;" onchange="insertImageToEditor(this, 'inputContent')">
+
             <label class="form-label">🔗 관련 링크 (다중 입력 가능)</label>
             <div id="inputLinkContainer"></div>
             <button class="btn btn-info mb-15" onclick="addLinkField('inputLinkContainer')">+ 링크 추가</button>
@@ -241,27 +242,46 @@
 
     <!-- 탭 4: 데이터 -->
     <div id="tab-data" class="tab-content">
+        <!-- [v14.4] 실시간 데이터 헬스 게이지 -->
+        <div class="card p-25 text-center mb-20">
+            <h3 class="mt-0">📊 데이터 헬스 모니터링</h3>
+            <div style="background:#eee; border-radius:20px; height:24px; width:100%; overflow:hidden; position:relative; margin:15px 0;">
+                <div id="gaugeFill" style="height:100%; width:0%; background:#27ae60; transition:width 0.5s, background 0.5s;"></div>
+            </div>
+            <div class="flex-between font-bold">
+                <span id="gaugeStatus" style="color:#27ae60;">계산 중...</span>
+                <span id="gaugeText">0 MB</span>
+            </div>
+        </div>
+
         <div class="card p-25 text-center">
             <h3>💾 데이터 센터</h3>
             
             <div class="data-box-green">
-                <strong style="color:#16a085;">📤 데이터 백업 (전체 / 기간별)</strong>
+                <strong style="color:#16a085;">📤 스마트 백업 어드바이저</strong>
                 <div class="date-filter-row mt-15 mb-15">
                     <input type="date" id="backupStartDate" title="시작일" style="flex:1;">
                     <span class="font-bold">~</span>
                     <input type="date" id="backupEndDate" title="종료일" style="flex:1;">
                 </div>
-                <button onclick="backupData()" class="btn-save-large btn-success">백업 파일 저장하기</button>
+                <button id="backupBtn" onclick="openBackupModal()" class="btn-save-large btn-success">스마트 백업 시작하기</button>
                 <p class="text-muted mt-10 mb-0">※ 날짜를 비워두시면 '전체 데이터'가 백업됩니다.</p>
-                <p class="text-danger mt-5 mb-0 font-bold">※ v14 최적화로 인해 백업 파일에는 텍스트 데이터만 포함되며, 이미지는 백업되지 않습니다.</p>
             </div>
 
-            <div class="data-box-yellow">
+            <!-- [v14.4] 데이터 다이어트 (자동 아카이빙) -->
+            <div class="data-box-yellow mt-20">
+                <strong style="color:#d35400;">✂️ 데이터 다이어트 (자동 아카이빙)</strong>
+                <p class="text-muted mt-5 mb-10">특정 날짜 이전의 데이터를 백업 파일로 내보낸 뒤, 앱에서 삭제하여 용량을 확보합니다.</p>
+                <input type="date" id="dietDate" class="mb-10">
+                <button onclick="executeDataDiet()" class="btn btn-warning w-100">선택한 날짜 이전 데이터 비우기</button>
+            </div>
+
+            <div class="data-box-yellow mt-20">
                 <strong style="color:#d35400;">📂 백업 파일로 복원</strong>
                 <input type="file" id="restoreInput" onchange="restoreData(this)" class="mt-10" style="background:white;">
-                <p class="text-muted mt-5 mb-0">※ 구버전 백업을 불러와도 자동으로 최신 계층 규격에 맞게 변환됩니다.</p>
+                <p class="text-muted mt-5 mb-0">※ 구버전 백업을 불러와도 자동으로 최신 규격에 맞게 변환됩니다.</p>
             </div>
-            <button onclick="resetApp()" class="btn-save-large btn-secondary">⚠️ 앱 초기화</button>
+            <button onclick="resetApp()" class="btn-save-large btn-secondary mt-10">⚠️ 앱 초기화</button>
         </div>
     </div>
 </div>
@@ -269,6 +289,17 @@
 <!-- 하단 삭제 바 -->
 <div id="bulkDeleteBar" onclick="deleteSelectedMemos()">
     🗑️ 선택한 항목 삭제하기 (<span id="selectedCount">0</span>)
+</div>
+
+<!-- [v14.4] 스마트 백업 모달 -->
+<div id="backupModal" class="modal" style="z-index: 2600;">
+    <div class="modal-content" style="max-width: 450px;">
+        <h3 class="mt-0">💾 스마트 백업 어드바이저</h3>
+        <p id="backupAdviceText" class="mb-20" style="line-height: 1.5;"></p>
+        <button onclick="executeBackup('text')" class="btn btn-primary w-100 mb-10">📄 초경량 텍스트 백업 (빠름)</button>
+        <button onclick="executeBackup('full')" class="btn btn-success w-100 mb-10">🖼️ 이미지 포함 전체 백업 (느림)</button>
+        <button onclick="closeModal('backupModal')" class="btn btn-secondary w-100">취소</button>
+    </div>
 </div>
 
 <!-- 태그 관리자 모달 -->
@@ -345,7 +376,10 @@
         <label class="form-label">내용</label>
         <div id="editContent" class="rich-editor" contenteditable="true"></div>
         
-        <label class="form-label mt-15">관련 링크 (다중 입력 가능)</label>
+        <label class="form-label mt-15">📎 이미지 추가</label>
+        <input type="file" id="editFile" accept="image/*" multiple style="padding:12px; background:#f8f9fa; width:100%; margin-bottom:15px;" onchange="insertImageToEditor(this, 'editContent')">
+
+        <label class="form-label">관련 링크 (다중 입력 가능)</label>
         <div id="editLinkContainer"></div>
         <button class="btn btn-info mb-20" onclick="addLinkField('editLinkContainer')">+ 링크 추가</button>
 
@@ -365,27 +399,175 @@
 
 <script>
     // ============================================================================
-    // [v14.1] 강력한 모바일 뒤로가기 방어 로직 (History API 이중 트랩)
+    // [v14.4] 실시간 데이터 헬스 모니터링 (용량 계산)
     // ============================================================================
-    let historyTrapInitialized = false;
+    async function getStorageHealth() {
+        return new Promise((resolve) => {
+            let totalBytes = 0;
+            const tx = db.transaction([STORE_NAME, STORE_IMAGES], 'readonly');
+            
+            const memoReq = tx.objectStore(STORE_NAME).openCursor();
+            memoReq.onsuccess = e => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    totalBytes += JSON.stringify(cursor.value).length * 2;
+                    cursor.continue();
+                }
+            };
 
-    function setupHistoryTrap() {
-        // 로그인 화면이 떠있거나 이미 트랩이 설치되었다면 무시
-        if (historyTrapInitialized || document.getElementById('loginOverlay').style.display !== 'none') return;
+            const imgReq = tx.objectStore(STORE_IMAGES).openCursor();
+            imgReq.onsuccess = e => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    if (cursor.value.blob) totalBytes += cursor.value.blob.size;
+                    cursor.continue();
+                }
+            };
+
+            tx.oncomplete = () => {
+                const mb = (totalBytes / (1024 * 1024)).toFixed(2);
+                resolve(parseFloat(mb));
+            };
+        });
+    }
+
+    async function updateHealthGauge() {
+        const mb = await getStorageHealth();
+        const gaugeFill = document.getElementById('gaugeFill');
+        const gaugeText = document.getElementById('gaugeText');
+        const gaugeStatus = document.getElementById('gaugeStatus');
         
-        // 브라우저 정책 우회: 현재 상태를 base로 만들고, 그 위에 main 상태를 쌓아 뒤로가기 공간 확보
+        let percent = (mb / 500) * 100;
+        if (percent > 100) percent = 100;
+        
+        gaugeFill.style.width = `${percent}%`;
+        gaugeText.innerText = `${mb} MB`;
+        
+        if (mb < 300) {
+            gaugeFill.style.background = '#27ae60';
+            gaugeStatus.innerText = '안전 (여유 있음)';
+            gaugeStatus.style.color = '#27ae60';
+        } else if (mb < 500) {
+            gaugeFill.style.background = '#f39c12';
+            gaugeStatus.innerText = '주의 (백업 및 정리 권장)';
+            gaugeStatus.style.color = '#f39c12';
+        } else {
+            gaugeFill.style.background = '#e74c3c';
+            gaugeStatus.innerText = '위험 (즉시 아카이빙 필요)';
+            gaugeStatus.style.color = '#e74c3c';
+        }
+        return mb;
+    }
+
+    // ============================================================================
+    // [v14.3] 독자적 만년 달력 엔진 (2024~2050년 음력/양력 및 대체공휴일 자동 계산)
+    // ============================================================================
+    let holidayCache = {};
+
+    function generateHolidays(year) {
+        const holidays = {};
+        const add = (m, d, name) => {
+            const dateStr = `${year}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            holidays[dateStr] = name;
+        };
+
+        add(1, 1, '신정'); add(3, 1, '삼일절'); add(5, 5, '어린이날'); add(6, 6, '현충일');
+        add(8, 15, '광복절'); add(10, 3, '개천절'); add(10, 9, '한글날'); add(12, 25, '성탄절');
+
+        const lunarData = {
+            2024:[2,10, 5,15, 9,17], 2025:[1,29, 5,5, 10,6], 2026:[2,17, 5,24, 9,25],
+            2027:[2,6, 5,13, 9,15], 2028:[1,26, 5,2, 10,3], 2029:[2,13, 5,20, 9,22],
+            2030:[2,3, 5,9, 9,12], 2031:[1,23, 5,28, 10,1], 2032:[2,11, 5,16, 9,19],
+            2033:[1,31, 5,6, 9,8], 2034:[2,19, 5,25, 9,27], 2035:[2,8, 5,15, 9,16],
+            2036:[1,28, 5,3, 10,4], 2037:[2,15, 5,22, 9,24], 2038:[2,4, 5,11, 9,13],
+            2039:[1,24, 4,30, 10,2], 2040:[2,12, 5,18, 9,21], 2041:[2,1, 5,7, 9,10],
+            2042:[1,22, 5,26, 9,28], 2043:[2,10, 5,16, 9,17], 2044:[1,30, 5,5, 10,5],
+            2045:[2,17, 5,24, 9,24], 2046:[2,6, 5,13, 9,14], 2047:[1,26, 5,2, 10,3],
+            2048:[2,14, 5,20, 9,22], 2049:[2,2, 5,8, 9,11], 2050:[1,23, 5,27, 9,30]
+        };
+
+        let subTargets = [];
+        const fixedHolidays =['01-01', '03-01', '05-05', '06-06', '08-15', '10-03', '10-09', '12-25'];
+
+        if (lunarData[year]) {
+            const[sm, sd, bm, bd, cm, cd] = lunarData[year];
+            
+            let seollal = new Date(year, sm-1, sd);
+            let sPrev = new Date(seollal); sPrev.setDate(seollal.getDate() - 1);
+            let sNext = new Date(seollal); sNext.setDate(seollal.getDate() + 1);
+            add(sPrev.getMonth()+1, sPrev.getDate(), '설날');
+            add(sm, sd, '설날');
+            add(sNext.getMonth()+1, sNext.getDate(), '설날');
+
+            let sDays =[sPrev, seollal, sNext];
+            if (sDays.some(d => d.getDay() === 0 || fixedHolidays.includes(`${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`))) {
+                subTargets.push(sNext);
+            }
+
+            add(bm, bd, '석가탄신일');
+            let buddha = new Date(year, bm-1, bd);
+            if (buddha.getDay() === 0 || buddha.getDay() === 6) subTargets.push(buddha);
+
+            let chuseok = new Date(year, cm-1, cd);
+            let cPrev = new Date(chuseok); cPrev.setDate(chuseok.getDate() - 1);
+            let cNext = new Date(chuseok); cNext.setDate(chuseok.getDate() + 1);
+            add(cPrev.getMonth()+1, cPrev.getDate(), '추석');
+            add(cm, cd, '추석');
+            add(cNext.getMonth()+1, cNext.getDate(), '추석');
+
+            let cDays =[cPrev, chuseok, cNext];
+            if (cDays.some(d => d.getDay() === 0 || fixedHolidays.includes(`${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`))) {
+                subTargets.push(cNext);
+            }
+        }
+
+        let childDay = new Date(year, 4, 5);
+        if (childDay.getDay() === 0 || childDay.getDay() === 6 || (lunarData[year] && lunarData[year][2]===5 && lunarData[year][3]===5)) {
+            subTargets.push(childDay);
+        }
+
+        const checkWeekendSub = (m, d) => {
+            let dt = new Date(year, m-1, d);
+            if (dt.getDay() === 0 || dt.getDay() === 6) subTargets.push(dt);
+        };
+        checkWeekendSub(3, 1); checkWeekendSub(8, 15); checkWeekendSub(10, 3); checkWeekendSub(10, 9); checkWeekendSub(12, 25);
+
+        const isHoliday = (d) => {
+            const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            return holidays[ds] !== undefined;
+        };
+
+        subTargets.sort((a,b) => a - b).forEach(target => {
+            let sub = new Date(target);
+            sub.setDate(sub.getDate() + 1);
+            while (sub.getDay() === 0 || sub.getDay() === 6 || isHoliday(sub)) {
+                sub.setDate(sub.getDate() + 1);
+            }
+            add(sub.getMonth()+1, sub.getDate(), '대체공휴일');
+        });
+
+        return holidays;
+    }
+
+    async function requestPersistentStorage() {
+        if (navigator.storage && navigator.storage.persist) {
+            const isPersisted = await navigator.storage.persisted();
+            if (!isPersisted) await navigator.storage.persist();
+        }
+    }
+
+    let historyTrapInitialized = false;
+    function setupHistoryTrap() {
+        if (historyTrapInitialized || document.getElementById('loginOverlay').style.display !== 'none') return;
         history.replaceState({ page: 'base' }, null, location.href);
         history.pushState({ page: 'main' }, null, location.href);
         historyTrapInitialized = true;
     }
 
-    // 모바일 브라우저(네이버 등)는 사용자 터치 없이 스크립트로만 pushState를 하면 무시하는 경향이 있음.
-    // 따라서 사용자가 화면을 터치하거나 클릭하는 순간 트랩을 강력하게 주입함.
     window.addEventListener('click', setupHistoryTrap, { once: true });
     window.addEventListener('touchstart', setupHistoryTrap, { once: true });
 
     window.addEventListener('popstate', function(event) {
-        // 1단계 방어: 열려있는 모달이 있는지 확인하고 닫기
         const modals = document.querySelectorAll('.modal');
         let isModalOpen = false;
         modals.forEach(m => {
@@ -396,12 +578,10 @@
         });
         
         if (isModalOpen) {
-            // 모달을 닫았으므로, 다시 상태를 푸시하여 사용자가 앱 밖으로 튕겨나가지 않게 트랩 복구
             history.pushState({ page: 'main' }, null, location.href);
             return;
         }
         
-        // 2단계 방어: 현재 탭이 '홈(달력)'이 아니면 홈으로 이동
         const calendarTab = document.getElementById('tab-calendar');
         if (!calendarTab.classList.contains('active')) {
             switchTab('calendar');
@@ -409,19 +589,14 @@
             return;
         }
         
-        // 3단계 방어: 홈 탭이고 모달도 없을 때 최종 종료 확인
         const exitConfirm = confirm("앱을 종료하시겠습니까?");
         if (exitConfirm) {
-            // 사용자가 종료를 승인하면, 현재 base 상태에서 한 번 더 뒤로가기를 실행하여 앱을 완전히 빠져나감
             history.back();
         } else {
-            // 종료를 취소하면 다시 상태를 푸시하여 트랩 복구
             history.pushState({ page: 'main' }, null, location.href);
         }
     });
-    // ============================================================================
 
-    // --- [v13.32] 자가 치유(Auto-Healing) 엔진 ---
     function sanitizeTagTree() {
         if (!tagTree || typeof tagTree !== 'object' || Array.isArray(tagTree)) tagTree = {};
         for (let l in tagTree) {
@@ -432,9 +607,14 @@
         }
     }
 
-    async function getMemo(id) { 
-        const memos = await getAll();
-        return memos.find(m => String(m.id) === String(id));
+    // [v14.4] 온디맨드 로딩: 특정 메모의 전체 데이터(본문 포함)를 DB에서 직접 호출
+    function getMemo(id) {
+        return new Promise(resolve => {
+            const tx = db.transaction(STORE_NAME, 'readonly');
+            const req = tx.objectStore(STORE_NAME).get(Number(id));
+            req.onsuccess = e => resolve(e.target.result);
+            req.onerror = () => resolve(null);
+        });
     }
 
     function getTagsFromMemo(m) {
@@ -465,7 +645,7 @@
     window.addEventListener('DOMContentLoaded', () => {
         if(sessionStorage.getItem('jdm_auth') === 'true') {
             document.getElementById('loginOverlay').style.display = 'none';
-            setupHistoryTrap(); // 이미 로그인 상태면 즉시 트랩 설치 시도
+            setupHistoryTrap(); 
         }
     });
     
@@ -474,7 +654,7 @@
         if(document.getElementById('passInput').value === getPassword()) {
             document.getElementById('loginOverlay').style.display = 'none';
             sessionStorage.setItem('jdm_auth', 'true'); 
-            setupHistoryTrap(); // 로그인 성공 시 트랩 설치
+            setupHistoryTrap(); 
         } else { alert('비밀번호가 틀렸습니다.'); }
     }
     function changePassword() {
@@ -482,7 +662,6 @@
         const newP = prompt("새 비밀번호:"); if(newP) { localStorage.setItem('appPass', newP); alert("변경 완료."); }
     }
 
-    // ---[v14] IndexedDB 구조 개편 (Blob 이미지 저장소 추가) ---
     const DB_NAME = 'JeongArchiveDB_v9'; 
     const STORE_NAME = 'memos';
     const STORE_IMAGES = 'images'; 
@@ -500,7 +679,7 @@
             let oldTags = JSON.parse(localStorage.getItem('myTags')) ||[];
             tagTree = {
                 "000 총류 (기본/일반)": { "일반":["#일반", "#생활"], "가족/인생":["#가족", "#인생", "#조언", "#아이디어"] },
-                "200 종교/철학": { "철학":["#철학", "#심리"], "종교": ["#종교", "#불교"] },
+                "200 종교/철학": { "철학":["#철학", "#심리"], "종교":["#종교", "#불교"] },
                 "300 사회과학": { "경제/금융":["#경제", "#부동산", "#가상자산", "#자산관리", "#재개발재건축", "#FOMO"], "사회/국제":["#사회", "#국제"] },
                 "500 기술과학": { "토목/공설":["#현장", "#어곡천", "#어곡천2공구", "#어곡천3공구", "#건설안전"], "첨단/IT":["#AI", "#기술", "#로봇", "#피지컬AI", "#OpenClaw", "#과학", "#드론"], "생활/의학":["#건강", "#레시피", "#자동차", "#운동", "#블랙아이스"] },
                 "600 예술/여가": { "예술/취미":["#예술", "#music", "#7080", "#영화", "#취미"], "여행": ["#여행"] },
@@ -541,8 +720,6 @@
     let currentRenderPage = 1;
     const ITEMS_PER_PAGE = 15;
 
-    const HOLIDAYS = { '2025-01-01': '신정', '2025-01-28': '설날', '2025-01-29': '설날', '2025-01-30': '설날', '2025-03-01': '삼일절', '2025-05-05': '어린이날', '2025-05-06': '석가탄신일', '2025-06-06': '현충일', '2025-08-15': '광복절', '2025-10-03': '개천절', '2025-10-05': '추석', '2025-10-06': '추석', '2025-10-07': '추석', '2025-10-08': '대체공휴일', '2025-10-09': '한글날', '2025-12-25': '성탄절', '2026-01-01': '신정', '2026-02-16': '설날', '2026-02-17': '설날', '2026-02-18': '설날', '2026-03-01': '삼일절', '2026-05-05': '어린이날', '2026-05-24': '석가탄신일', '2026-06-06': '현충일', '2026-08-15': '광복절', '2026-09-24': '추석', '2026-09-25': '추석', '2026-09-26': '추석', '2026-10-03': '개천절', '2026-10-09': '한글날', '2026-12-25': '성탄절' };
-
     const request = indexedDB.open(DB_NAME, 2); 
     request.onupgradeneeded = e => { 
         db = e.target.result; 
@@ -551,6 +728,7 @@
     };
     request.onsuccess = async e => { 
         db = e.target.result; 
+        await requestPersistentStorage(); 
         await runBase64ToBlobMigration(); 
         initApp(); 
     };
@@ -573,9 +751,18 @@
         return new Blob(byteArrays, { type: contentType });
     }
 
+    function blobToBase64(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
+
     async function runBase64ToBlobMigration() {
         const memos = await getAll();
-        let needsUpdate = [];
+        let needsUpdate =[];
         let newImages =[];
 
         for (let m of memos) {
@@ -616,10 +803,7 @@
                 needsUpdate.forEach(m => mStore.put(m));
                 newImages.forEach(img => iStore.put(img));
                 
-                tx.oncomplete = () => {
-                    console.log(`[v14 최적화 완료] ${needsUpdate.length}개의 메모에서 Base64 이미지를 Blob으로 변환했습니다.`);
-                    resolve();
-                };
+                tx.oncomplete = () => { resolve(); };
                 tx.onerror = (e) => reject(e);
             });
         }
@@ -668,11 +852,67 @@
         return tempDiv.innerHTML;
     }
 
-    function initApp() { 
+    function compressImage(file) { 
+        return new Promise(r => { 
+            const reader = new FileReader(); 
+            reader.onload = e => { 
+                const img = new Image(); 
+                img.onload = () => { 
+                    const c = document.createElement('canvas'); 
+                    let w=img.width, h=img.height; 
+                    if(w>1024) { h*=1024/w; w=1024; } 
+                    c.width=w; c.height=h; 
+                    c.getContext('2d').drawImage(img,0,0,w,h); 
+                    r(c.toDataURL('image/jpeg',0.7)); 
+                }; 
+                img.src = e.target.result; 
+            }; 
+            reader.readAsDataURL(file); 
+        }); 
+    }
+
+    async function insertImageToEditor(input, editorId) { 
+        const files = input.files; 
+        if(files.length === 0) return; 
+        const editor = document.getElementById(editorId); 
+        
+        for(let i=0; i<files.length; i++) { 
+            const file = files[i]; 
+            if(file.type.startsWith('image/')) { 
+                const base64Data = await compressImage(file); 
+                
+                const matches = base64Data.match(/^data:(image\/\w+);base64,(.+)$/);
+                if (matches) {
+                    const blob = base64ToBlob(matches[2], matches[1]);
+                    const imgId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    
+                    const tx = db.transaction(STORE_IMAGES, 'readwrite');
+                    tx.objectStore(STORE_IMAGES).put({ id: imgId, blob: blob });
+                    
+                    const img = document.createElement('img'); 
+                    img.setAttribute('data-local-id', imgId);
+                    img.src = URL.createObjectURL(blob); 
+                    editor.appendChild(img); 
+                    editor.appendChild(document.createElement('br')); 
+                }
+            } 
+        } 
+        input.value = ''; 
+    }
+
+    async function initApp() { 
         initTagTree(); 
         updateTagSelectors(); 
         document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
         addLinkField('inputLinkContainer');
+        
+        // [v14.4] 스마트 어드바이저 알림
+        const mb = await updateHealthGauge();
+        if (mb >= 300 && !sessionStorage.getItem('health_warned')) {
+            alert("💡 [Smart Advisor]\n데이터가 무거워졌습니다 (" + mb + "MB).\n안전한 사용을 위해 '데이터 탭'에서 백업 후 과거 데이터를 정리할 때입니다.");
+            sessionStorage.setItem('health_warned', 'true');
+        }
+
         renderCalendar(); 
         renderMemos(true); 
     }
@@ -684,8 +924,10 @@
         document.getElementById('tab-'+tab).classList.add('active');
         const tabs =['calendar','list','write','data'];
         document.querySelectorAll('.nav-item')[tabs.indexOf(tab)].classList.add('active');
+        
         if(tab === 'list') renderMemos(true);
         if(tab === 'calendar') { currDate = new Date(); renderCalendar(); }
+        if(tab === 'data') updateHealthGauge();
     }
 
     function renderTagSelector(containerId, selectedSet) {
@@ -857,7 +1099,7 @@
             tagTree[targetL][m] = tagTree[l][m]; 
             delete tagTree[l][m]; 
         } else if (type === 'sTag') {
-            const [targetL, targetM] = val.split('|');
+            const[targetL, targetM] = val.split('|');
             if(tagTree[targetL][targetM].includes(t)) return alert('해당 분류에 이미 같은 태그가 있습니다.');
             tagTree[l][m] = tagTree[l][m].filter(tag => tag !== t);
             tagTree[targetL][targetM].push(t);
@@ -947,7 +1189,7 @@
 
     async function openViewModal(id) {
         try {
-            let m = await getMemo(id);
+            let m = await getMemo(id); // [v14.4] DB에서 직접 전체 데이터 호출 (Lazy Fetch)
             if(!m) return alert("해당 데이터를 불러올 수 없습니다.");
             
             currentActiveMemoId = m.id; 
@@ -977,7 +1219,7 @@
 
     async function openEditPopup(id) {
         try {
-            let m = await getMemo(id);
+            let m = await getMemo(id); // [v14.4] DB에서 직접 전체 데이터 호출
             if(!m) return alert("해당 데이터를 불러올 수 없습니다.");
             
             currentActiveMemoId = m.id; 
@@ -1005,8 +1247,10 @@
         if(confirm('삭제하시겠습니까?')) {
             const tx = db.transaction(STORE_NAME, 'readwrite');
             tx.objectStore(STORE_NAME).delete(currentActiveMemoId);
-            tx.oncomplete = () => {
-                alert('삭제됨'); closeModal('viewModal'); renderMemos(true); renderCalendar();
+            tx.oncomplete = async () => {
+                alert('삭제됨'); closeModal('viewModal'); 
+                await updateHealthGauge();
+                renderMemos(true); renderCalendar();
             };
         }
     }
@@ -1026,8 +1270,10 @@
             tags: tags, 
             content: finalContent, 
             links: links 
-        }).onsuccess = () => {
-            alert('수정 완료!'); closeModal('editPopup'); renderMemos(true); renderCalendar();
+        }).onsuccess = async () => {
+            alert('수정 완료!'); closeModal('editPopup'); 
+            await updateHealthGauge();
+            renderMemos(true); renderCalendar();
         };
     }
 
@@ -1080,16 +1326,48 @@
         }
     }
 
+    // [v14.4] 온디맨드 로딩: 전체 데이터를 가져오되, 과거 데이터는 본문을 잘라내어 메모리 최적화
+    function getAllLightweight() {
+        return new Promise(resolve => {
+            const tx = db.transaction(STORE_NAME, 'readonly');
+            const req = tx.objectStore(STORE_NAME).getAll();
+            req.onsuccess = e => {
+                const memos = e.target.result;
+                const threeMonthsAgo = new Date();
+                threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+                const cutoff = parseInt(`${threeMonthsAgo.getFullYear()}${String(threeMonthsAgo.getMonth()+1).padStart(2,'0')}${String(threeMonthsAgo.getDate()).padStart(2,'0')}`);
+
+                memos.sort((a,b) => b.id - a.id);
+
+                memos.forEach((m, index) => {
+                    const mDate = parseInt(normalizeDate(m.dateStr));
+                    // 최신 100건이 아니면서 3개월 이전 데이터인 경우 본문을 요약본으로 대체
+                    if (index >= 100 && mDate < cutoff) {
+                        if (m.content) {
+                            m.content = m.content.replace(/<[^>]*>?/gm, '').substring(0, 100);
+                        }
+                        m.isLightweight = true;
+                    }
+                });
+                resolve(memos);
+            };
+        });
+    }
+
+    // 백업 및 아카이빙용 전체 원본 데이터 호출
+    function getAll() { 
+        return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result)); 
+    }
+
     async function renderMemos(resetPage = true) {
         try {
             if(resetPage) { currentRenderPage = 1; }
-            const memos = await getAll();
+            const memos = await getAllLightweight(); // [v14.4] 가벼운 데이터 호출
             const filter = document.getElementById('listFilter').value;
             const key = document.getElementById('searchInput').value;
             const sDate = document.getElementById('filterStartDate').value;
             const eDate = document.getElementById('filterEndDate').value;
             
-            memos.sort((a,b) => b.id - a.id);
             sanitizeTagTree();
 
             currentFilteredMemos = memos.filter(m => {
@@ -1155,7 +1433,11 @@
                 tx.objectStore(STORE_NAME).delete(id);
                 tx.objectStore(STORE_NAME).delete(Number(id)); 
             });
-            tx.oncomplete = () => { alert("삭제됨"); toggleSelectMode(); renderMemos(true); renderCalendar(); };
+            tx.oncomplete = async () => { 
+                alert("삭제됨"); toggleSelectMode(); 
+                await updateHealthGauge();
+                renderMemos(true); renderCalendar(); 
+            };
         }
     }
 
@@ -1168,13 +1450,17 @@
         const first = new Date(y,m,1).getDay(), last = new Date(y,m+1,0).getDate();
         for(let i=0; i<first; i++) grid.innerHTML += `<div></div>`;
         
-        const memos = await getAll();
+        if (!holidayCache[y]) holidayCache[y] = generateHolidays(y);
+        const currentYearHolidays = holidayCache[y];
+
+        const memos = await getAllLightweight(); //[v14.4] 달력도 가벼운 데이터로 렌더링
         for(let d=1; d<=last; d++) {
             const targetStr = `${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
             const isoStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; 
             
             const dayMemos = memos.filter(memo => normalizeDate(memo.dateStr) === targetStr);
-            const holidayName = HOLIDAYS[isoStr];
+            const holidayName = currentYearHolidays[isoStr];
+            
             let exClass = new Date(y,m,d).getDay()===0?'sun':new Date(y,m,d).getDay()===6?'sat':'';
             if(holidayName) exClass += ' holiday';
             if(y===new Date().getFullYear() && m===new Date().getMonth() && d===new Date().getDate()) exClass += ' today';
@@ -1210,7 +1496,7 @@
         currentSelectedDateKey = targetStr;
         if(!isRefresh) renderCalendar(); 
 
-        const memos = await getAll();
+        const memos = await getAllLightweight();
         const target = memos.filter(m => normalizeDate(m.dateStr) === targetStr);
         
         const y = targetStr.substring(0, 4);
@@ -1234,8 +1520,28 @@
         document.getElementById('calendarMemos').innerHTML = html;
     }
 
-    function backupData() { 
-        getAll().then(memos => { 
+    // ============================================================================
+    //[v14.4] 스마트 백업 어드바이저 & 데이터 다이어트 로직
+    // ============================================================================
+    async function openBackupModal() {
+        const mb = await getStorageHealth();
+        const advice = document.getElementById('backupAdviceText');
+        if (mb >= 300) {
+            advice.innerHTML = `<span class="text-danger font-bold">현재 용량(${mb}MB)이 큽니다.</span><br>안정성을 위해 <b>'초경량 텍스트 백업'</b>을 권장합니다.`;
+        } else {
+            advice.innerHTML = `현재 용량(${mb}MB)은 안전한 수준입니다.<br>원하시는 백업 방식을 선택하세요.`;
+        }
+        document.getElementById('backupModal').style.display = 'flex';
+    }
+
+    async function executeBackup(type) {
+        closeModal('backupModal');
+        const btn = document.getElementById('backupBtn');
+        btn.innerText = "백업 파일 생성 중...";
+        btn.disabled = true;
+
+        try {
+            const memos = await getAll(); // 백업은 원본 전체 데이터 필요
             const startVal = document.getElementById('backupStartDate').value;
             const endVal = document.getElementById('backupEndDate').value;
             
@@ -1244,32 +1550,92 @@
             
             if (startVal || endVal) {
                 targetMemos = memos.filter(m => checkDateRange(m.dateStr, startVal, endVal));
-                if(targetMemos.length === 0) return alert('해당 기간에 저장된 데이터가 없습니다.');
+                if(targetMemos.length === 0) throw new Error('해당 기간에 저장된 데이터가 없습니다.');
                 const sStr = startVal ? startVal.replace(/-/g, '').slice(2) : "START";
                 const eStr = endVal ? endVal.replace(/-/g, '').slice(2) : "END";
                 dateSuffix = `${sStr}_${eStr}`;
             } else {
                 dateSuffix = new Date().toISOString().slice(0,10).replace(/-/g, '');
             }
-            
-            const backupObj = {
-                version: "v14.1", 
-                savedAt: new Date().toISOString(),
-                memos: targetMemos,
-                tagTree: tagTree
-            };
-            const a = document.createElement('a'); 
-            a.href = URL.createObjectURL(new Blob([JSON.stringify(backupObj)],{type:'application/json'})); 
-            a.download = `JDM_Backup_${dateSuffix}.json`; 
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); 
-        }); 
+
+            await performBackup(targetMemos, type, dateSuffix);
+        } catch (error) {
+            console.error(error);
+            alert(error.message || "백업 중 오류가 발생했습니다.");
+        } finally {
+            btn.innerText = "스마트 백업 시작하기";
+            btn.disabled = false;
+        }
+    }
+
+    async function performBackup(targetMemos, type, dateSuffix) {
+        let imageBackup =[];
+        if (type === 'full') {
+            const images = await new Promise(resolve => {
+                const tx = db.transaction(STORE_IMAGES, 'readonly');
+                const req = tx.objectStore(STORE_IMAGES).getAll();
+                req.onsuccess = e => resolve(e.target.result);
+                req.onerror = () => resolve([]);
+            });
+
+            for (let img of images) {
+                if (img.blob) {
+                    const base64 = await blobToBase64(img.blob);
+                    imageBackup.push({ id: img.id, dataUrl: base64 });
+                }
+            }
+        }
+        
+        const backupObj = {
+            version: "v14.4", 
+            savedAt: new Date().toISOString(),
+            type: type,
+            memos: targetMemos,
+            tagTree: tagTree,
+            images: imageBackup
+        };
+
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(backupObj)],{type:'application/json'})); 
+        a.download = `JDM_${type==='full'?'Full':'Text'}_${dateSuffix}.json`; 
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); 
+    }
+
+    async function executeDataDiet() {
+        const dateVal = document.getElementById('dietDate').value;
+        if (!dateVal) return alert("날짜를 선택해주세요.");
+        
+        const memos = await getAll(); 
+        const targetMemos = memos.filter(m => {
+            const mDate = parseInt(normalizeDate(m.dateStr));
+            const dDate = parseInt(dateVal.replace(/-/g, ''));
+            return mDate < dDate;
+        });
+
+        if (targetMemos.length === 0) return alert("해당 날짜 이전에 작성된 데이터가 없습니다.");
+
+        if (!confirm(`총 ${targetMemos.length}개의 과거 데이터를 아카이빙(백업 후 삭제) 하시겠습니까?\n\n※ 확인을 누르시면 백업 파일이 다운로드된 후 앱에서 데이터가 삭제됩니다.`)) return;
+
+        // 1. 백업 파일 생성
+        await performBackup(targetMemos, 'full', `Archive_Before_${dateVal.replace(/-/g, '')}`);
+
+        // 2. DB에서 삭제
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        targetMemos.forEach(m => tx.objectStore(STORE_NAME).delete(m.id));
+        
+        tx.oncomplete = async () => {
+            alert("아카이빙이 완료되었습니다. 데이터가 가벼워졌습니다!");
+            await updateHealthGauge();
+            renderMemos(true);
+            renderCalendar();
+        };
     }
 
     function restoreData(input) { 
         const file = input.files[0]; 
         if(!file) return; 
         const reader = new FileReader(); 
-        reader.onload = e => { 
+        reader.onload = async e => { 
             try { 
                 let data = JSON.parse(e.target.result); 
                 let memoList =[];
@@ -1290,13 +1656,29 @@
                     memoList = data.memos;
                     localStorage.removeItem('tagTree_v3');
                 }
+
+                let imageList =[];
+                if (data.images && Array.isArray(data.images)) {
+                    for (let img of data.images) {
+                        const matches = img.dataUrl.match(/^data:(image\/\w+);base64,(.+)$/);
+                        if (matches) {
+                            const blob = base64ToBlob(matches[2], matches[1]);
+                            imageList.push({ id: img.id, blob: blob });
+                        }
+                    }
+                }
                 
-                const tx = db.transaction(STORE_NAME, 'readwrite'); 
+                const tx = db.transaction([STORE_NAME, STORE_IMAGES], 'readwrite'); 
                 memoList.forEach(i => tx.objectStore(STORE_NAME).put(i)); 
+                imageList.forEach(i => tx.objectStore(STORE_IMAGES).put(i));
+
                 tx.oncomplete = () => { 
                     alert('성공적으로 복원되었습니다!\n\n※ 구버전 데이터는 3단계 폴더 구조로 자동 마이그레이션 됩니다.'); 
                     location.reload(); 
                 }; 
+                tx.onerror = () => {
+                    alert('복원 중 데이터베이스 오류가 발생했습니다.');
+                };
             } catch(err) { 
                 console.error(err);
                 alert('파일 오류: 올바른 형식의 백업 파일이 아닙니다.'); 
@@ -1320,8 +1702,6 @@
         if(navigator.share) navigator.share(s); 
         else { navigator.clipboard.writeText(`${s.title}\n\n${s.text}`); alert('복사되었습니다.'); } 
     }
-    
-    function getAll() { return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result)); }
 </script>
 </body>
 </html>
