@@ -6,11 +6,10 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v14.4</title>
+    <title>JDM Archive v14.4.1</title>
     
-    <!--[v14.4] 캐시 방지(Cache-Busting) 로직 -->
     <script>
-        const APP_VERSION = "14.4";
+        const APP_VERSION = "14.4.1";
         if (localStorage.getItem('jdm_version') !== APP_VERSION) {
             localStorage.setItem('jdm_version', APP_VERSION);
             if ('URLSearchParams' in window) {
@@ -167,7 +166,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v14.4</h1>
+    <h1>JDM Archive v14.4.1</h1>
     <button onclick="changePassword()" class="btn-icon">🔒</button>
 </header>
 
@@ -242,7 +241,6 @@
 
     <!-- 탭 4: 데이터 -->
     <div id="tab-data" class="tab-content">
-        <!-- [v14.4] 실시간 데이터 헬스 게이지 -->
         <div class="card p-25 text-center mb-20">
             <h3 class="mt-0">📊 데이터 헬스 모니터링</h3>
             <div style="background:#eee; border-radius:20px; height:24px; width:100%; overflow:hidden; position:relative; margin:15px 0;">
@@ -268,12 +266,11 @@
                 <p class="text-muted mt-10 mb-0">※ 날짜를 비워두시면 '전체 데이터'가 백업됩니다.</p>
             </div>
 
-            <!-- [v14.4] 데이터 다이어트 (자동 아카이빙) -->
             <div class="data-box-yellow mt-20">
                 <strong style="color:#d35400;">✂️ 데이터 다이어트 (자동 아카이빙)</strong>
                 <p class="text-muted mt-5 mb-10">특정 날짜 이전의 데이터를 백업 파일로 내보낸 뒤, 앱에서 삭제하여 용량을 확보합니다.</p>
                 <input type="date" id="dietDate" class="mb-10">
-                <button onclick="executeDataDiet()" class="btn btn-warning w-100">선택한 날짜 이전 데이터 비우기</button>
+                <button id="dietBtn" onclick="executeDataDiet()" class="btn btn-warning w-100">선택한 날짜 이전 데이터 비우기</button>
             </div>
 
             <div class="data-box-yellow mt-20">
@@ -291,14 +288,10 @@
     🗑️ 선택한 항목 삭제하기 (<span id="selectedCount">0</span>)
 </div>
 
-<!-- [v14.4] 스마트 백업 모달 -->
+<!--[v14.4.1] 스마트 백업 모달 (동적 렌더링용) -->
 <div id="backupModal" class="modal" style="z-index: 2600;">
-    <div class="modal-content" style="max-width: 450px;">
-        <h3 class="mt-0">💾 스마트 백업 어드바이저</h3>
-        <p id="backupAdviceText" class="mb-20" style="line-height: 1.5;"></p>
-        <button onclick="executeBackup('text')" class="btn btn-primary w-100 mb-10">📄 초경량 텍스트 백업 (빠름)</button>
-        <button onclick="executeBackup('full')" class="btn btn-success w-100 mb-10">🖼️ 이미지 포함 전체 백업 (느림)</button>
-        <button onclick="closeModal('backupModal')" class="btn btn-secondary w-100">취소</button>
+    <div class="modal-content" style="max-width: 450px;" id="backupModalContent">
+        <!-- JS에서 내용 주입 -->
     </div>
 </div>
 
@@ -399,7 +392,7 @@
 
 <script>
     // ============================================================================
-    // [v14.4] 실시간 데이터 헬스 모니터링 (용량 계산)
+    //[v14.4] 실시간 데이터 헬스 모니터링 (용량 계산)
     // ============================================================================
     async function getStorageHealth() {
         return new Promise((resolve) => {
@@ -460,7 +453,7 @@
     }
 
     // ============================================================================
-    // [v14.3] 독자적 만년 달력 엔진 (2024~2050년 음력/양력 및 대체공휴일 자동 계산)
+    // [v14.3] 독자적 만년 달력 엔진
     // ============================================================================
     let holidayCache = {};
 
@@ -607,7 +600,6 @@
         }
     }
 
-    // [v14.4] 온디맨드 로딩: 특정 메모의 전체 데이터(본문 포함)를 DB에서 직접 호출
     function getMemo(id) {
         return new Promise(resolve => {
             const tx = db.transaction(STORE_NAME, 'readonly');
@@ -906,7 +898,6 @@
         document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
         addLinkField('inputLinkContainer');
         
-        // [v14.4] 스마트 어드바이저 알림
         const mb = await updateHealthGauge();
         if (mb >= 300 && !sessionStorage.getItem('health_warned')) {
             alert("💡 [Smart Advisor]\n데이터가 무거워졌습니다 (" + mb + "MB).\n안전한 사용을 위해 '데이터 탭'에서 백업 후 과거 데이터를 정리할 때입니다.");
@@ -1189,7 +1180,7 @@
 
     async function openViewModal(id) {
         try {
-            let m = await getMemo(id); // [v14.4] DB에서 직접 전체 데이터 호출 (Lazy Fetch)
+            let m = await getMemo(id); 
             if(!m) return alert("해당 데이터를 불러올 수 없습니다.");
             
             currentActiveMemoId = m.id; 
@@ -1219,7 +1210,7 @@
 
     async function openEditPopup(id) {
         try {
-            let m = await getMemo(id); // [v14.4] DB에서 직접 전체 데이터 호출
+            let m = await getMemo(id); 
             if(!m) return alert("해당 데이터를 불러올 수 없습니다.");
             
             currentActiveMemoId = m.id; 
@@ -1326,7 +1317,6 @@
         }
     }
 
-    // [v14.4] 온디맨드 로딩: 전체 데이터를 가져오되, 과거 데이터는 본문을 잘라내어 메모리 최적화
     function getAllLightweight() {
         return new Promise(resolve => {
             const tx = db.transaction(STORE_NAME, 'readonly');
@@ -1341,7 +1331,6 @@
 
                 memos.forEach((m, index) => {
                     const mDate = parseInt(normalizeDate(m.dateStr));
-                    // 최신 100건이 아니면서 3개월 이전 데이터인 경우 본문을 요약본으로 대체
                     if (index >= 100 && mDate < cutoff) {
                         if (m.content) {
                             m.content = m.content.replace(/<[^>]*>?/gm, '').substring(0, 100);
@@ -1354,7 +1343,6 @@
         });
     }
 
-    // 백업 및 아카이빙용 전체 원본 데이터 호출
     function getAll() { 
         return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result)); 
     }
@@ -1362,7 +1350,7 @@
     async function renderMemos(resetPage = true) {
         try {
             if(resetPage) { currentRenderPage = 1; }
-            const memos = await getAllLightweight(); // [v14.4] 가벼운 데이터 호출
+            const memos = await getAllLightweight(); 
             const filter = document.getElementById('listFilter').value;
             const key = document.getElementById('searchInput').value;
             const sDate = document.getElementById('filterStartDate').value;
@@ -1453,7 +1441,7 @@
         if (!holidayCache[y]) holidayCache[y] = generateHolidays(y);
         const currentYearHolidays = holidayCache[y];
 
-        const memos = await getAllLightweight(); //[v14.4] 달력도 가벼운 데이터로 렌더링
+        const memos = await getAllLightweight(); 
         for(let d=1; d<=last; d++) {
             const targetStr = `${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
             const isoStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; 
@@ -1521,27 +1509,39 @@
     }
 
     // ============================================================================
-    //[v14.4] 스마트 백업 어드바이저 & 데이터 다이어트 로직
+    // [v14.4.1] 투스텝 다운로드 & 청크 분할 압축 백업 로직
     // ============================================================================
     async function openBackupModal() {
         const mb = await getStorageHealth();
-        const advice = document.getElementById('backupAdviceText');
+        const content = document.getElementById('backupModalContent');
+
+        let adviceHtml = '';
         if (mb >= 300) {
-            advice.innerHTML = `<span class="text-danger font-bold">현재 용량(${mb}MB)이 큽니다.</span><br>안정성을 위해 <b>'초경량 텍스트 백업'</b>을 권장합니다.`;
+            adviceHtml = `<span class="text-danger font-bold">현재 용량(${mb}MB)이 큽니다.</span><br>안정성을 위해 <b>'초경량 텍스트 백업'</b>을 권장합니다.`;
         } else {
-            advice.innerHTML = `현재 용량(${mb}MB)은 안전한 수준입니다.<br>원하시는 백업 방식을 선택하세요.`;
+            adviceHtml = `현재 용량(${mb}MB)은 안전한 수준입니다.<br>원하시는 백업 방식을 선택하세요.`;
         }
+
+        content.innerHTML = `
+            <h3 class="mt-0">💾 스마트 백업 어드바이저</h3>
+            <p class="mb-20" style="line-height: 1.5;">${adviceHtml}</p>
+            <button onclick="executeBackup('text')" class="btn btn-primary w-100 mb-10">📄 초경량 텍스트 백업 (빠름)</button>
+            <button onclick="executeBackup('full')" class="btn btn-success w-100 mb-10">🖼️ 이미지 포함 전체 백업 (느림)</button>
+            <button onclick="closeModal('backupModal')" class="btn btn-secondary w-100">취소</button>
+        `;
         document.getElementById('backupModal').style.display = 'flex';
     }
 
     async function executeBackup(type) {
-        closeModal('backupModal');
-        const btn = document.getElementById('backupBtn');
-        btn.innerText = "백업 파일 생성 중...";
-        btn.disabled = true;
+        const content = document.getElementById('backupModalContent');
+        content.innerHTML = `
+            <h3 class="mt-0">⏳ 백업 파일 생성 중...</h3>
+            <p class="text-muted">데이터 용량에 따라 10초~1분 정도 소요될 수 있습니다.<br>화면을 닫지 말고 잠시만 기다려주세요.</p>
+            <div style="text-align:center; margin: 20px 0; font-size: 2rem;">🔄</div>
+        `;
 
         try {
-            const memos = await getAll(); // 백업은 원본 전체 데이터 필요
+            const memos = await getAll(); 
             const startVal = document.getElementById('backupStartDate').value;
             const endVal = document.getElementById('backupEndDate').value;
             
@@ -1558,19 +1558,33 @@
                 dateSuffix = new Date().toISOString().slice(0,10).replace(/-/g, '');
             }
 
-            await performBackup(targetMemos, type, dateSuffix);
+            const { url, fileName } = await performBackup(targetMemos, type, dateSuffix);
+
+            content.innerHTML = `
+                <h3 class="mt-0 text-success">✅ 백업 준비 완료!</h3>
+                <p class="text-muted">아래 버튼을 눌러 파일을 기기에 저장하세요.</p>
+                <a href="${url}" download="${fileName}" class="btn btn-success w-100 mb-10" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:1.1rem;">💾 파일 다운로드 저장</a>
+                <button onclick="closeModal('backupModal')" class="btn btn-secondary w-100">닫기</button>
+            `;
         } catch (error) {
             console.error(error);
-            alert(error.message || "백업 중 오류가 발생했습니다.");
-        } finally {
-            btn.innerText = "스마트 백업 시작하기";
-            btn.disabled = false;
+            content.innerHTML = `
+                <h3 class="mt-0 text-danger">❌ 오류 발생</h3>
+                <p>${error.message || "백업 중 문제가 발생했습니다."}</p>
+                <button onclick="closeModal('backupModal');" class="btn btn-secondary w-100">닫기</button>
+            `;
         }
     }
 
+    // [v14.4.1] 청크 분할 압축 (메모리 초과 방지)
     async function performBackup(targetMemos, type, dateSuffix) {
-        let imageBackup =[];
+        const blobParts =[];
+        blobParts.push(`{\n"version": "v14.4.1",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
+        blobParts.push(`"tagTree": ${JSON.stringify(tagTree)},\n`);
+        blobParts.push(`"memos": ${JSON.stringify(targetMemos)}`);
+
         if (type === 'full') {
+            blobParts.push(`,\n"images":[\n`);
             const images = await new Promise(resolve => {
                 const tx = db.transaction(STORE_IMAGES, 'readonly');
                 const req = tx.objectStore(STORE_IMAGES).getAll();
@@ -1578,27 +1592,25 @@
                 req.onerror = () => resolve([]);
             });
 
+            let isFirstImg = true;
             for (let img of images) {
                 if (img.blob) {
                     const base64 = await blobToBase64(img.blob);
-                    imageBackup.push({ id: img.id, dataUrl: base64 });
+                    if (!isFirstImg) blobParts.push(`,\n`);
+                    blobParts.push(JSON.stringify({ id: img.id, dataUrl: base64 }));
+                    isFirstImg = false;
                 }
             }
+            blobParts.push(`\n]`);
         }
-        
-        const backupObj = {
-            version: "v14.4", 
-            savedAt: new Date().toISOString(),
-            type: type,
-            memos: targetMemos,
-            tagTree: tagTree,
-            images: imageBackup
-        };
 
-        const a = document.createElement('a'); 
-        a.href = URL.createObjectURL(new Blob([JSON.stringify(backupObj)],{type:'application/json'})); 
-        a.download = `JDM_${type==='full'?'Full':'Text'}_${dateSuffix}.json`; 
-        document.body.appendChild(a); a.click(); document.body.removeChild(a); 
+        blobParts.push(`\n}`);
+
+        const finalBlob = new Blob(blobParts, { type: 'application/json' });
+        const url = URL.createObjectURL(finalBlob);
+        const fileName = `JDM_${type==='full'?'Full':'Text'}_${dateSuffix}.json`;
+
+        return { url, fileName };
     }
 
     async function executeDataDiet() {
@@ -1616,19 +1628,42 @@
 
         if (!confirm(`총 ${targetMemos.length}개의 과거 데이터를 아카이빙(백업 후 삭제) 하시겠습니까?\n\n※ 확인을 누르시면 백업 파일이 다운로드된 후 앱에서 데이터가 삭제됩니다.`)) return;
 
-        // 1. 백업 파일 생성
-        await performBackup(targetMemos, 'full', `Archive_Before_${dateVal.replace(/-/g, '')}`);
+        const btn = document.getElementById('dietBtn');
+        const originalText = btn.innerText;
+        btn.innerText = "아카이빙 진행 중... (화면 유지)";
+        btn.disabled = true;
 
-        // 2. DB에서 삭제
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        targetMemos.forEach(m => tx.objectStore(STORE_NAME).delete(m.id));
-        
-        tx.oncomplete = async () => {
-            alert("아카이빙이 완료되었습니다. 데이터가 가벼워졌습니다!");
-            await updateHealthGauge();
-            renderMemos(true);
-            renderCalendar();
-        };
+        try {
+            const { url, fileName } = await performBackup(targetMemos, 'full', `Archive_Before_${dateVal.replace(/-/g, '')}`);
+
+            const content = document.getElementById('backupModalContent');
+            content.innerHTML = `
+                <h3 class="mt-0 text-success">✅ 아카이빙 백업 준비 완료!</h3>
+                <p class="text-muted">먼저 아래 버튼을 눌러 백업 파일을 기기에 저장하세요.<br><br><strong class="text-danger">다운로드가 완료된 후 '데이터 비우기 실행'을 눌러주세요.</strong></p>
+                <a href="${url}" download="${fileName}" class="btn btn-success w-100 mb-15" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:1.1rem;">💾 1단계: 백업 파일 다운로드</a>
+                <button id="confirmDietBtn" class="btn btn-danger w-100 mb-10">🗑️ 2단계: 데이터 비우기 실행</button>
+                <button onclick="closeModal('backupModal')" class="btn btn-secondary w-100">취소</button>
+            `;
+            document.getElementById('backupModal').style.display = 'flex';
+
+            document.getElementById('confirmDietBtn').onclick = () => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                targetMemos.forEach(m => tx.objectStore(STORE_NAME).delete(m.id));
+
+                tx.oncomplete = async () => {
+                    alert("아카이빙이 완료되었습니다. 데이터가 가벼워졌습니다!");
+                    closeModal('backupModal');
+                    await updateHealthGauge();
+                    renderMemos(true);
+                    renderCalendar();
+                };
+            };
+        } catch(e) {
+            alert("오류 발생: " + e.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
     }
 
     function restoreData(input) { 
