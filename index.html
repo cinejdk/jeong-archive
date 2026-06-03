@@ -6,10 +6,11 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v14.4.4</title>
+    <title>JDM Archive v14.4.5</title>
     
+    <!--[v14.4.5] 캐시 방지(Cache-Busting) 로직 -->
     <script>
-        const APP_VERSION = "14.4.4";
+        const APP_VERSION = "14.4.5";
         if (localStorage.getItem('jdm_version') !== APP_VERSION) {
             localStorage.setItem('jdm_version', APP_VERSION);
             if ('URLSearchParams' in window) {
@@ -170,7 +171,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v14.4.4</h1>
+    <h1>JDM Archive v14.4.5</h1>
     <button onclick="changePassword()" class="btn-icon">🔒</button>
 </header>
 
@@ -178,9 +179,9 @@
     <!-- 탭 1: 달력 -->
     <div id="tab-calendar" class="tab-content active">
         <div class="card p-15 mb-15 flex-between">
-            <button onclick="changeMonth(-1)" class="btn-icon text-primary">◀</button>
+            <button onclick="changeMonth(-1)" class="btn-icon text-primary" style="color: var(--primary-color) !important;">◀</button>
             <h2 id="currentMonth" style="margin:0; font-size:1.3rem;"></h2>
-            <button onclick="changeMonth(1)" class="btn-icon text-primary">▶</button>
+            <button onclick="changeMonth(1)" class="btn-icon text-primary" style="color: var(--primary-color) !important;">▶</button>
         </div>
         <div class="card">
             <div id="calendarGrid" class="calendar-grid"></div>
@@ -396,10 +397,10 @@
 
 <script>
     // ============================================================================
-    // [v14.4.4] 대분류 스마트 자동 정렬 로직 (가나다/숫자순)
+    // [v14.4.5] 스마트 데이터 저장/동적 정렬 기저 설계
     // ============================================================================
     function saveTagTree() { 
-        // 대분류(Large Category)는 이름순(숫자/가나다순)으로 자동 정렬
+        // 저장 시에도 데이터의 무결성을 위해 대분류 오름차순 가나다/숫자 정렬
         let sortedTree = {};
         Object.keys(tagTree).sort().forEach(l => {
             sortedTree[l] = tagTree[l];
@@ -455,7 +456,7 @@
     }
 
     // ============================================================================
-    //[v14.4] 실시간 데이터 헬스 모니터링 (용량 계산)
+    // [v14.4] 실시간 데이터 헬스 모니터링 (용량 계산)
     // ============================================================================
     async function getStorageHealth() {
         return new Promise((resolve) => {
@@ -733,28 +734,31 @@
         if (Object.keys(tagTree).length === 0) {
             let oldTags = JSON.parse(localStorage.getItem('myTags')) ||[];
             tagTree = {
-                "000 총류 (기본/일반)": { "일반":["#일반", "#생활"], "가족/인생":["#가족", "#인생", "#조언", "#아이디어"] },
-                "200 종교/철학": { "철학":["#철학", "#심리"], "종교":["#종교", "#불교"] },
-                "300 사회과학": { "경제/금융":["#경제", "#부동산", "#가상자산", "#자산관리", "#재개발재건축", "#FOMO"], "사회/국제":["#사회", "#국제"] },
-                "500 기술과학": { "토목/공설":["#현장", "#어곡천", "#어곡천2공구", "#어곡천3공구", "#건설안전"], "첨단/IT":["#AI", "#기술", "#로봇", "#피지컬AI", "#OpenClaw", "#과학", "#드론"], "생활/의학":["#건강", "#레시피", "#자동차", "#운동", "#블랙아이스"] },
-                "600 예술/여가": { "예술/취미":["#예술", "#music", "#7080", "#영화", "#취미"], "여행": ["#여행"] },
-                "800 언어/문학/역사": { "인문":["#문학", "#책", "#역사", "#English", "#업무"] }
+                "000 기본 (일반/가족,인생)": {"일반":["#일반", "#생활"], "가족/인생":["#가족", "#인생", "#조언", "#아이디어"]},
+                "200 종교/철학/심리": {"철학":["#철학"], "종교":["#종교", "#불교"], "심리":["#심리", "#뇌과학"]},
+                "300 사회과학": {"경제/금융":["#경제", "#부동산", "#가상자산", "#자산관리", "#재개발재건축", "#FOMO"], "사회/국제":["#사회", "#국제", "#정치"]},
+                "500 기술과학": {"토목/공학":["#건설안전", "#블랙아이스", "#건설사업관리"], "기술":["#AI", "#기술", "#로봇", "#피지컬AI", "#OpenClaw", "#드론", "#자동차"], "어곡천 현장":["#어곡천", "#현장", "#어곡천2공구", "#어곡천3공구"], "과학/수학":["#과학", "#수학", "#의학"]},
+                "600 예술/여가": {"예술/취미":["#예술", "#music", "#7080", "#영화", "#취미"], "여행":["#여행"], "생활":["#레시피"], "운동/건강":["#건강", "#운동"]},
+                "800 언어/문학/역사": {"인문":["#문학", "#책", "#역사", "#English", "#업무", "#공부법"], "교육":["#육아"]}
             };
             const flatTreeTags = Object.values(tagTree).flatMap(m => Object.values(m).flat());
             oldTags.forEach(tag => {
                 if(!flatTreeTags.includes(tag)) {
-                    if(!tagTree["000 총류 (기본/일반)"]["미분류"]) tagTree["000 총류 (기본/일반)"]["미분류"] =[];
-                    if(!tagTree["000 총류 (기본/일반)"]["미분류"].includes(tag)) tagTree["000 총류 (기본/일반)"]["미분류"].push(tag);
+                    if(!tagTree["000 기본 (일반/가족,인생)"]["미분류"]) tagTree["000 기본 (일반/가족,인생)"]["미분류"] =[];
+                    if(!tagTree["000 기본 (일반/가족,인생)"]["미분류"].includes(tag)) tagTree["000 기본 (일반/가족,인생)"]["미분류"].push(tag);
                 }
             });
             saveTagTree();
         }
     }
 
+    // [v14.4.5] 계층 경로 탐색 시 대분류/중분류 완벽 오름차순 반영
     function getTagPath(tag) {
-        for (let l in tagTree) {
+        const sortedLKeys = Object.keys(tagTree).sort();
+        for (let l of sortedLKeys) {
             if (typeof tagTree[l] === 'object' && !Array.isArray(tagTree[l])) {
-                for (let m in tagTree[l]) {
+                const sortedMKeys = Object.keys(tagTree[l]).sort();
+                for (let m of sortedMKeys) {
                     if (Array.isArray(tagTree[l][m]) && tagTree[l][m].includes(tag)) {
                         return `${l} > ${m} > <span>${tag}</span>`;
                     }
@@ -984,29 +988,34 @@
         if(tab === 'data') updateHealthGauge();
     }
 
+    // [v14.4.5] 글 작성/수정 시 출력되는 태그 셀렉터에 동적 정렬(000 오름차순) 강제 적용
     function renderTagSelector(containerId, selectedSet) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
         const allTags = Object.values(tagTree).flatMap(m => Object.values(m).flat());
         
-        for (let l in tagTree) {
+        const sortedLKeys = Object.keys(tagTree).sort();
+        sortedLKeys.forEach(l => {
             let hasTags = false;
             for (let m in tagTree[l]) if (tagTree[l][m].length > 0) hasTags = true;
-            if (!hasTags) continue;
+            if (!hasTags) return;
 
             let lDiv = document.createElement('div');
             lDiv.className = 'tag-category-group';
             lDiv.innerHTML = `<div class="l-cat-title">📂 ${l}</div>`;
             
-            for (let m in tagTree[l]) {
-                if (tagTree[l][m].length === 0) continue;
+            const sortedMKeys = Object.keys(tagTree[l]).sort();
+            sortedMKeys.forEach(m => {
+                if (tagTree[l][m].length === 0) return;
                 let mDiv = document.createElement('div');
                 mDiv.className = 'm-cat-group';
                 mDiv.innerHTML = `<div class="m-cat-title">📁 ${m}</div>`;
                 
                 let sDiv = document.createElement('div');
                 sDiv.className = 's-cat-chips';
-                tagTree[l][m].forEach(tag => {
+                
+                const sortedSTags = [...tagTree[l][m]].sort();
+                sortedSTags.forEach(tag => {
                     let btn = document.createElement('span');
                     btn.className = 'tag-chip-btn' + (selectedSet.has(tag) ? ' active' : '');
                     btn.innerText = tag;
@@ -1019,9 +1028,9 @@
                 });
                 mDiv.appendChild(sDiv);
                 lDiv.appendChild(mDiv);
-            }
+            });
             container.appendChild(lDiv);
-        }
+        });
 
         let ghostTags =[];
         selectedSet.forEach(tag => { if (!allTags.includes(tag)) ghostTags.push(tag); });
@@ -1041,29 +1050,40 @@
         }
     }
 
+    // [v14.4.5] 목록 필터 드롭다운 구성 시에도 동적 정렬 강제 적용
     function updateTagSelectors() {
         renderTagSelector('inputTagContainer', inputSelectedTags);
         renderTagSelector('editTagContainer', editSelectedTags);
         
         let html = `<option value="all">전체보기</option>`;
-        for(let l in tagTree) {
+        
+        const sortedLKeys = Object.keys(tagTree).sort();
+        sortedLKeys.forEach(l => {
             html += `<optgroup label="📂 ${l}">`;
-            for(let m in tagTree[l]) {
-                tagTree[l][m].forEach(t => { html += `<option value="${t}">${m} > ${t}</option>`; });
-            }
+            const sortedMKeys = Object.keys(tagTree[l]).sort();
+            sortedMKeys.forEach(m => {
+                const sortedSTags = [...tagTree[l][m]].sort();
+                sortedSTags.forEach(t => { 
+                    html += `<option value="${t}">${m} > ${t}</option>`; 
+                });
+            });
             html += `</optgroup>`;
-        }
+        });
+        
         const curFilter = document.getElementById('listFilter').value;
         document.getElementById('listFilter').innerHTML = html;
         document.getElementById('listFilter').value = curFilter;
     }
 
+    // [v14.4.5] 지식 계층 관리자 렌더링 시 대분류/중분류/소분류 모두 완벽 오름차순(000, 200...)으로 화면 출력
     function openTagManager() {
         try {
             sanitizeTagTree();
             const display = document.getElementById('tagTreeDisplay');
             display.innerHTML = '';
-            for (let l in tagTree) {
+            
+            const sortedLKeys = Object.keys(tagTree).sort();
+            sortedLKeys.forEach(l => {
                 let block = document.createElement('div');
                 block.className = "card p-15 mb-15";
                 block.innerHTML = `
@@ -1077,13 +1097,15 @@
                     </div>
                 `;
                 
-                for (let m in tagTree[l]) {
+                const sortedMKeys = Object.keys(tagTree[l]).sort();
+                sortedMKeys.forEach(m => {
                     let mBlock = document.createElement('div');
                     mBlock.style = "margin-left:15px; margin-top:10px; border-left:2px solid #3498db; padding-left:10px;";
                     
                     let tagsHtml = '';
                     if (Array.isArray(tagTree[l][m])) {
-                        tagsHtml = tagTree[l][m].map(t => `
+                        const sortedSTags = [...tagTree[l][m]].sort();
+                        tagsHtml = sortedSTags.map(t => `
                             <span class="tag-item">${t} 
                                 <span style="cursor:pointer; color:#3498db; margin-left:4px;" onclick="openMoveTagModal('sTag', '${l}', '${m}', '${t}')" title="태그 이동">🔄</span>
                                 <span style="cursor:pointer; color:#f39c12; margin-left:4px;" onclick="renameSTag('${l}','${m}','${t}')" title="태그 이름 변경">✏️</span>
@@ -1107,37 +1129,40 @@
                         </div>
                     `;
                     block.appendChild(mBlock);
-                }
+                });
                 display.appendChild(block);
-            }
+            });
             document.getElementById('tagManagerModal').style.display = 'flex';
         } catch(e) {
             alert("태그 관리자를 여는 중 문제가 발생했습니다: " + e.message);
         }
     }
 
+    // [v14.4.5] 이동 모달 구성 시에도 대/중분류 드롭다운 목록 오름차순 고정
     let currentMoveTarget = null;
     function openMoveTagModal(type, l, m, t) {
         currentMoveTarget = { type, l, m, t };
         const select = document.getElementById('moveTagSelect');
         select.innerHTML = '';
         
+        const sortedLKeys = Object.keys(tagTree).sort();
         if (type === 'mCat') {
             document.getElementById('moveTagTitle').innerText = "중분류 이동";
             document.getElementById('moveTagDesc').innerText = `'${m}'을(를) 어느 대분류로 이동할까요?`;
-            Object.keys(tagTree).forEach(cat => {
+            sortedLKeys.forEach(cat => {
                 if (cat !== l) select.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
         } else if (type === 'sTag') {
             document.getElementById('moveTagTitle').innerText = "태그 이동";
             document.getElementById('moveTagDesc').innerText = `'${t}' 태그를 어느 중분류로 이동할까요?`;
-            for (let lCat in tagTree) {
-                for (let mCat in tagTree[lCat]) {
+            sortedLKeys.forEach(lCat => {
+                const sortedMKeys = Object.keys(tagTree[lCat]).sort();
+                sortedMKeys.forEach(mCat => {
                     if (lCat !== l || mCat !== m) {
                         select.innerHTML += `<option value="${lCat}|${mCat}">${lCat} > ${mCat}</option>`;
                     }
-                }
-            }
+                });
+            });
         }
         document.getElementById('moveTagModal').style.display = 'flex';
     }
@@ -1164,7 +1189,6 @@
         alert('성공적으로 이동되었습니다.');
     }
 
-    // [v14.4.4] 대분류 이름 변경 시 자동 정렬 로직 적용
     function renameLCat(oldL) {
         let newL = prompt(`'${oldL}'의 새 대분류 이름을 입력하세요:`, oldL);
         if(newL && newL.trim() && newL.trim() !== oldL) {
@@ -1176,7 +1200,6 @@
         }
     }
 
-    // [v14.4.4] 중분류 이름 변경 시 기존 순서 유지 로직 적용
     function renameMCat(l, oldM) {
         let newM = prompt(`'${oldM}'의 새 중분류 이름을 입력하세요:`, oldM);
         if(newM && newM.trim() && newM.trim() !== oldM) {
@@ -1631,6 +1654,9 @@
         document.getElementById('calendarMemos').innerHTML = html;
     }
 
+    // ============================================================================
+    // [v14.4.1] 투스텝 다운로드 & 청크 분할 압축 백업 로직
+    // ============================================================================
     async function openBackupModal() {
         const mb = await getStorageHealth();
         const content = document.getElementById('backupModalContent');
@@ -1696,36 +1722,25 @@
         }
     }
 
+    // [v14.4.1] 청크 분할 압축 (메모리 초과 방지)
     async function performBackup(targetMemos, type, dateSuffix) {
         const blobParts =[];
-        blobParts.push(`{\n"version": "v14.4.4",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
+        blobParts.push(`{\n"version": "v14.4.5",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
         blobParts.push(`"tagTree": ${JSON.stringify(tagTree)},\n`);
         blobParts.push(`"memos": ${JSON.stringify(targetMemos)}`);
 
         if (type === 'full') {
             blobParts.push(`,\n"images":[\n`);
-            
-            const requiredImageIds = new Set();
-            targetMemos.forEach(m => {
-                if (m.content) {
-                    const regex = /local-img:([^"'\s>]+)/g;
-                    let match;
-                    while ((match = regex.exec(m.content)) !== null) {
-                        requiredImageIds.add(match[1]);
-                    }
-                }
+            const images = await new Promise(resolve => {
+                const tx = db.transaction(STORE_IMAGES, 'readonly');
+                const req = tx.objectStore(STORE_IMAGES).getAll();
+                req.onsuccess = e => resolve(e.target.result);
+                req.onerror = () => resolve([]);
             });
 
             let isFirstImg = true;
-            for (let imgId of requiredImageIds) {
-                const img = await new Promise(resolve => {
-                    const tx = db.transaction(STORE_IMAGES, 'readonly');
-                    const req = tx.objectStore(STORE_IMAGES).get(imgId);
-                    req.onsuccess = e => resolve(e.target.result);
-                    req.onerror = () => resolve(null);
-                });
-
-                if (img && img.blob) {
+            for (let img of images) {
+                if (img.blob) {
                     const base64 = await blobToBase64(img.blob);
                     if (!isFirstImg) blobParts.push(`,\n`);
                     blobParts.push(JSON.stringify({ id: img.id, dataUrl: base64 }));
