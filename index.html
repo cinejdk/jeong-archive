@@ -6,11 +6,11 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v14.4.5</title>
+    <title>JDM Archive v14.4.6</title>
     
-    <!--[v14.4.5] 캐시 방지(Cache-Busting) 로직 -->
+    <!--[v14.4.6] 캐시 방지(Cache-Busting) 로직 -->
     <script>
-        const APP_VERSION = "14.4.5";
+        const APP_VERSION = "14.4.6";
         if (localStorage.getItem('jdm_version') !== APP_VERSION) {
             localStorage.setItem('jdm_version', APP_VERSION);
             if ('URLSearchParams' in window) {
@@ -171,7 +171,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v14.4.5</h1>
+    <h1>JDM Archive v14.4.6</h1>
     <button onclick="changePassword()" class="btn-icon">🔒</button>
 </header>
 
@@ -1255,7 +1255,7 @@
     }
 
     function addNewLCat() { let n = prompt("새 대분류 명칭 (예: 900 기타):"); if(n && n.trim()) { tagTree[n.trim()] = {}; saveTagTree(); openTagManager(); updateTagSelectors(); } }
-    function addNewMCat(l) { let n = prompt(`'${l}' 아래에 들어갈 중분류 명칭:`); if(n && n.trim()) { tagTree[l][n.trim()] =[]; saveTagTree(); openTagManager(); updateTagSelectors(); } }
+    function addNewMCat(l) { let n = prompt(`'${l}' 아래에 들어갈 중분류 명칭:`); if(n && n.trim()) { tagTree[l][n.trim()] =[]; saveTagTree(); updateTagSelectors(); } }
     function addNewSTag(l, m) { 
         let input = document.getElementById(`newT_${l}_${m}`);
         let n = input.value.trim();
@@ -1722,25 +1722,38 @@
         }
     }
 
-    // [v14.4.1] 청크 분할 압축 (메모리 초과 방지)
+    // [v14.4.6] 청크 분할 압축 - 타겟 메모에 종속된 이미지만 백업하도록 완전 개선
     async function performBackup(targetMemos, type, dateSuffix) {
         const blobParts =[];
-        blobParts.push(`{\n"version": "v14.4.5",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
+        blobParts.push(`{\n"version": "v14.4.6",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
         blobParts.push(`"tagTree": ${JSON.stringify(tagTree)},\n`);
         blobParts.push(`"memos": ${JSON.stringify(targetMemos)}`);
 
         if (type === 'full') {
             blobParts.push(`,\n"images":[\n`);
-            const images = await new Promise(resolve => {
-                const tx = db.transaction(STORE_IMAGES, 'readonly');
-                const req = tx.objectStore(STORE_IMAGES).getAll();
-                req.onsuccess = e => resolve(e.target.result);
-                req.onerror = () => resolve([]);
+            
+            // 타겟 메모 내에 포함된 실제 이미지 ID 목록만 정밀 수집
+            const requiredImageIds = new Set();
+            targetMemos.forEach(m => {
+                if (m.content) {
+                    const regex = /local-img:([^"'\s>]+)/g;
+                    let match;
+                    while ((match = regex.exec(m.content)) !== null) {
+                        requiredImageIds.add(match[1]);
+                    }
+                }
             });
 
             let isFirstImg = true;
-            for (let img of images) {
-                if (img.blob) {
+            for (let imgId of requiredImageIds) {
+                const img = await new Promise(resolve => {
+                    const tx = db.transaction(STORE_IMAGES, 'readonly');
+                    const req = tx.objectStore(STORE_IMAGES).get(imgId);
+                    req.onsuccess = e => resolve(e.target.result);
+                    req.onerror = () => resolve(null);
+                });
+
+                if (img && img.blob) {
                     const base64 = await blobToBase64(img.blob);
                     if (!isFirstImg) blobParts.push(`,\n`);
                     blobParts.push(JSON.stringify({ id: img.id, dataUrl: base64 }));
