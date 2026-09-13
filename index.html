@@ -6,11 +6,11 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v14.4.6</title>
+    <title>JDM Archive v14.4.7</title>
     
-    <!--[v14.4.6] 캐시 방지(Cache-Busting) 로직 -->
+    <!--[v14.4.7] 캐시 방지(Cache-Busting) 로직 -->
     <script>
-        const APP_VERSION = "14.4.6";
+        const APP_VERSION = "14.4.7";
         if (localStorage.getItem('jdm_version') !== APP_VERSION) {
             localStorage.setItem('jdm_version', APP_VERSION);
             if ('URLSearchParams' in window) {
@@ -55,7 +55,6 @@
         .btn-outline-info { border: 1px solid #3498db; background: #fff; color: #3498db; padding: 4px 8px; font-size: 0.8rem; }
         .btn-outline-warning { border: 1px solid #9b59b6; background: #fff; color: #9b59b6; padding: 4px 8px; font-size: 0.8rem; }
         
-        /* [v14.4.4] 화살표 투명화 버그 수정 */
         .btn-icon { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
         header .btn-icon { color: white; }
         
@@ -119,6 +118,8 @@
         .tag-chip-btn { padding: 6px 12px; border-radius: 20px; border: 1px solid #ddd; background: #fff; color: #555; font-size: 0.85rem; cursor: pointer; transition: 0.2s; }
         .tag-chip-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); font-weight: bold; }
         .tag-chip-btn.ghost { background: #fff0f0; color: #e74c3c; border: 1px dashed #e74c3c; }
+        .tag-chip-btn.quick-add { background: #eaf2f8; color: #2980b9; border: 1px dashed #3498db; font-weight: bold; }
+        .tag-chip-btn.quick-add:hover { background: #d4e6f1; }
         .mini-tag-path { font-size: 0.75rem; background: #e3f2fd; color: var(--sat-color); padding: 3px 8px; border-radius: 12px; font-weight: bold; margin-bottom: 4px; display: inline-block; border: 1px solid #c8e6c9; }
         .tag-item { background: #fff; border:1px solid #ccc; padding: 6px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px; font-size: 0.85rem; }
         .tag-del-btn { color: #e74c3c; font-weight: bold; cursor: pointer; margin-left: 5px; }
@@ -171,7 +172,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v14.4.6</h1>
+    <h1>JDM Archive v14.4.7</h1>
     <button onclick="changePassword()" class="btn-icon">🔒</button>
 </header>
 
@@ -295,9 +296,7 @@
 
 <!-- 스마트 백업 모달 -->
 <div id="backupModal" class="modal" style="z-index: 2600;">
-    <div class="modal-content" style="max-width: 450px;" id="backupModalContent">
-        <!-- JS에서 내용 주입 -->
-    </div>
+    <div class="modal-content" style="max-width: 450px;" id="backupModalContent"></div>
 </div>
 
 <!-- 태그 관리자 모달 -->
@@ -396,11 +395,7 @@
 </nav>
 
 <script>
-    // ============================================================================
-    // [v14.4.5] 스마트 데이터 저장/동적 정렬 기저 설계
-    // ============================================================================
     function saveTagTree() { 
-        // 저장 시에도 데이터의 무결성을 위해 대분류 오름차순 가나다/숫자 정렬
         let sortedTree = {};
         Object.keys(tagTree).sort().forEach(l => {
             sortedTree[l] = tagTree[l];
@@ -409,9 +404,6 @@
         localStorage.setItem('tagTree_v3', JSON.stringify(tagTree)); 
     }
 
-    // ============================================================================
-    // [v14.4.3] 고아 이미지 자동 청소기 (Auto-Healing)
-    // ============================================================================
     async function cleanupOrphanedImages() {
         return new Promise((resolve) => {
             const usedImages = new Set();
@@ -447,7 +439,7 @@
                     };
                     
                     tx2.oncomplete = () => {
-                        if (deletedCount > 0) console.log(`[v14.4.3] 숨어있던 고아 이미지 ${deletedCount}개 자동 삭제 완료!`);
+                        if (deletedCount > 0) console.log(`[v14.4.3] 고아 이미지 ${deletedCount}개 자동 청소 완료`);
                         resolve();
                     };
                 }
@@ -455,9 +447,6 @@
         });
     }
 
-    // ============================================================================
-    // [v14.4] 실시간 데이터 헬스 모니터링 (용량 계산)
-    // ============================================================================
     async function getStorageHealth() {
         return new Promise((resolve) => {
             let totalBytes = 0;
@@ -516,11 +505,7 @@
         return mb;
     }
 
-    // ============================================================================
-    // [v14.3] 독자적 만년 달력 엔진
-    // ============================================================================
     let holidayCache = {};
-
     function generateHolidays(year) {
         const holidays = {};
         const add = (m, d, name) => {
@@ -752,7 +737,6 @@
         }
     }
 
-    // [v14.4.5] 계층 경로 탐색 시 대분류/중분류 완벽 오름차순 반영
     function getTagPath(tag) {
         const sortedLKeys = Object.keys(tagTree).sort();
         for (let l of sortedLKeys) {
@@ -988,7 +972,7 @@
         if(tab === 'data') updateHealthGauge();
     }
 
-    // [v14.4.5] 글 작성/수정 시 출력되는 태그 셀렉터에 동적 정렬(000 오름차순) 강제 적용
+    // [v14.4.7] 빈 중분류 폴더도 절대 은폐되지 않고, 원클릭으로 태그 생성 및 즉시 선택 지원!
     function renderTagSelector(containerId, selectedSet) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
@@ -996,17 +980,15 @@
         
         const sortedLKeys = Object.keys(tagTree).sort();
         sortedLKeys.forEach(l => {
-            let hasTags = false;
-            for (let m in tagTree[l]) if (tagTree[l][m].length > 0) hasTags = true;
-            if (!hasTags) return;
+            // 하위 중분류가 하나라도 등록되어 있으면 대분류 박스를 항상 표시
+            const sortedMKeys = Object.keys(tagTree[l]).sort();
+            if (sortedMKeys.length === 0) return;
 
             let lDiv = document.createElement('div');
             lDiv.className = 'tag-category-group';
             lDiv.innerHTML = `<div class="l-cat-title">📂 ${l}</div>`;
             
-            const sortedMKeys = Object.keys(tagTree[l]).sort();
             sortedMKeys.forEach(m => {
-                if (tagTree[l][m].length === 0) return;
                 let mDiv = document.createElement('div');
                 mDiv.className = 'm-cat-group';
                 mDiv.innerHTML = `<div class="m-cat-title">📁 ${m}</div>`;
@@ -1014,18 +996,39 @@
                 let sDiv = document.createElement('div');
                 sDiv.className = 's-cat-chips';
                 
-                const sortedSTags = [...tagTree[l][m]].sort();
-                sortedSTags.forEach(tag => {
-                    let btn = document.createElement('span');
-                    btn.className = 'tag-chip-btn' + (selectedSet.has(tag) ? ' active' : '');
-                    btn.innerText = tag;
-                    btn.onclick = () => {
-                        if(selectedSet.has(tag)) selectedSet.delete(tag);
-                        else selectedSet.add(tag);
+                const sortedSTags = [...(tagTree[l][m] || [])].sort();
+                
+                // [v14.4.7 핵심 패치] 중분류 내에 아직 태그가 없는 경우: 숨기지 않고 원클릭 태그 생성 버튼 제공
+                if (sortedSTags.length === 0) {
+                    let quickBtn = document.createElement('span');
+                    quickBtn.className = 'tag-chip-btn quick-add';
+                    quickBtn.innerText = `+ #${m} 태그 생성`;
+                    quickBtn.title = `'#${m}' 태그를 즉시 등록하고 선택합니다`;
+                    quickBtn.onclick = () => {
+                        const newTag = '#' + m;
+                        if (!tagTree[l][m]) tagTree[l][m] = [];
+                        if (!tagTree[l][m].includes(newTag)) {
+                            tagTree[l][m].push(newTag);
+                            saveTagTree();
+                            updateTagSelectors();
+                        }
+                        selectedSet.add(newTag);
                         renderTagSelector(containerId, selectedSet);
                     };
-                    sDiv.appendChild(btn);
-                });
+                    sDiv.appendChild(quickBtn);
+                } else {
+                    sortedSTags.forEach(tag => {
+                        let btn = document.createElement('span');
+                        btn.className = 'tag-chip-btn' + (selectedSet.has(tag) ? ' active' : '');
+                        btn.innerText = tag;
+                        btn.onclick = () => {
+                            if(selectedSet.has(tag)) selectedSet.delete(tag);
+                            else selectedSet.add(tag);
+                            renderTagSelector(containerId, selectedSet);
+                        };
+                        sDiv.appendChild(btn);
+                    });
+                }
                 mDiv.appendChild(sDiv);
                 lDiv.appendChild(mDiv);
             });
@@ -1050,7 +1053,6 @@
         }
     }
 
-    // [v14.4.5] 목록 필터 드롭다운 구성 시에도 동적 정렬 강제 적용
     function updateTagSelectors() {
         renderTagSelector('inputTagContainer', inputSelectedTags);
         renderTagSelector('editTagContainer', editSelectedTags);
@@ -1062,7 +1064,7 @@
             html += `<optgroup label="📂 ${l}">`;
             const sortedMKeys = Object.keys(tagTree[l]).sort();
             sortedMKeys.forEach(m => {
-                const sortedSTags = [...tagTree[l][m]].sort();
+                const sortedSTags = [...(tagTree[l][m] || [])].sort();
                 sortedSTags.forEach(t => { 
                     html += `<option value="${t}">${m} > ${t}</option>`; 
                 });
@@ -1075,7 +1077,6 @@
         document.getElementById('listFilter').value = curFilter;
     }
 
-    // [v14.4.5] 지식 계층 관리자 렌더링 시 대분류/중분류/소분류 모두 완벽 오름차순(000, 200...)으로 화면 출력
     function openTagManager() {
         try {
             sanitizeTagTree();
@@ -1122,7 +1123,7 @@
                                 <button onclick="removeMCat('${l}','${m}')" class="btn-icon text-danger" style="font-size:1rem;">삭제</button>
                             </div>
                         </div>
-                        <div class="flex-row mb-10" style="flex-wrap:wrap;">${tagsHtml}</div>
+                        <div class="flex-row mb-10" style="flex-wrap:wrap;">${tagsHtml || '<span class="text-muted" style="font-size:0.8rem;">(아래에서 태그를 추가해주세요)</span>'}</div>
                         <div class="flex-row">
                             <input type="text" id="newT_${l}_${m}" placeholder="#새태그" style="padding:6px; font-size:0.85rem; margin-bottom:0; flex:1;">
                             <button onclick="addNewSTag('${l}','${m}')" class="btn btn-primary" style="padding:6px 12px;">추가</button>
@@ -1138,7 +1139,6 @@
         }
     }
 
-    // [v14.4.5] 이동 모달 구성 시에도 대/중분류 드롭다운 목록 오름차순 고정
     let currentMoveTarget = null;
     function openMoveTagModal(type, l, m, t) {
         currentMoveTarget = { type, l, m, t };
@@ -1255,7 +1255,23 @@
     }
 
     function addNewLCat() { let n = prompt("새 대분류 명칭 (예: 900 기타):"); if(n && n.trim()) { tagTree[n.trim()] = {}; saveTagTree(); openTagManager(); updateTagSelectors(); } }
-    function addNewMCat(l) { let n = prompt(`'${l}' 아래에 들어갈 중분류 명칭:`); if(n && n.trim()) { tagTree[l][n.trim()] =[]; saveTagTree(); updateTagSelectors(); } }
+    
+    // [v14.4.7] 중분류 생성 시 사용자가 바로 사용할 수 있도록 동명 태그(#명칭) 기본 등록 편의성 지원
+    function addNewMCat(l) { 
+        let n = prompt(`'${l}' 아래에 들어갈 중분류 명칭:`); 
+        if(n && n.trim()) { 
+            let name = n.trim();
+            if (!tagTree[l]) tagTree[l] = {};
+            if (tagTree[l][name]) return alert('이미 존재하는 중분류입니다.');
+            
+            // 빈 폴더로 두지 않고 편의를 위해 '#중분류명' 기본 태그 자동 초기화
+            tagTree[l][name] = ['#' + name]; 
+            saveTagTree(); 
+            openTagManager(); 
+            updateTagSelectors(); 
+        } 
+    }
+    
     function addNewSTag(l, m) { 
         let input = document.getElementById(`newT_${l}_${m}`);
         let n = input.value.trim();
@@ -1654,9 +1670,6 @@
         document.getElementById('calendarMemos').innerHTML = html;
     }
 
-    // ============================================================================
-    // [v14.4.1] 투스텝 다운로드 & 청크 분할 압축 백업 로직
-    // ============================================================================
     async function openBackupModal() {
         const mb = await getStorageHealth();
         const content = document.getElementById('backupModalContent');
@@ -1722,17 +1735,15 @@
         }
     }
 
-    // [v14.4.6] 청크 분할 압축 - 타겟 메모에 종속된 이미지만 백업하도록 완전 개선
     async function performBackup(targetMemos, type, dateSuffix) {
         const blobParts =[];
-        blobParts.push(`{\n"version": "v14.4.6",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
+        blobParts.push(`{\n"version": "v14.4.7",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
         blobParts.push(`"tagTree": ${JSON.stringify(tagTree)},\n`);
         blobParts.push(`"memos": ${JSON.stringify(targetMemos)}`);
 
         if (type === 'full') {
             blobParts.push(`,\n"images":[\n`);
             
-            // 타겟 메모 내에 포함된 실제 이미지 ID 목록만 정밀 수집
             const requiredImageIds = new Set();
             targetMemos.forEach(m => {
                 if (m.content) {
@@ -1879,7 +1890,7 @@
                 imageList.forEach(i => tx.objectStore(STORE_IMAGES).put(i));
 
                 tx.oncomplete = () => { 
-                    alert('성공적으로 복원되었습니다!\n\n※ 구버전 데이터는 3단계 폴더 구조로 자동 마이그레이션 됩니다.'); 
+                    alert('성공적으로 복원되었습니다!\n\n※ 최신 3단계 폴더 규격으로 완벽 매칭되었습니다.'); 
                     location.reload(); 
                 }; 
                 tx.onerror = () => {
