@@ -9,11 +9,11 @@
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#2c3e50">
     <link rel="icon" href="./icon-192.png">
-    <title>JDM Archive v14.5.0</title>
+    <title>JDM Archive v14.5.2</title>
 
     <!--[v14.4.7] 캐시 방지(Cache-Busting) 로직 -->
     <script>
-        const APP_VERSION = "14.5.0";
+        const APP_VERSION = "14.5.2";
         if (localStorage.getItem('jdm_version') !== APP_VERSION) {
             localStorage.setItem('jdm_version', APP_VERSION);
             if ('URLSearchParams' in window) {
@@ -183,14 +183,16 @@
         <h2>🔒 JDM Archive</h2>
         <p>Access Verification</p>
         <input type="password" id="passInput" maxlength="4" placeholder="****">
-        <br>
+        <label style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:18px; font-size:0.95rem; cursor:pointer;">
+            <input type="checkbox" id="rememberDevice" checked style="width:20px; height:20px;"> 이 기기에서 30일간 비밀번호 생략
+        </label>
         <button type="submit" class="btn btn-accent mt-20">ENTER</button>
     </form>
 </div>
 
 <header>
-    <h1>JDM Archive v14.5.0</h1>
-    <button onclick="changePassword()" class="btn-icon">🔒</button>
+    <h1>JDM Archive v14.5.2</h1>
+    <button onclick="lockMenu()" class="btn-icon">🔒</button>
 </header>
 
 <div class="container">
@@ -878,7 +880,7 @@
     let currentActiveMemoId = null;
 
     window.addEventListener('DOMContentLoaded', () => {
-        if(sessionStorage.getItem('jdm_auth') === 'true') {
+        if(sessionStorage.getItem('jdm_auth') === 'true' || isDeviceRemembered()) {
             document.getElementById('loginOverlay').style.display = 'none';
             authed = true;
             maybeProcessShare();
@@ -886,11 +888,30 @@
         }
     });
 
+    function isDeviceRemembered() {
+        try { return Date.now() < parseInt(localStorage.getItem('jdm_auth_until') || '0'); } catch(e) { return false; }
+    }
+    function lockMenu() {
+        if (confirm("지금 앱을 잠글까요?\n(30일 비밀번호 생략도 해제됩니다)\n\n[취소]를 누르면 비밀번호 변경으로 넘어갑니다.")) {
+            try { localStorage.removeItem('jdm_auth_until'); } catch(e) {}
+            sessionStorage.removeItem('jdm_auth');
+            authed = false;
+            document.getElementById('passInput').value = '';
+            document.getElementById('loginOverlay').style.display = 'flex';
+        } else {
+            changePassword();
+        }
+    }
+
     function getPassword() { return localStorage.getItem('appPass') || "0403"; }
     function checkPass() {
         if(document.getElementById('passInput').value === getPassword()) {
             document.getElementById('loginOverlay').style.display = 'none';
             sessionStorage.setItem('jdm_auth', 'true');
+            try {
+                if (document.getElementById('rememberDevice').checked) localStorage.setItem('jdm_auth_until', String(Date.now() + 30 * 86400000));
+                else localStorage.removeItem('jdm_auth_until');
+            } catch(e) {}
             authed = true;
             maybeProcessShare();
             setupHistoryTrap();
@@ -2003,7 +2024,7 @@
 
     async function performBackup(targetMemos, type, dateSuffix) {
         const blobParts =[];
-        blobParts.push(`{\n"version": "v14.5.0",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
+        blobParts.push(`{\n"version": "v14.5.2",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
         blobParts.push(`"tagTree": ${JSON.stringify(tagTree)},\n`);
         blobParts.push(`"memos": ${JSON.stringify(targetMemos)}`);
 
