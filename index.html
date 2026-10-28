@@ -9,11 +9,11 @@
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#2c3e50">
     <link rel="icon" href="./icon-192.png">
-    <title>JDM Archive v14.5.2</title>
+    <title>JDM Archive v14.5.3</title>
 
     <!--[v14.4.7] 캐시 방지(Cache-Busting) 로직 -->
     <script>
-        const APP_VERSION = "14.5.2";
+        const APP_VERSION = "14.5.3";
         if (localStorage.getItem('jdm_version') !== APP_VERSION) {
             localStorage.setItem('jdm_version', APP_VERSION);
             if ('URLSearchParams' in window) {
@@ -191,7 +191,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v14.5.2</h1>
+    <h1>JDM Archive v14.5.3</h1>
     <button onclick="lockMenu()" class="btn-icon">🔒</button>
 </header>
 
@@ -241,6 +241,7 @@
             <div class="flex-between mb-15">
                 <h3 class="text-primary" style="margin:0;">📝 새 기록 작성</h3>
             </div>
+            <button class="btn btn-info w-100 mb-15" style="padding:14px; font-size:1rem;" onclick="pasteFromClipboard()">📋 복사한 링크·캡처 붙여넣기</button>
             <input type="text" id="inputTitle" placeholder="제목">
             <div class="mb-15">
                 <label class="form-label">날짜</label>
@@ -589,6 +590,55 @@
             console.error(e);
             alert('공유 내용을 불러오지 못했습니다: ' + e.message);
         }
+    }
+
+    // [v14.5.3] 네이버 앱 등 'URL복사'만 되는 곳에서 가져오기
+    async function pasteFromClipboard() {
+        let text = '';
+        try {
+            if (navigator.clipboard && navigator.clipboard.readText) text = await navigator.clipboard.readText();
+        } catch(e) {}
+
+        const links = extractUrls(text);
+        if (links.length) {
+            const existing = collectLinks('inputLinkContainer');
+            const fresh = links.filter(l => !existing.includes(l));
+            if (!fresh.length) return showToast('이미 들어가 있는 링크입니다');
+            document.querySelectorAll('#inputLinkContainer input').forEach(i => { if (!i.value.trim()) i.parentElement.remove(); });
+            fresh.forEach(l => addLinkField('inputLinkContainer', l));
+            // 링크 앞뒤에 기사 제목 같은 글이 같이 복사됐으면 제목으로 사용
+            let rest = text; links.forEach(l => { rest = rest.split(l).join(' '); });
+            rest = rest.replace(/\s+/g, ' ').trim();
+            const titleEl = document.getElementById('inputTitle');
+            if (rest && !titleEl.value.trim()) titleEl.value = rest.substring(0, 100);
+            showToast(`링크 ${fresh.length}개를 넣었습니다`);
+            tryFillTitleFromLink(fresh[0]);
+            return;
+        }
+
+        // 링크가 없으면 복사된 이미지(캡처)가 있는지 확인
+        try {
+            if (navigator.clipboard && navigator.clipboard.read) {
+                const items = await navigator.clipboard.read();
+                const files = [];
+                for (const it of items) {
+                    const type = it.types.find(t => t.startsWith('image/'));
+                    if (type) { const b = await it.getType(type); files.push(new File([b], 'clip', { type })); }
+                }
+                if (files.length) {
+                    const n = await addImageFiles(files, 'inputContent');
+                    if (n) return showToast('캡처 이미지를 넣었습니다');
+                }
+            }
+        } catch(e) {}
+
+        if (text.trim()) {
+            const ed = document.getElementById('inputContent');
+            ed.appendChild(document.createTextNode(text.trim()));
+            ed.appendChild(document.createElement('br'));
+            return showToast('복사한 글을 내용에 넣었습니다');
+        }
+        alert('복사된 링크를 읽지 못했습니다.\n\n처음 한 번은 "클립보드 읽기 허용"을 눌러 주세요.\n허용이 안 되면 링크 칸을 길게 눌러 붙여넣기 하시면 됩니다.');
     }
 
     function saveTagTree() {
@@ -2024,7 +2074,7 @@
 
     async function performBackup(targetMemos, type, dateSuffix) {
         const blobParts =[];
-        blobParts.push(`{\n"version": "v14.5.2",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
+        blobParts.push(`{\n"version": "v14.5.3",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
         blobParts.push(`"tagTree": ${JSON.stringify(tagTree)},\n`);
         blobParts.push(`"memos": ${JSON.stringify(targetMemos)}`);
 
