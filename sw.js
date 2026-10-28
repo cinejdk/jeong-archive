@@ -1,7 +1,7 @@
-// JDM Archive 서비스워커 v14.5.0
+// JDM Archive 서비스워커 v14.5.1
 // 역할 1: 갤럭시 공유 메뉴에서 넘어온 링크/이미지를 받아 앱으로 전달
 // 역할 2: 현장처럼 신호가 약할 때 마지막으로 받은 앱 화면을 대신 띄움 (데이터는 원래 폰 안에 있음)
-const APP_CACHE = 'jdm-app-v14.5.0';
+const APP_CACHE = 'jdm-app-v14.5.1';
 const SHARE_CACHE = 'jdm-share';
 const scoped = (p) => new URL(p, self.registration.scope).href;
 
@@ -52,7 +52,8 @@ self.addEventListener('fetch', (event) => {
   if (req.method === 'GET' && req.mode === 'navigate' && url.origin === self.location.origin) {
     event.respondWith((async () => {
       try {
-        const res = await fetch(req);
+        // 브라우저 HTTP 캐시를 거치지 않고 GitHub에 매번 최신 여부를 확인 (예전 코드가 계속 뜨는 문제 방지)
+        const res = await fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' });
         if (res.ok && !res.redirected) {
           const copy = res.clone();
           caches.open(APP_CACHE).then((c) => c.put(scoped('./'), copy)).catch(() => {});
