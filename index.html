@@ -9,11 +9,11 @@
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#2c3e50">
     <link rel="icon" href="./icon-192.png">
-    <title>JDM Archive v14.5.3</title>
+    <title>JDM Archive v14.5.4</title>
 
     <!--[v14.4.7] 캐시 방지(Cache-Busting) 로직 -->
     <script>
-        const APP_VERSION = "14.5.3";
+        const APP_VERSION = "14.5.4";
         if (localStorage.getItem('jdm_version') !== APP_VERSION) {
             localStorage.setItem('jdm_version', APP_VERSION);
             if ('URLSearchParams' in window) {
@@ -191,7 +191,7 @@
 </div>
 
 <header>
-    <h1>JDM Archive v14.5.3</h1>
+    <h1>JDM Archive v14.5.4</h1>
     <button onclick="lockMenu()" class="btn-icon">🔒</button>
 </header>
 
@@ -1378,6 +1378,20 @@
             const display = document.getElementById('tagTreeDisplay');
             display.innerHTML = '';
 
+            // [v14.5.4] 같은 태그가 여러 폴더에 있으면 맨 위에 알려줌
+            const where = {};
+            Object.keys(tagTree).forEach(l => Object.keys(tagTree[l]).forEach(m => (tagTree[l][m] || []).forEach(t => { (where[t] = where[t] || []).push(`${l} > ${m}`); })));
+            const dups = Object.keys(where).filter(t => where[t].length > 1).sort();
+            if (dups.length) {
+                const warn = document.createElement('div');
+                warn.className = 'card p-15 mb-15';
+                warn.style.cssText = 'background:#fff8e1; border-color:#f39c12;';
+                warn.innerHTML = `<strong style="color:#d35400;">⚠️ 여러 폴더에 중복된 태그 ${dups.length}개</strong>
+                    <p class="text-muted" style="margin:6px 0 8px;">한쪽만 남기고 나머지 위치에서 × 로 지우세요. 메모 데이터는 지워지지 않습니다.</p>` +
+                    dups.map(t => `<div style="font-size:0.85rem; margin-bottom:4px;"><b>${esc(t)}</b> : ${where[t].map(esc).join(' / ')}</div>`).join('');
+                display.appendChild(warn);
+            }
+
             Object.keys(tagTree).sort().forEach(l => {
                 let block = document.createElement('div');
                 block.className = "card p-15 mb-15";
@@ -2074,7 +2088,7 @@
 
     async function performBackup(targetMemos, type, dateSuffix) {
         const blobParts =[];
-        blobParts.push(`{\n"version": "v14.5.3",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
+        blobParts.push(`{\n"version": "v14.5.4",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
         blobParts.push(`"tagTree": ${JSON.stringify(tagTree)},\n`);
         blobParts.push(`"memos": ${JSON.stringify(targetMemos)}`);
 
@@ -2197,7 +2211,12 @@
                 if (data.memos && Array.isArray(data.memos)) {
                     memoList = data.memos;
                     if(data.tagTree) {
-                        mergeTagTree(data.tagTree);
+                        if (confirm("분류(태그) 구조를 백업 파일의 것으로 교체할까요?\n\n[확인] 백업 구조로 교체 (권장)\n[취소] 지금 구조와 합치기")) {
+                            tagTree = data.tagTree;
+                            sanitizeTagTree();
+                        } else {
+                            mergeTagTree(data.tagTree);
+                        }
                         saveTagTree();
                     } else if (data.tags && Array.isArray(data.tags)) {
                         localStorage.setItem('myTags', JSON.stringify(data.tags));
