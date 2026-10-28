@@ -6,11 +6,14 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JDM Archive v14.4.7</title>
-    
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="icon" href="./icon-192.png">
+    <title>JDM Archive v14.5.0</title>
+
     <!--[v14.4.7] 캐시 방지(Cache-Busting) 로직 -->
     <script>
-        const APP_VERSION = "14.4.7";
+        const APP_VERSION = "14.5.0";
         if (localStorage.getItem('jdm_version') !== APP_VERSION) {
             localStorage.setItem('jdm_version', APP_VERSION);
             if ('URLSearchParams' in window) {
@@ -40,7 +43,7 @@
         .font-bold { font-weight: bold; }
         .w-100 { width: 100%; }
         .border-bottom { border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        
+
         .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.95rem; transition: 0.2s; }
         .btn:disabled { background: #bdc3c7 !important; cursor: not-allowed; }
         .btn-primary { background: var(--primary-color); color: white; }
@@ -54,10 +57,10 @@
         .btn-outline-danger { border: 1px solid #e74c3c; background: #fff; color: #e74c3c; padding: 4px 8px; font-size: 0.8rem; }
         .btn-outline-info { border: 1px solid #3498db; background: #fff; color: #3498db; padding: 4px 8px; font-size: 0.8rem; }
         .btn-outline-warning { border: 1px solid #9b59b6; background: #fff; color: #9b59b6; padding: 4px 8px; font-size: 0.8rem; }
-        
+
         .btn-icon { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
         header .btn-icon { color: white; }
-        
+
         .btn-save-large { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
 
         input[type="text"], input[type="date"], input[type="password"], select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: #fff; }
@@ -67,10 +70,10 @@
         header h1 { margin: 0; font-size: 1.4rem; font-weight: 700; flex-grow: 1; text-align: center; margin-left: 40px; letter-spacing: -0.5px; }
         .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px; }
         .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; }
-        
+
         .tab-content { display: none; animation: fadeIn 0.3s ease; } .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
+
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #loginOverlay input { width: 220px; padding: 15px; font-size: 1.5rem; text-align: center; border-radius: 12px; border: none; margin-top: 10px; letter-spacing: 5px; }
 
@@ -92,10 +95,10 @@
         .cal-day.sat .day-num { color: var(--sat-color); }
         .dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; margin-top: 4px; display: block; }
         .cal-events-pc { display: none; width: 100%; margin-top: 2px; padding: 0 2px; box-sizing: border-box; }
-        
+
         @media (min-width: 768px) {
             .cal-day { aspect-ratio: auto; min-height: 130px; height: 100%; align-items: flex-start; padding: 8px; }
-            .dot { display: none !important; } 
+            .dot { display: none !important; }
             .cal-events-pc { display: block !important; }
             .cal-event-item { font-size: 0.8rem; background: #f1f3f5; color: #495057; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; border-left: 3px solid var(--accent-color); cursor: pointer; transition: background 0.2s; }
             .cal-event-item:hover { background: #e9ecef; color: #000; }
@@ -149,7 +152,7 @@
         .close-btn { font-size: 2rem; border: none; background: none; cursor: pointer; color: #aaa; line-height: 1; margin-left: 10px;}
         #editPopup { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#f0f2f5; z-index:3000; overflow-y:auto; padding-bottom: 50px;}
         .edit-container { max-width:800px; margin:20px auto; padding:20px; background:white; border-radius:15px; box-shadow:0 0 20px rgba(0,0,0,0.1); }
-        
+
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: white; display: flex; border-top: 1px solid #eee; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { flex: 1; text-align: center; padding: 10px; color: #999; font-size: 0.75rem; cursor: pointer; }
         .nav-item.active { color: var(--primary-color); font-weight: bold; }
@@ -157,6 +160,20 @@
 
         .data-box-green { background:#e8f8f5; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #1abc9c; text-align:left; }
         .data-box-yellow { background:#fff3cd; padding:20px; border-radius:12px; margin-bottom:20px; border:2px solid #ffc107; text-align:left; }
+
+        /* [v14.5.0] 추가 스타일 */
+        #backupBanner { display:none; background:#fff8e1; border:1px solid #f39c12; color:#8a5a00; padding:12px 15px; border-radius:12px; margin-bottom:15px; justify-content:space-between; align-items:center; gap:10px; font-size:0.9rem; font-weight:bold; }
+        #backupBanner button { flex-shrink:0; }
+        .link-card { display:flex; gap:10px; align-items:center; background:#f8f9fa; padding:10px; border-radius:10px; margin-bottom:8px; text-decoration:none; color:#2c3e50; border:1px solid #eee; overflow:hidden; }
+        .yt-thumb { width:120px; height:68px; object-fit:cover; border-radius:6px; flex-shrink:0; }
+        .link-meta { display:flex; flex-direction:column; min-width:0; gap:2px; }
+        .link-domain { font-weight:bold; font-size:0.9rem; color:#2980b9; }
+        .link-url { font-size:0.75rem; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .memo-card-body { display:flex; gap:12px; align-items:flex-start; }
+        .memo-card-text { flex:1; min-width:0; }
+        .card-thumb { width:96px; height:54px; object-fit:cover; border-radius:6px; flex-shrink:0; background:#eee; }
+        .domain-chip { font-size:0.72rem; background:#f1f3f5; color:#555; padding:2px 7px; border-radius:10px; margin:0 4px 4px 0; display:inline-block; }
+        #toast { position:fixed; left:50%; bottom:calc(var(--nav-height) + 20px); transform:translateX(-50%); background:rgba(44,62,80,0.95); color:#fff; padding:12px 18px; border-radius:25px; font-size:0.9rem; z-index:5000; display:none; max-width:90%; text-align:center; }
     </style>
 </head>
 <body>
@@ -172,13 +189,14 @@
 </div>
 
 <header>
-    <h1>JDM Archive v14.4.7</h1>
+    <h1>JDM Archive v14.5.0</h1>
     <button onclick="changePassword()" class="btn-icon">🔒</button>
 </header>
 
 <div class="container">
     <!-- 탭 1: 달력 -->
     <div id="tab-calendar" class="tab-content active">
+        <div id="backupBanner"></div>
         <div class="card p-15 mb-15 flex-between">
             <button onclick="changeMonth(-1)" class="btn-icon text-primary" style="color: var(--primary-color) !important;">◀</button>
             <h2 id="currentMonth" style="margin:0; font-size:1.3rem;"></h2>
@@ -201,7 +219,7 @@
                 </select>
             </div>
             <div class="search-row">
-                <input type="text" id="searchInput" placeholder="검색어 입력..." onkeyup="renderMemos(true)">
+                <input type="text" id="searchInput" placeholder="검색어 입력..." oninput="debouncedRender()">
             </div>
             <div class="date-filter-row">
                 <input type="date" id="filterStartDate" onchange="renderMemos(true)" title="시작일">
@@ -226,14 +244,14 @@
                 <label class="form-label">날짜</label>
                 <input type="date" id="inputDate" style="margin-bottom:0;">
             </div>
-            
+
             <div class="mb-15">
                 <label class="form-label">🏷️ 분야별 태그 선택 (다중 선택)</label>
                 <div id="inputTagContainer"></div>
             </div>
-            
-            <div id="inputContent" class="rich-editor" contenteditable="true" placeholder="내용을 입력하세요."></div>
-            
+
+            <div id="inputContent" class="rich-editor" contenteditable="true" placeholder="내용 입력 (캡처 이미지 붙여넣기 가능)" onpaste="handleEditorPaste(event, 'inputContent')"></div>
+
             <label class="form-label mt-15">📎 이미지 첨부 (자동 최적화)</label>
             <input type="file" id="inputFile" accept="image/*" multiple style="padding:12px; background:#f8f9fa; width:100%; margin-bottom:15px;" onchange="insertImageToEditor(this, 'inputContent')">
 
@@ -260,7 +278,7 @@
 
         <div class="card p-25 text-center">
             <h3>💾 데이터 센터</h3>
-            
+
             <div class="data-box-green">
                 <strong style="color:#16a085;">📤 스마트 백업 어드바이저</strong>
                 <div class="date-filter-row mt-15 mb-15">
@@ -307,11 +325,11 @@
             <button class="close-btn" onclick="closeModal('tagManagerModal')">×</button>
         </div>
         <p class="text-muted mb-10" style="line-height:1.4;">※ 이곳에서 폴더(분류)를 이동하거나 이름을 바꾸면, 기존에 저장된 수백 개의 <b>메모 데이터 위에도 안전하고 일괄적으로 연쇄 업데이트</b> 됩니다!</p>
-        
+
         <button class="btn btn-info w-100 mb-15" onclick="addNewLCat()">+ 새 대분류(최상위 폴더) 추가</button>
-        
+
         <div id="tagTreeDisplay" style="max-height: 55vh; overflow-y: auto; padding-right:10px; margin-bottom:15px;"></div>
-        
+
         <button class="btn-save-large btn-success" onclick="saveAndCloseTagManager()">💾 변경사항 안전하게 적용 및 닫기</button>
     </div>
 </div>
@@ -364,15 +382,15 @@
             <label class="form-label">날짜 (수정 가능)</label>
             <input type="date" id="editDate" style="margin-bottom:0;">
         </div>
-        
+
         <div class="mb-15">
             <label class="form-label">🏷️ 분야별 태그 선택 (다중 선택)</label>
             <div id="editTagContainer"></div>
         </div>
 
         <label class="form-label">내용</label>
-        <div id="editContent" class="rich-editor" contenteditable="true"></div>
-        
+        <div id="editContent" class="rich-editor" contenteditable="true" onpaste="handleEditorPaste(event, 'editContent')"></div>
+
         <label class="form-label mt-15">📎 이미지 추가</label>
         <input type="file" id="editFile" accept="image/*" multiple style="padding:12px; background:#f8f9fa; width:100%; margin-bottom:15px;" onchange="insertImageToEditor(this, 'editContent')">
 
@@ -387,6 +405,8 @@
     </div>
 </div>
 
+<div id="toast"></div>
+
 <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('calendar')"><span class="nav-icon">📅</span>홈</div>
     <div class="nav-item" onclick="switchTab('list')"><span class="nav-icon">📋</span>목록</div>
@@ -395,13 +415,187 @@
 </nav>
 
 <script>
-    function saveTagTree() { 
+    // ===== [v14.5.0] 공통 헬퍼 =====
+    var appReady = false, authed = false, shareHandled = false;
+
+    // HTML 표시용 이스케이프
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    // onclick="fn(...)" 안에 넣을 문자열 인자 (작은따옴표·특수문자 안전)
+    function jsq(s) { return esc(JSON.stringify(String(s))); }
+
+    // 한국 시간 기준 오늘 날짜 (YYYY-MM-DD)  ※ toISOString은 UTC라 오전 9시 전엔 어제가 됨
+    function todayLocal() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function stripHtml(html) {
+        return String(html || '').replace(/<[^>]*>?/gm, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ');
+    }
+
+    function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+    function extractUrls(text) {
+        const found = String(text || '').match(/https?:\/\/[^\s<>"']+/g) || [];
+        return [...new Set(found.map(u => u.replace(/[)\].,]+$/, '')))];
+    }
+
+    function safeHref(u) {
+        u = String(u || '').trim();
+        if (!u) return null;
+        if (/^www\./i.test(u)) u = 'https://' + u;
+        try { const p = new URL(u); return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : null; } catch(e) { return null; }
+    }
+
+    function getDomain(u) {
+        const h = safeHref(u);
+        if (!h) return '';
+        try { return new URL(h).hostname.replace(/^(www|m)\./, ''); } catch(e) { return ''; }
+    }
+
+    function getYouTubeId(u) {
+        const m = String(u || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#\s]*&)?v=|shorts\/|live\/|embed\/))([A-Za-z0-9_-]{11})/);
+        return m ? m[1] : null;
+    }
+
+    // 유튜브 영상 제목 자동 가져오기 (실패하면 조용히 넘어감)
+    async function fetchYouTubeTitle(u) {
+        const id = getYouTubeId(u);
+        if (!id) return null;
+        const target = encodeURIComponent('https://www.youtube.com/watch?v=' + id);
+        for (const ep of ['https://www.youtube.com/oembed?format=json&url=', 'https://noembed.com/embed?url=']) {
+            try {
+                const r = await fetch(ep + target);
+                if (r.ok) { const j = await r.json(); if (j && j.title) return j.title; }
+            } catch(e) {}
+        }
+        return null;
+    }
+
+    async function tryFillTitleFromLink(u) {
+        const titleEl = document.getElementById('inputTitle');
+        if (titleEl.value.trim()) return;
+        const t = await fetchYouTubeTitle(u);
+        if (t && !titleEl.value.trim()) { titleEl.value = t; showToast('영상 제목을 자동으로 채웠습니다'); }
+    }
+
+    function renderLinksHtml(links) {
+        return links.map(l => {
+            const href = safeHref(l);
+            if (!href) return `<div class="link-card"><span class="link-url">${esc(l)}</span></div>`;
+            const yt = getYouTubeId(href);
+            const thumb = yt ? `<img class="yt-thumb" src="https://i.ytimg.com/vi/${yt}/mqdefault.jpg" alt="" loading="lazy">` : '';
+            const label = yt ? '▶ YouTube' : '🔗 ' + esc(getDomain(href));
+            return `<a class="link-card" href="${esc(href)}" target="_blank" rel="noopener">${thumb}<div class="link-meta"><span class="link-domain">${label}</span><span class="link-url">${esc(l)}</span></div></a>`;
+        }).join('');
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg; t.style.display = 'block';
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    // ===== 백업 알림 =====
+    function markBackupDone() {
+        try { localStorage.setItem('jdm_last_backup', String(Date.now())); } catch(e) {}
+        setTimeout(checkBackupReminder, 300);
+    }
+    function checkBackupReminder() {
+        const el = document.getElementById('backupBanner');
+        let last = 0;
+        try { last = parseInt(localStorage.getItem('jdm_last_backup') || '0'); } catch(e) {}
+        const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+        if (days === null || days >= 8) {
+            const msg = days === null ? '💾 아직 백업 기록이 없어요' : `💾 마지막 백업 후 ${days}일 지났습니다`;
+            el.innerHTML = `<span>${msg}</span><button class="btn btn-warning" style="padding:6px 12px;" onclick="switchTab('data')">백업하기</button>`;
+            el.style.display = 'flex';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+
+    // 복원 시 현재 태그 구조를 덮어쓰지 않고 합치기
+    function mergeTagTree(incoming) {
+        if (!incoming || typeof incoming !== 'object') return;
+        for (const l in incoming) {
+            if (!incoming[l] || typeof incoming[l] !== 'object') continue;
+            if (!tagTree[l] || typeof tagTree[l] !== 'object') tagTree[l] = {};
+            for (const m in incoming[l]) {
+                if (!Array.isArray(incoming[l][m])) continue;
+                if (!Array.isArray(tagTree[l][m])) tagTree[l][m] = [];
+                incoming[l][m].forEach(t => { if (!tagTree[l][m].includes(t)) tagTree[l][m].push(t); });
+            }
+        }
+    }
+
+    // ===== 공유 받기 (갤럭시 공유 메뉴 → JDM Archive) =====
+    async function maybeProcessShare() {
+        if (!appReady || !authed || shareHandled) return;
+        const params = new URLSearchParams(location.search);
+        if (!params.has('share')) return;
+        shareHandled = true;
+
+        const cleanUrl = new URL(location.href);
+        cleanUrl.searchParams.delete('share');
+        history.replaceState(history.state, null, cleanUrl.toString());
+
+        if (!('caches' in window)) return;
+        try {
+            const cache = await caches.open('jdm-share');
+            const metaRes = await cache.match(new URL('./shared/meta', location.href).href);
+            if (!metaRes) return;
+            const meta = await metaRes.json();
+
+            resetWriteForm();
+            switchTab('write');
+
+            const links = extractUrls(`${meta.url || ''} ${meta.text || ''}`);
+            let restText = String(meta.text || '');
+            links.forEach(l => { restText = restText.split(l).join(' '); });
+            restText = restText.replace(/\s+/g, ' ').trim();
+
+            let title = String(meta.title || '').trim();
+            if (!title && restText) { title = restText.substring(0, 100); restText = ''; }
+            if (restText && restText !== title) document.getElementById('inputContent').innerText = restText;
+            document.getElementById('inputTitle').value = title;
+
+            if (links.length > 0) {
+                document.getElementById('inputLinkContainer').innerHTML = '';
+                links.forEach(l => addLinkField('inputLinkContainer', l));
+            }
+
+            const files = [];
+            for (let i = 0; i < (meta.files || 0); i++) {
+                const r = await cache.match(new URL(`./shared/file-${i}`, location.href).href);
+                if (r) {
+                    const b = await r.blob();
+                    files.push(new File([b], `shared-${i}`, { type: b.type || 'image/jpeg' }));
+                }
+            }
+            if (files.length) await addImageFiles(files, 'inputContent');
+
+            const keys = await cache.keys();
+            await Promise.all(keys.map(k => cache.delete(k)));
+
+            showToast('공유된 내용을 불러왔습니다. 태그를 고르고 저장하세요.');
+            if (!title && links.length) tryFillTitleFromLink(links[0]);
+        } catch(e) {
+            console.error(e);
+            alert('공유 내용을 불러오지 못했습니다: ' + e.message);
+        }
+    }
+
+    function saveTagTree() {
         let sortedTree = {};
         Object.keys(tagTree).sort().forEach(l => {
             sortedTree[l] = tagTree[l];
         });
         tagTree = sortedTree;
-        localStorage.setItem('tagTree_v3', JSON.stringify(tagTree)); 
+        localStorage.setItem('tagTree_v3', JSON.stringify(tagTree));
     }
 
     async function cleanupOrphanedImages() {
@@ -409,7 +603,7 @@
             const usedImages = new Set();
             const tx1 = db.transaction(STORE_NAME, 'readonly');
             const req1 = tx1.objectStore(STORE_NAME).openCursor();
-            
+
             req1.onsuccess = e => {
                 const cursor = e.target.result;
                 if (cursor) {
@@ -426,7 +620,7 @@
                     const tx2 = db.transaction(STORE_IMAGES, 'readwrite');
                     const req2 = tx2.objectStore(STORE_IMAGES).openCursor();
                     let deletedCount = 0;
-                    
+
                     req2.onsuccess = e2 => {
                         const cursor2 = e2.target.result;
                         if (cursor2) {
@@ -437,7 +631,7 @@
                             cursor2.continue();
                         }
                     };
-                    
+
                     tx2.oncomplete = () => {
                         if (deletedCount > 0) console.log(`[v14.4.3] 고아 이미지 ${deletedCount}개 자동 청소 완료`);
                         resolve();
@@ -451,7 +645,7 @@
         return new Promise((resolve) => {
             let totalBytes = 0;
             const tx = db.transaction([STORE_NAME, STORE_IMAGES], 'readonly');
-            
+
             const memoReq = tx.objectStore(STORE_NAME).openCursor();
             memoReq.onsuccess = e => {
                 const cursor = e.target.result;
@@ -482,13 +676,13 @@
         const gaugeFill = document.getElementById('gaugeFill');
         const gaugeText = document.getElementById('gaugeText');
         const gaugeStatus = document.getElementById('gaugeStatus');
-        
+
         let percent = (mb / 500) * 100;
         if (percent > 100) percent = 100;
-        
+
         gaugeFill.style.width = `${percent}%`;
         gaugeText.innerText = `${mb} MB`;
-        
+
         if (mb < 300) {
             gaugeFill.style.background = '#27ae60';
             gaugeStatus.innerText = '안전 (여유 있음)';
@@ -533,7 +727,7 @@
 
         if (lunarData[year]) {
             const[sm, sd, bm, bd, cm, cd] = lunarData[year];
-            
+
             let seollal = new Date(year, sm-1, sd);
             let sPrev = new Date(seollal); sPrev.setDate(seollal.getDate() - 1);
             let sNext = new Date(seollal); sNext.setDate(seollal.getDate() + 1);
@@ -618,19 +812,19 @@
                 isModalOpen = true;
             }
         });
-        
+
         if (isModalOpen) {
             history.pushState({ page: 'main' }, null, location.href);
             return;
         }
-        
+
         const calendarTab = document.getElementById('tab-calendar');
         if (!calendarTab.classList.contains('active')) {
             switchTab('calendar');
             history.pushState({ page: 'main' }, null, location.href);
             return;
         }
-        
+
         const exitConfirm = confirm("앱을 종료하시겠습니까?");
         if (exitConfirm) {
             history.back();
@@ -662,7 +856,7 @@
         if (!m) return[];
         if (m.tags && Array.isArray(m.tags)) return m.tags;
         if (m.tags && typeof m.tags === 'string') return [m.tags];
-        if (m.tag) return [m.tag]; 
+        if (m.tag) return [m.tag];
         return[];
     }
 
@@ -670,7 +864,7 @@
         if (!m) return[];
         if (m.links && Array.isArray(m.links)) return m.links;
         if (m.links && typeof m.links === 'string') return[m.links];
-        if (m.link) return [m.link]; 
+        if (m.link) return [m.link];
         return[];
     }
 
@@ -686,16 +880,20 @@
     window.addEventListener('DOMContentLoaded', () => {
         if(sessionStorage.getItem('jdm_auth') === 'true') {
             document.getElementById('loginOverlay').style.display = 'none';
-            setupHistoryTrap(); 
+            authed = true;
+            maybeProcessShare();
+            setupHistoryTrap();
         }
     });
-    
+
     function getPassword() { return localStorage.getItem('appPass') || "0403"; }
     function checkPass() {
         if(document.getElementById('passInput').value === getPassword()) {
             document.getElementById('loginOverlay').style.display = 'none';
-            sessionStorage.setItem('jdm_auth', 'true'); 
-            setupHistoryTrap(); 
+            sessionStorage.setItem('jdm_auth', 'true');
+            authed = true;
+            maybeProcessShare();
+            setupHistoryTrap();
         } else { alert('비밀번호가 틀렸습니다.'); }
     }
     function changePassword() {
@@ -703,18 +901,18 @@
         const newP = prompt("새 비밀번호:"); if(newP) { localStorage.setItem('appPass', newP); alert("변경 완료."); }
     }
 
-    const DB_NAME = 'JeongArchiveDB_v9'; 
+    const DB_NAME = 'JeongArchiveDB_v9';
     const STORE_NAME = 'memos';
-    const STORE_IMAGES = 'images'; 
+    const STORE_IMAGES = 'images';
     let db;
     let currDate = new Date();
     let tagTree = {};
-    
+
     function initTagTree() {
         const savedTree = localStorage.getItem('tagTree_v3');
         if (savedTree) {
             try { tagTree = JSON.parse(savedTree); } catch(e) { tagTree = {}; }
-        } 
+        }
         sanitizeTagTree();
         if (Object.keys(tagTree).length === 0) {
             let oldTags = JSON.parse(localStorage.getItem('myTags')) ||[];
@@ -744,12 +942,12 @@
                 const sortedMKeys = Object.keys(tagTree[l]).sort();
                 for (let m of sortedMKeys) {
                     if (Array.isArray(tagTree[l][m]) && tagTree[l][m].includes(tag)) {
-                        return `${l} > ${m} > <span>${tag}</span>`;
+                        return `${esc(l)} > ${esc(m)} > <span>${esc(tag)}</span>`;
                     }
                 }
             }
         }
-        return `기타 > 미분류 > <span>${tag}</span>`;
+        return `기타 > 미분류 > <span>${esc(tag)}</span>`;
     }
 
     let isSelectionMode = false;
@@ -761,17 +959,17 @@
     let currentRenderPage = 1;
     const ITEMS_PER_PAGE = 15;
 
-    const request = indexedDB.open(DB_NAME, 2); 
-    request.onupgradeneeded = e => { 
-        db = e.target.result; 
-        if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:'id'}); 
-        if(!db.objectStoreNames.contains(STORE_IMAGES)) db.createObjectStore(STORE_IMAGES, {keyPath:'id'}); 
+    const request = indexedDB.open(DB_NAME, 2);
+    request.onupgradeneeded = e => {
+        db = e.target.result;
+        if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, {keyPath:'id'});
+        if(!db.objectStoreNames.contains(STORE_IMAGES)) db.createObjectStore(STORE_IMAGES, {keyPath:'id'});
     };
-    request.onsuccess = async e => { 
-        db = e.target.result; 
-        await requestPersistentStorage(); 
-        await runBase64ToBlobMigration(); 
-        initApp(); 
+    request.onsuccess = async e => {
+        db = e.target.result;
+        await requestPersistentStorage();
+        await runBase64ToBlobMigration();
+        initApp();
     };
 
     function base64ToBlob(base64Data, contentType) {
@@ -812,7 +1010,7 @@
                 tempDiv.innerHTML = m.content;
                 const imgs = tempDiv.querySelectorAll('img[src^="data:image/"]');
                 let modified = false;
-                
+
                 imgs.forEach(img => {
                     const src = img.src;
                     const matches = src.match(/^data:(image\/\w+);base64,(.+)$/);
@@ -821,13 +1019,13 @@
                         const b64Data = matches[2];
                         const blob = base64ToBlob(b64Data, mime);
                         const imgId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                        
+
                         newImages.push({ id: imgId, blob: blob });
                         img.src = `local-img:${imgId}`;
                         modified = true;
                     }
                 });
-                
+
                 if (modified) {
                     m.content = tempDiv.innerHTML;
                     needsUpdate.push(m);
@@ -840,10 +1038,10 @@
                 const tx = db.transaction([STORE_NAME, STORE_IMAGES], 'readwrite');
                 const mStore = tx.objectStore(STORE_NAME);
                 const iStore = tx.objectStore(STORE_IMAGES);
-                
+
                 needsUpdate.forEach(m => mStore.put(m));
                 newImages.forEach(img => iStore.put(img));
-                
+
                 tx.oncomplete = () => { resolve(); };
                 tx.onerror = (e) => reject(e);
             });
@@ -864,12 +1062,12 @@
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = contentHtml;
         const imgs = tempDiv.querySelectorAll('img[src^="local-img:"]');
-        
+
         for (let img of imgs) {
             const imgId = img.getAttribute('src').replace('local-img:', '');
             const blobObj = await getImageBlob(imgId);
             if (blobObj && blobObj.blob) {
-                img.setAttribute('data-local-id', imgId); 
+                img.setAttribute('data-local-id', imgId);
                 img.src = URL.createObjectURL(blobObj.blob);
             } else {
                 img.alt = "이미지 유실됨";
@@ -893,60 +1091,83 @@
         return tempDiv.innerHTML;
     }
 
-    function compressImage(file) { 
-        return new Promise(r => { 
-            const reader = new FileReader(); 
-            reader.onload = e => { 
-                const img = new Image(); 
-                img.onload = () => { 
-                    const c = document.createElement('canvas'); 
-                    let w=img.width, h=img.height; 
-                    if(w>1024) { h*=1024/w; w=1024; } 
-                    c.width=w; c.height=h; 
-                    c.getContext('2d').drawImage(img,0,0,w,h); 
-                    r(c.toDataURL('image/jpeg',0.7)); 
-                }; 
-                img.src = e.target.result; 
-            }; 
-            reader.readAsDataURL(file); 
-        }); 
+        // [v14.5.0] WebP 저장 (같은 용량에 캡처 글씨가 더 선명), 긴 스크롤 캡처 대응
+    function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                let w = img.naturalWidth, h = img.naturalHeight;
+                const s = Math.min(1, 1440 / w, Math.sqrt(10000000 / (w * h)));
+                w = Math.round(w * s); h = Math.round(h * s);
+                const c = document.createElement('canvas');
+                c.width = w; c.height = h;
+                c.getContext('2d').drawImage(img, 0, 0, w, h);
+                URL.revokeObjectURL(url);
+                c.toBlob(b => {
+                    if (b && b.type === 'image/webp') resolve(b);
+                    else c.toBlob(b2 => b2 ? resolve(b2) : reject(new Error('이미지 변환 실패')), 'image/jpeg', 0.8);
+                }, 'image/webp', 0.82);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('이미지를 읽을 수 없습니다')); };
+            img.src = url;
+        });
     }
 
-    async function insertImageToEditor(input, editorId) { 
-        const files = input.files; 
-        if(files.length === 0) return; 
-        const editor = document.getElementById(editorId); 
-        
-        for(let i=0; i<files.length; i++) { 
-            const file = files[i]; 
-            if(file.type.startsWith('image/')) { 
-                const base64Data = await compressImage(file); 
-                
-                const matches = base64Data.match(/^data:(image\/\w+);base64,(.+)$/);
-                if (matches) {
-                    const blob = base64ToBlob(matches[2], matches[1]);
-                    const imgId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    
+    async function addImageFiles(files, editorId) {
+        const editor = document.getElementById(editorId);
+        let added = 0;
+        for (const file of files) {
+            if (!file || !file.type || !file.type.startsWith('image/')) continue;
+            try {
+                const blob = await compressImage(file);
+                const imgId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                await new Promise((res, rej) => {
                     const tx = db.transaction(STORE_IMAGES, 'readwrite');
                     tx.objectStore(STORE_IMAGES).put({ id: imgId, blob: blob });
-                    
-                    const img = document.createElement('img'); 
-                    img.setAttribute('data-local-id', imgId);
-                    img.src = URL.createObjectURL(blob); 
-                    editor.appendChild(img); 
-                    editor.appendChild(document.createElement('br')); 
-                }
-            } 
-        } 
-        input.value = ''; 
+                    tx.oncomplete = res;
+                    tx.onerror = () => rej(tx.error);
+                });
+                const img = document.createElement('img');
+                img.setAttribute('data-local-id', imgId);
+                img.src = URL.createObjectURL(blob);
+                editor.appendChild(img);
+                editor.appendChild(document.createElement('br'));
+                added++;
+            } catch(e) {
+                console.error(e);
+                alert('이미지 처리 실패: ' + e.message);
+            }
+        }
+        return added;
     }
 
-    async function initApp() { 
-        initTagTree(); 
-        updateTagSelectors(); 
-        document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
+    async function insertImageToEditor(input, editorId) {
+        const files = Array.from(input.files || []);
+        input.value = '';
+        if (files.length) await addImageFiles(files, editorId);
+    }
+
+    // 캡처 이미지를 붙여넣으면 base64로 박히지 않고 압축 저장 경로로 보냄
+    function handleEditorPaste(e, editorId) {
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        const files = [];
+        for (const it of items) {
+            if (it.kind === 'file' && it.type.startsWith('image/')) {
+                const f = it.getAsFile();
+                if (f) files.push(f);
+            }
+        }
+        if (files.length) { e.preventDefault(); addImageFiles(files, editorId); }
+    }
+
+        async function initApp() {
+        initTagTree();
+        updateTagSelectors();
+        document.getElementById('inputDate').value = todayLocal();
         addLinkField('inputLinkContainer');
-        
+
         await cleanupOrphanedImages();
 
         const mb = await updateHealthGauge();
@@ -955,18 +1176,21 @@
             sessionStorage.setItem('health_warned', 'true');
         }
 
-        renderCalendar(); 
-        renderMemos(true); 
+        renderCalendar();
+        renderMemos(true);
+        checkBackupReminder();
+        appReady = true;
+        maybeProcessShare();
     }
 
     function switchTab(tab) {
-        window.scrollTo(0, 0); 
+        window.scrollTo(0, 0);
         document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
         document.getElementById('tab-'+tab).classList.add('active');
         const tabs =['calendar','list','write','data'];
         document.querySelectorAll('.nav-item')[tabs.indexOf(tab)].classList.add('active');
-        
+
         if(tab === 'list') renderMemos(true);
         if(tab === 'calendar') { currDate = new Date(); renderCalendar(); }
         if(tab === 'data') updateHealthGauge();
@@ -977,7 +1201,7 @@
         const container = document.getElementById(containerId);
         container.innerHTML = '';
         const allTags = Object.values(tagTree).flatMap(m => Object.values(m).flat());
-        
+
         const sortedLKeys = Object.keys(tagTree).sort();
         sortedLKeys.forEach(l => {
             // 하위 중분류가 하나라도 등록되어 있으면 대분류 박스를 항상 표시
@@ -986,18 +1210,18 @@
 
             let lDiv = document.createElement('div');
             lDiv.className = 'tag-category-group';
-            lDiv.innerHTML = `<div class="l-cat-title">📂 ${l}</div>`;
-            
+            lDiv.innerHTML = `<div class="l-cat-title">📂 ${esc(l)}</div>`;
+
             sortedMKeys.forEach(m => {
                 let mDiv = document.createElement('div');
                 mDiv.className = 'm-cat-group';
-                mDiv.innerHTML = `<div class="m-cat-title">📁 ${m}</div>`;
-                
+                mDiv.innerHTML = `<div class="m-cat-title">📁 ${esc(m)}</div>`;
+
                 let sDiv = document.createElement('div');
                 sDiv.className = 's-cat-chips';
-                
+
                 const sortedSTags = [...(tagTree[l][m] || [])].sort();
-                
+
                 // [v14.4.7 핵심 패치] 중분류 내에 아직 태그가 없는 경우: 숨기지 않고 원클릭 태그 생성 버튼 제공
                 if (sortedSTags.length === 0) {
                     let quickBtn = document.createElement('span');
@@ -1056,77 +1280,74 @@
     function updateTagSelectors() {
         renderTagSelector('inputTagContainer', inputSelectedTags);
         renderTagSelector('editTagContainer', editSelectedTags);
-        
+
         let html = `<option value="all">전체보기</option>`;
-        
+
         const sortedLKeys = Object.keys(tagTree).sort();
         sortedLKeys.forEach(l => {
-            html += `<optgroup label="📂 ${l}">`;
+            html += `<optgroup label="📂 ${esc(l)}">`;
             const sortedMKeys = Object.keys(tagTree[l]).sort();
             sortedMKeys.forEach(m => {
                 const sortedSTags = [...(tagTree[l][m] || [])].sort();
-                sortedSTags.forEach(t => { 
-                    html += `<option value="${t}">${m} > ${t}</option>`; 
+                sortedSTags.forEach(t => {
+                    html += `<option value="${esc(t)}">${esc(m)} > ${esc(t)}</option>`;
                 });
             });
             html += `</optgroup>`;
         });
-        
+
         const curFilter = document.getElementById('listFilter').value;
         document.getElementById('listFilter').innerHTML = html;
         document.getElementById('listFilter').value = curFilter;
     }
 
-    function openTagManager() {
+        function openTagManager() {
         try {
             sanitizeTagTree();
             const display = document.getElementById('tagTreeDisplay');
             display.innerHTML = '';
-            
-            const sortedLKeys = Object.keys(tagTree).sort();
-            sortedLKeys.forEach(l => {
+
+            Object.keys(tagTree).sort().forEach(l => {
                 let block = document.createElement('div');
                 block.className = "card p-15 mb-15";
                 block.innerHTML = `
                     <div class="flex-between border-bottom mb-10">
-                        <strong class="text-primary" style="font-size:1.05rem;">📂 ${l}</strong>
+                        <strong class="text-primary" style="font-size:1.05rem;">📂 ${esc(l)}</strong>
                         <div class="flex-row">
-                            <button onclick="renameLCat('${l}')" class="btn-outline-success">이름변경</button>
-                            <button onclick="removeLCat('${l}')" class="btn-outline-danger">삭제</button>
-                            <button onclick="addNewMCat('${l}')" class="btn-outline-info">+ 중분류 추가</button>
+                            <button onclick="renameLCat(${jsq(l)})" class="btn-outline-success">이름변경</button>
+                            <button onclick="removeLCat(${jsq(l)})" class="btn-outline-danger">삭제</button>
+                            <button onclick="addNewMCat(${jsq(l)})" class="btn-outline-info">+ 중분류 추가</button>
                         </div>
                     </div>
                 `;
-                
-                const sortedMKeys = Object.keys(tagTree[l]).sort();
-                sortedMKeys.forEach(m => {
+
+                Object.keys(tagTree[l]).sort().forEach(m => {
                     let mBlock = document.createElement('div');
                     mBlock.style = "margin-left:15px; margin-top:10px; border-left:2px solid #3498db; padding-left:10px;";
-                    
+
                     let tagsHtml = '';
                     if (Array.isArray(tagTree[l][m])) {
-                        const sortedSTags = [...tagTree[l][m]].sort();
-                        tagsHtml = sortedSTags.map(t => `
-                            <span class="tag-item">${t} 
-                                <span style="cursor:pointer; color:#3498db; margin-left:4px;" onclick="openMoveTagModal('sTag', '${l}', '${m}', '${t}')" title="태그 이동">🔄</span>
-                                <span style="cursor:pointer; color:#f39c12; margin-left:4px;" onclick="renameSTag('${l}','${m}','${t}')" title="태그 이름 변경">✏️</span>
-                                <span class="tag-del-btn" onclick="removeSTag('${l}','${m}','${t}')" title="태그 삭제">×</span>
+                        tagsHtml = [...tagTree[l][m]].sort().map(t => `
+                            <span class="tag-item">${esc(t)}
+                                <span style="cursor:pointer; color:#3498db; margin-left:4px;" onclick="openMoveTagModal('sTag', ${jsq(l)}, ${jsq(m)}, ${jsq(t)})" title="태그 이동">🔄</span>
+                                <span style="cursor:pointer; color:#f39c12; margin-left:4px;" onclick="renameSTag(${jsq(l)}, ${jsq(m)}, ${jsq(t)})" title="태그 이름 변경">✏️</span>
+                                <span class="tag-del-btn" onclick="removeSTag(${jsq(l)}, ${jsq(m)}, ${jsq(t)})" title="태그 삭제">×</span>
                             </span>`).join('');
                     }
 
                     mBlock.innerHTML = `
                         <div class="flex-between mb-5">
-                            <span class="font-bold text-muted" style="font-size:0.95rem;">📁 ${m}</span>
+                            <span class="font-bold text-muted" style="font-size:0.95rem;">📁 ${esc(m)}</span>
                             <div class="flex-row">
-                                <button onclick="openMoveTagModal('mCat', '${l}', '${m}')" class="btn-outline-warning">🚀이동</button>
-                                <button onclick="renameMCat('${l}','${m}')" class="btn-outline-success">이름변경</button>
-                                <button onclick="removeMCat('${l}','${m}')" class="btn-icon text-danger" style="font-size:1rem;">삭제</button>
+                                <button onclick="openMoveTagModal('mCat', ${jsq(l)}, ${jsq(m)})" class="btn-outline-warning">🚀이동</button>
+                                <button onclick="renameMCat(${jsq(l)}, ${jsq(m)})" class="btn-outline-success">이름변경</button>
+                                <button onclick="removeMCat(${jsq(l)}, ${jsq(m)})" class="btn-icon text-danger" style="font-size:1rem;">삭제</button>
                             </div>
                         </div>
                         <div class="flex-row mb-10" style="flex-wrap:wrap;">${tagsHtml || '<span class="text-muted" style="font-size:0.8rem;">(아래에서 태그를 추가해주세요)</span>'}</div>
                         <div class="flex-row">
-                            <input type="text" id="newT_${l}_${m}" placeholder="#새태그" style="padding:6px; font-size:0.85rem; margin-bottom:0; flex:1;">
-                            <button onclick="addNewSTag('${l}','${m}')" class="btn btn-primary" style="padding:6px 12px;">추가</button>
+                            <input type="text" id="${esc('newT_' + l + '_' + m)}" placeholder="#새태그" style="padding:6px; font-size:0.85rem; margin-bottom:0; flex:1;">
+                            <button onclick="addNewSTag(${jsq(l)}, ${jsq(m)})" class="btn btn-primary" style="padding:6px 12px;">추가</button>
                         </div>
                     `;
                     block.appendChild(mBlock);
@@ -1144,13 +1365,13 @@
         currentMoveTarget = { type, l, m, t };
         const select = document.getElementById('moveTagSelect');
         select.innerHTML = '';
-        
+
         const sortedLKeys = Object.keys(tagTree).sort();
         if (type === 'mCat') {
             document.getElementById('moveTagTitle').innerText = "중분류 이동";
             document.getElementById('moveTagDesc').innerText = `'${m}'을(를) 어느 대분류로 이동할까요?`;
             sortedLKeys.forEach(cat => {
-                if (cat !== l) select.innerHTML += `<option value="${cat}">${cat}</option>`;
+                if (cat !== l) select.innerHTML += `<option value="${esc(cat)}">${esc(cat)}</option>`;
             });
         } else if (type === 'sTag') {
             document.getElementById('moveTagTitle').innerText = "태그 이동";
@@ -1159,7 +1380,7 @@
                 const sortedMKeys = Object.keys(tagTree[lCat]).sort();
                 sortedMKeys.forEach(mCat => {
                     if (lCat !== l || mCat !== m) {
-                        select.innerHTML += `<option value="${lCat}|${mCat}">${lCat} > ${mCat}</option>`;
+                        select.innerHTML += `<option value="${esc(lCat + '|' + mCat)}">${esc(lCat)} > ${esc(mCat)}</option>`;
                     }
                 });
             });
@@ -1175,15 +1396,15 @@
         if (type === 'mCat') {
             const targetL = val;
             if(tagTree[targetL][m]) return alert('이동하려는 대분류에 이미 같은 이름의 중분류가 있습니다.');
-            tagTree[targetL][m] = tagTree[l][m]; 
-            delete tagTree[l][m]; 
+            tagTree[targetL][m] = tagTree[l][m];
+            delete tagTree[l][m];
         } else if (type === 'sTag') {
             const[targetL, targetM] = val.split('|');
             if(tagTree[targetL][targetM].includes(t)) return alert('해당 분류에 이미 같은 태그가 있습니다.');
             tagTree[l][m] = tagTree[l][m].filter(tag => tag !== t);
             tagTree[targetL][targetM].push(t);
         }
-        
+
         saveTagTree(); openTagManager(); updateTagSelectors(); renderMemos(true);
         closeModal('moveTagModal');
         alert('성공적으로 이동되었습니다.');
@@ -1205,7 +1426,7 @@
         if(newM && newM.trim() && newM.trim() !== oldM) {
             newM = newM.trim();
             if(tagTree[l][newM]) return alert('이미 존재하는 분류명입니다.');
-            
+
             let newMGroup = {};
             for (let key in tagTree[l]) {
                 if (key === oldM) {
@@ -1224,10 +1445,10 @@
         if(newT && newT.trim() && newT.trim() !== oldT) {
             newT = newT.trim();
             if(!newT.startsWith('#')) newT = '#' + newT;
-            
+
             const allTags = Object.values(tagTree).flatMap(x => Object.values(x).flat());
             if(allTags.includes(newT)) return alert('이미 존재하는 태그입니다.');
-            
+
             const idx = tagTree[l][m].indexOf(oldT);
             if(idx !== -1) tagTree[l][m][idx] = newT;
             saveTagTree();
@@ -1235,7 +1456,7 @@
             const tx = db.transaction(STORE_NAME, 'readwrite');
             const store = tx.objectStore(STORE_NAME);
             const req = store.getAll();
-            
+
             req.onsuccess = (e) => {
                 const memos = e.target.result;
                 let updateCount = 0;
@@ -1247,7 +1468,7 @@
                         updateCount++;
                     }
                 });
-                
+
                 alert(`태그명이 변경되었습니다!\n과거 메모 ${updateCount}건에 자동 반영되었습니다.`);
                 openTagManager(); updateTagSelectors(); renderMemos(true); renderCalendar();
             };
@@ -1255,80 +1476,77 @@
     }
 
     function addNewLCat() { let n = prompt("새 대분류 명칭 (예: 900 기타):"); if(n && n.trim()) { tagTree[n.trim()] = {}; saveTagTree(); openTagManager(); updateTagSelectors(); } }
-    
+
     // [v14.4.7] 중분류 생성 시 사용자가 바로 사용할 수 있도록 동명 태그(#명칭) 기본 등록 편의성 지원
-    function addNewMCat(l) { 
-        let n = prompt(`'${l}' 아래에 들어갈 중분류 명칭:`); 
-        if(n && n.trim()) { 
+    function addNewMCat(l) {
+        let n = prompt(`'${l}' 아래에 들어갈 중분류 명칭:`);
+        if(n && n.trim()) {
             let name = n.trim();
             if (!tagTree[l]) tagTree[l] = {};
             if (tagTree[l][name]) return alert('이미 존재하는 중분류입니다.');
-            
+
             // 빈 폴더로 두지 않고 편의를 위해 '#중분류명' 기본 태그 자동 초기화
-            tagTree[l][name] = ['#' + name]; 
-            saveTagTree(); 
-            openTagManager(); 
-            updateTagSelectors(); 
-        } 
+            tagTree[l][name] = ['#' + name];
+            saveTagTree();
+            openTagManager();
+            updateTagSelectors();
+        }
     }
-    
-    function addNewSTag(l, m) { 
+
+    function addNewSTag(l, m) {
         let input = document.getElementById(`newT_${l}_${m}`);
         let n = input.value.trim();
-        if(n) { 
-            if(!n.startsWith('#')) n='#'+n; 
+        if(n) {
+            if(!n.startsWith('#')) n='#'+n;
             const allTags = Object.values(tagTree).flatMap(x => Object.values(x).flat());
             if(allTags.includes(n)) return alert('이미 존재하는 태그입니다.');
-            tagTree[l][m].push(n); 
-            saveTagTree(); openTagManager(); updateTagSelectors(); 
-        } 
+            tagTree[l][m].push(n);
+            saveTagTree(); openTagManager(); updateTagSelectors();
+        }
     }
     function removeLCat(l) { if(Object.keys(tagTree[l]).length>0) return alert('하위 중분류가 있어서 삭제할 수 없습니다. 먼저 중분류를 이동/삭제하세요.'); if(confirm('정말 삭제하시겠습니까?')) { delete tagTree[l]; saveTagTree(); openTagManager(); updateTagSelectors(); } }
     function removeMCat(l, m) { if(tagTree[l][m].length>0) return alert('안에 태그가 남아있어 삭제할 수 없습니다. 태그를 이동/삭제하세요.'); if(confirm('정말 삭제하시겠습니까?')) { delete tagTree[l][m]; saveTagTree(); openTagManager(); updateTagSelectors(); } }
     function removeSTag(l, m, t) { if(confirm('이 태그를 계층 목록에서 지우시겠습니까?\n(기존 메모의 데이터는 지워지지 않습니다)')) { tagTree[l][m] = tagTree[l][m].filter(i=>i!==t); saveTagTree(); openTagManager(); updateTagSelectors(); } }
-    
+
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function saveAndCloseTagManager() { closeModal('tagManagerModal'); alert('모든 구조 변경사항이 안전하게 저장 및 적용되었습니다.'); }
 
-    async function openViewModal(id) {
+        async function openViewModal(id) {
         try {
-            let m = await getMemo(id); 
+            let m = await getMemo(id);
             if(!m) return alert("해당 데이터를 불러올 수 없습니다.");
-            
-            currentActiveMemoId = m.id; 
+
+            currentActiveMemoId = m.id;
             document.getElementById('viewTitle').innerText = m.title || "무제";
             document.getElementById('viewDate').innerText = m.dateStr || "";
-            
+
             const safeTags = getTagsFromMemo(m);
-            let pathsHtml = safeTags.map(t => `<div class="mini-tag-path">${getTagPath(t)}</div>`).join(' ');
-            document.getElementById('viewTagPath').innerHTML = pathsHtml;
-            
+            document.getElementById('viewTagPath').innerHTML = safeTags.map(t => `<div class="mini-tag-path">${getTagPath(t)}</div>`).join(' ');
+
             document.getElementById('viewBody').innerHTML = await renderContentWithImages(m.content || "");
-            
-            const safeLinks = getLinksFromMemo(m);
-            document.getElementById('viewLink').innerHTML = safeLinks.map((l,i) => `<a href="${l}" target="_blank" style="display:block; background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:5px; text-decoration:none; color:#2980b9;">🔗 관련 자료 보기</a>`).join('');
-            
+            document.getElementById('viewLink').innerHTML = renderLinksHtml(getLinksFromMemo(m));
+
             document.getElementById('viewModal').style.display = 'flex';
         } catch(e) {
             console.error(e);
             alert("메모를 여는 중 문제가 발생했습니다.");
         }
     }
-    
-    function transferToEdit() { 
-        closeModal('viewModal'); 
-        openEditPopup(currentActiveMemoId); 
+
+    function transferToEdit() {
+        closeModal('viewModal');
+        openEditPopup(currentActiveMemoId);
     }
 
     async function openEditPopup(id) {
         try {
-            let m = await getMemo(id); 
+            let m = await getMemo(id);
             if(!m) return alert("해당 데이터를 불러올 수 없습니다.");
-            
-            currentActiveMemoId = m.id; 
+
+            currentActiveMemoId = m.id;
             document.getElementById('editTitle').value = m.title || "";
             document.getElementById('editDate').value = strToInputDate(m.dateStr || "");
-            
+
             editSelectedTags = new Set(getTagsFromMemo(m));
             renderTagSelector('editTagContainer', editSelectedTags);
 
@@ -1336,7 +1554,7 @@
             const container = document.getElementById('editLinkContainer');
             container.innerHTML = '';
             if(safeLinks.length > 0) safeLinks.forEach(l => addLinkField('editLinkContainer', l));
-            else addLinkField('editLinkContainer'); 
+            else addLinkField('editLinkContainer');
 
             document.getElementById('editContent').innerHTML = await renderContentWithImages(m.content || "");
             document.getElementById('editPopup').style.display = 'block';
@@ -1363,7 +1581,7 @@
             imageIdsToDelete.forEach(imgId => tx.objectStore(STORE_IMAGES).delete(imgId));
 
             tx.oncomplete = async () => {
-                alert('삭제됨'); closeModal('viewModal'); 
+                alert('삭제됨'); closeModal('viewModal');
                 await updateHealthGauge();
                 renderMemos(true); renderCalendar();
             };
@@ -1373,11 +1591,11 @@
     async function saveEditedMemo() {
         const title = document.getElementById('editTitle').value;
         const rawContent = document.getElementById('editContent').innerHTML;
-        const finalContent = prepareContentForSave(rawContent); 
+        const finalContent = prepareContentForSave(rawContent);
         const tags = Array.from(editSelectedTags);
         const links = collectLinks('editLinkContainer');
-        const dateVal = document.getElementById('editDate').value; 
-        
+        const dateVal = document.getElementById('editDate').value;
+
         const oldMemo = await getMemo(currentActiveMemoId);
         const oldImages = new Set();
         if (oldMemo && oldMemo.content) {
@@ -1387,79 +1605,107 @@
                 oldImages.add(match[1]);
             }
         }
-        
+
         const newImages = new Set();
         const regex2 = /local-img:([^"'\s>]+)/g;
         let match2;
         while ((match2 = regex2.exec(finalContent)) !== null) {
             newImages.add(match2[1]);
         }
-        
+
         const orphanedImages = [...oldImages].filter(id => !newImages.has(id));
-        
+
         const tx = db.transaction([STORE_NAME, STORE_IMAGES], 'readwrite');
-        tx.objectStore(STORE_NAME).put({ 
-            id: currentActiveMemoId, 
-            dateStr: inputDateToStr(dateVal), 
-            title: title || "무제", 
-            tags: tags, 
-            content: finalContent, 
-            links: links 
+        tx.objectStore(STORE_NAME).put({
+            id: currentActiveMemoId,
+            dateStr: inputDateToStr(dateVal),
+            title: title || "무제",
+            tags: tags,
+            content: finalContent,
+            links: links
         });
-        
+
         orphanedImages.forEach(imgId => tx.objectStore(STORE_IMAGES).delete(imgId));
-        
+
         tx.oncomplete = async () => {
-            alert('수정 완료!'); closeModal('editPopup'); 
+            alert('수정 완료!'); closeModal('editPopup');
             await updateHealthGauge();
             renderMemos(true); renderCalendar();
         };
     }
 
-    async function saveNewMemo() {
-        const title = document.getElementById('inputTitle').value || "무제";
-        const rawContent = document.getElementById('inputContent').innerHTML;
-        const finalContent = prepareContentForSave(rawContent); 
-        const date = document.getElementById('inputDate').value || new Date().toISOString().split('T')[0];
-        
-        const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME);
-        store.add({
+        async function saveNewMemo() {
+        const title = document.getElementById('inputTitle').value.trim() || "무제";
+        const finalContent = prepareContentForSave(document.getElementById('inputContent').innerHTML);
+        const date = document.getElementById('inputDate').value || todayLocal();
+
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).add({
             id: Date.now(),
             dateStr: inputDateToStr(date),
             title: title,
             tags: Array.from(inputSelectedTags),
             content: finalContent,
             links: collectLinks('inputLinkContainer')
-        }).onsuccess = () => {
-            alert('저장 완료');
-            location.reload();
+        });
+        tx.oncomplete = async () => {
+            showToast('저장 완료');
+            resetWriteForm();
+            await updateHealthGauge();
+            switchTab('list');
         };
+        tx.onerror = () => alert('저장 중 오류가 발생했습니다.');
     }
 
-    function collectLinks(cid) { return Array.from(document.querySelectorAll(`#${cid} input`)).map(i=>i.value).filter(v=>v); }
-    function addLinkField(cid, val="") { 
-        let d = document.createElement('div'); d.className='link-row';
-        d.innerHTML = `<input type="text" value="${val}" placeholder="https://..." style="margin-bottom:0; flex-grow:1;"> <button class="btn-del-link" onclick="this.parentElement.remove()">-</button>`;
+    function resetWriteForm() {
+        document.getElementById('inputTitle').value = '';
+        document.getElementById('inputDate').value = todayLocal();
+        document.getElementById('inputContent').innerHTML = '';
+        inputSelectedTags.clear();
+        renderTagSelector('inputTagContainer', inputSelectedTags);
+        document.getElementById('inputLinkContainer').innerHTML = '';
+        addLinkField('inputLinkContainer');
+    }
+
+    function collectLinks(cid) {
+        return Array.from(document.querySelectorAll(`#${cid} input`)).map(i => i.value.trim()).filter(v => v);
+    }
+
+    function addLinkField(cid, val = "") {
+        const d = document.createElement('div');
+        d.className = 'link-row';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'https://...';
+        input.style.cssText = 'margin-bottom:0; flex-grow:1;';
+        input.value = val;
+        if (cid === 'inputLinkContainer') input.addEventListener('change', () => tryFillTitleFromLink(input.value));
+        const btn = document.createElement('button');
+        btn.className = 'btn-del-link';
+        btn.innerText = '-';
+        btn.onclick = () => d.remove();
+        d.appendChild(input);
+        d.appendChild(btn);
         document.getElementById(cid).appendChild(d);
     }
 
     function checkDateRange(targetStr, start, end) {
         if(!targetStr) return false;
-        const targetNum = parseInt(normalizeDate(targetStr)); 
+        const targetNum = parseInt(normalizeDate(targetStr));
         const startNum = start ? parseInt(start.replace(/-/g, '')) : 0;
         const endNum = end ? parseInt(end.replace(/-/g, '')) : 99999999;
         return targetNum >= startNum && targetNum <= endNum;
     }
 
-    function toggleSelectMode() { 
+    function toggleSelectMode() {
         try {
-            isSelectionMode = !isSelectionMode; 
-            selectedIds.clear(); 
-            const bulk = document.getElementById('bulkDeleteBar'); 
-            document.getElementById('selectModeBtn').classList.toggle('active'); 
-            bulk.style.display = isSelectionMode ? 'block' : 'none'; 
-            document.getElementById('selectedCount').innerText='0'; 
-            renderMemos(false); 
+            isSelectionMode = !isSelectionMode;
+            selectedIds.clear();
+            const bulk = document.getElementById('bulkDeleteBar');
+            document.getElementById('selectModeBtn').classList.toggle('active');
+            bulk.style.display = isSelectionMode ? 'block' : 'none';
+            document.getElementById('selectedCount').innerText='0';
+            renderMemos(false);
         } catch(e) {
             alert("선택 모드 실행 오류: " + e.message);
         }
@@ -1491,43 +1737,56 @@
         });
     }
 
-    function getAll() { 
-        return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result)); 
+    function getAll() {
+        return new Promise(r => db.transaction(STORE_NAME,'readonly').objectStore(STORE_NAME).getAll().onsuccess = e => r(e.target.result));
     }
+
+        const debouncedRender = debounce(() => renderMemos(true), 250);
 
     async function renderMemos(resetPage = true) {
         try {
             if(resetPage) { currentRenderPage = 1; }
-            const memos = await getAllLightweight(); 
             const filter = document.getElementById('listFilter').value;
-            const key = document.getElementById('searchInput').value;
+            const key = document.getElementById('searchInput').value.trim().toLowerCase();
             const sDate = document.getElementById('filterStartDate').value;
             const eDate = document.getElementById('filterEndDate').value;
-            
+
+            // [v14.5.0] 검색할 때는 오래된 메모도 본문 전체를 대상으로 (예전엔 100자로 잘린 상태에서 검색됨)
+            const memos = key ? (await getAll()).sort((a, b) => b.id - a.id) : await getAllLightweight();
+            const words = key ? key.split(/\s+/) : [];
+
             sanitizeTagTree();
 
             currentFilteredMemos = memos.filter(m => {
                 const safeTags = getTagsFromMemo(m);
                 if(filter !== 'all' && !safeTags.includes(filter)) return false;
-                if(key && !(m.title||"").includes(key) && !(m.content||"").includes(key)) return false;
+                if(words.length) {
+                    const hay = [m.title || '', stripHtml(m.content), safeTags.join(' '), getLinksFromMemo(m).join(' ')].join(' ').toLowerCase();
+                    if(!words.every(w => hay.includes(w))) return false;
+                }
                 if(sDate || eDate) if(!checkDateRange(m.dateStr, sDate, eDate)) return false;
                 return true;
             });
 
             const limit = currentRenderPage * ITEMS_PER_PAGE;
             const pageMemos = currentFilteredMemos.slice(0, limit);
-            
+
             let listHtml = '';
-            
             pageMemos.forEach(m => {
-                let mContent = m.content || "";
-                let summary = mContent.replace(/<[^>]*>?/gm, '').substring(0, 40) + "...";
-                let hasImg = mContent.includes('local-img:') ? '📷' : '';
+                const mContent = m.content || "";
+                const plain = stripHtml(mContent).trim();
+                const summary = plain ? esc(plain.substring(0, 60)) + (plain.length > 60 ? '…' : '') : '';
+                const hasImg = mContent.includes('local-img:') ? '📷' : '';
                 const safeLinks = getLinksFromMemo(m);
-                let hasLink = safeLinks.length > 0 ? `🔗(${safeLinks.length})` : '';
                 const safeTags = getTagsFromMemo(m);
                 const pathsHtml = safeTags.map(t => `<span class="mini-tag-path">${getTagPath(t)}</span>`).join(' ');
-                
+
+                let ytId = null;
+                for (const l of safeLinks) { ytId = getYouTubeId(l); if (ytId) break; }
+                const thumbHtml = ytId ? `<img class="card-thumb" src="https://i.ytimg.com/vi/${ytId}/mqdefault.jpg" alt="" loading="lazy">` : '';
+                const domains = [...new Set(safeLinks.map(l => getYouTubeId(l) ? 'YouTube' : getDomain(l)).filter(Boolean))];
+                const domainHtml = domains.map(d => `<span class="domain-chip">${esc(d)}</span>`).join('');
+
                 const isSelected = selectedIds.has(String(m.id));
                 const action = isSelectionMode ? `toggleSelectCard('${m.id}')` : `openViewModal('${m.id}')`;
 
@@ -1535,14 +1794,21 @@
                 <div class="memo-card ${isSelected?'selected':''} ${isSelectionMode?'selection-mode':''}" onclick="${action}">
                     <div class="check-circle"></div>
                     <div class="flex-between text-muted mb-5">
-                        <span>${m.dateStr || ''}</span>
+                        <span>${esc(m.dateStr || '')}</span>
                     </div>
                     <div class="flex-row mb-10" style="flex-wrap:wrap;">${pathsHtml}</div>
-                    <h3 style="margin:0 0 5px 0; font-size:1.1rem; color:#2c3e50;">${m.title || "무제"} <span style="font-size:0.8rem;">${hasImg}${hasLink}</span></h3>
-                    <p style="color:#666; font-size:0.9rem; margin:0;">${summary}</p>
+                    <div class="memo-card-body">
+                        <div class="memo-card-text">
+                            <h3 style="margin:0 0 5px 0; font-size:1.1rem; color:#2c3e50;">${esc(m.title || "무제")} <span style="font-size:0.8rem;">${hasImg}</span></h3>
+                            ${domainHtml ? `<div>${domainHtml}</div>` : ''}
+                            ${summary ? `<p style="color:#666; font-size:0.9rem; margin:4px 0 0 0;">${summary}</p>` : ''}
+                        </div>
+                        ${thumbHtml}
+                    </div>
                 </div>`;
             });
-            
+
+            if (!listHtml && key) listHtml = `<p class="text-center text-muted mt-20">'${esc(key)}' 검색 결과가 없습니다.</p>`;
             document.getElementById('memoList').innerHTML = listHtml;
             document.getElementById('loadMoreContainer').style.display = (limit < currentFilteredMemos.length) ? 'block' : 'none';
         } catch(e) {
@@ -1552,15 +1818,15 @@
     }
 
     function loadMoreMemos() { currentRenderPage++; renderMemos(false); }
-    
-    function toggleSelectCard(id) { 
+
+    function toggleSelectCard(id) {
         const strId = String(id);
-        if(selectedIds.has(strId)) selectedIds.delete(strId); 
-        else selectedIds.add(strId); 
-        document.getElementById('selectedCount').innerText = selectedIds.size; 
-        renderMemos(false); 
+        if(selectedIds.has(strId)) selectedIds.delete(strId);
+        else selectedIds.add(strId);
+        document.getElementById('selectedCount').innerText = selectedIds.size;
+        renderMemos(false);
     }
-    
+
     async function deleteSelectedMemos() {
         if(selectedIds.size === 0) return;
         if(confirm(`${selectedIds.size}개 항목 삭제?`)) {
@@ -1579,14 +1845,14 @@
             const tx = db.transaction([STORE_NAME, STORE_IMAGES], 'readwrite');
             selectedIds.forEach(id => {
                 tx.objectStore(STORE_NAME).delete(id);
-                tx.objectStore(STORE_NAME).delete(Number(id)); 
+                tx.objectStore(STORE_NAME).delete(Number(id));
             });
             imageIdsToDelete.forEach(imgId => tx.objectStore(STORE_IMAGES).delete(imgId));
 
-            tx.oncomplete = async () => { 
-                alert("삭제됨"); toggleSelectMode(); 
+            tx.oncomplete = async () => {
+                alert("삭제됨"); toggleSelectMode();
                 await updateHealthGauge();
-                renderMemos(true); renderCalendar(); 
+                renderMemos(true); renderCalendar();
             };
         }
     }
@@ -1599,18 +1865,18 @@
         days.forEach((d, i) => grid.innerHTML += `<div class="day-header ${i===0?'sun':''} ${i===6?'sat':''}">${d}</div>`);
         const first = new Date(y,m,1).getDay(), last = new Date(y,m+1,0).getDate();
         for(let i=0; i<first; i++) grid.innerHTML += `<div></div>`;
-        
+
         if (!holidayCache[y]) holidayCache[y] = generateHolidays(y);
         const currentYearHolidays = holidayCache[y];
 
-        const memos = await getAllLightweight(); 
+        const memos = await getAllLightweight();
         for(let d=1; d<=last; d++) {
             const targetStr = `${y}${String(m+1).padStart(2,'0')}${String(d).padStart(2,'0')}`;
-            const isoStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; 
-            
+            const isoStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
             const dayMemos = memos.filter(memo => normalizeDate(memo.dateStr) === targetStr);
             const holidayName = currentYearHolidays[isoStr];
-            
+
             let exClass = new Date(y,m,d).getDay()===0?'sun':new Date(y,m,d).getDay()===6?'sat':'';
             if(holidayName) exClass += ' holiday';
             if(y===new Date().getFullYear() && m===new Date().getMonth() && d===new Date().getDate()) exClass += ' today';
@@ -1618,11 +1884,11 @@
 
             let pcEvents = '';
             const limit = 3;
-            dayMemos.slice(0, limit).forEach(dm => { 
-                pcEvents += `<div class="cal-event-item" onclick="event.stopPropagation(); openViewModal('${dm.id}')">${dm.title || "무제"}</div>`; 
+            dayMemos.slice(0, limit).forEach(dm => {
+                pcEvents += `<div class="cal-event-item" onclick="event.stopPropagation(); openViewModal('${dm.id}')">${esc(dm.title || "무제")}</div>`;
             });
             if(dayMemos.length > limit) pcEvents += `<div class="more-items">+${dayMemos.length - limit} 더보기</div>`;
-            
+
             grid.innerHTML += `
             <div class="cal-day ${exClass} ${dayMemos.length>0?'has-memo':''}" onclick="${dayMemos.length>0?`showDay('${targetStr}')`:`openWriteWithDate(${y},${m+1},${d})`}">
                 <span class="day-num">${d}</span>
@@ -1631,24 +1897,24 @@
                 <div class="cal-events-pc">${pcEvents}</div>
             </div>`;
         }
-        
+
         const currentMonthKey = `${y}${String(m+1).padStart(2,'0')}`;
         if (currentSelectedDateKey && currentSelectedDateKey.startsWith(currentMonthKey)) {
-            showDay(currentSelectedDateKey, true); 
+            showDay(currentSelectedDateKey, true);
         } else {
             document.getElementById('calendarMemos').innerHTML = '';
         }
     }
-    
+
     function changeMonth(d) { currDate.setMonth(currDate.getMonth()+d); renderCalendar(); }
-    
+
     async function showDay(targetStr, isRefresh = false) {
         currentSelectedDateKey = targetStr;
-        if(!isRefresh) renderCalendar(); 
+        if(!isRefresh) renderCalendar();
 
         const memos = await getAllLightweight();
         const target = memos.filter(m => normalizeDate(m.dateStr) === targetStr);
-        
+
         const y = targetStr.substring(0, 4);
         const m = targetStr.substring(4, 6);
         const d = targetStr.substring(6, 8);
@@ -1663,7 +1929,7 @@
             const pathsHtml = safeTags.map(t => `<span class="mini-tag-path" style="font-size:0.7rem; padding:2px 6px;">${getTagPath(t)}</span>`).join('');
             return `<div onclick="openViewModal('${m.id}')" style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
                 <div class="mb-5">${pathsHtml}</div>
-                <span class="font-bold" style="font-size:1.05rem; color:#333;">${m.title || "무제"}</span>
+                <span class="font-bold" style="font-size:1.05rem; color:#333;">${esc(m.title || "무제")}</span>
             </div>`
         }).join('');
         html += `</div>`;
@@ -1700,13 +1966,13 @@
         `;
 
         try {
-            const memos = await getAll(); 
+            const memos = await getAll();
             const startVal = document.getElementById('backupStartDate').value;
             const endVal = document.getElementById('backupEndDate').value;
-            
+
             let targetMemos = memos;
             let dateSuffix = "ALL";
-            
+
             if (startVal || endVal) {
                 targetMemos = memos.filter(m => checkDateRange(m.dateStr, startVal, endVal));
                 if(targetMemos.length === 0) throw new Error('해당 기간에 저장된 데이터가 없습니다.');
@@ -1714,7 +1980,7 @@
                 const eStr = endVal ? endVal.replace(/-/g, '').slice(2) : "END";
                 dateSuffix = `${sStr}_${eStr}`;
             } else {
-                dateSuffix = new Date().toISOString().slice(0,10).replace(/-/g, '');
+                dateSuffix = todayLocal().replace(/-/g, '');
             }
 
             const { url, fileName } = await performBackup(targetMemos, type, dateSuffix);
@@ -1722,7 +1988,7 @@
             content.innerHTML = `
                 <h3 class="mt-0 text-success">✅ 백업 준비 완료!</h3>
                 <p class="text-muted">아래 버튼을 눌러 파일을 기기에 저장하세요.</p>
-                <a href="${url}" download="${fileName}" class="btn btn-success w-100 mb-10" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:1.1rem;">💾 파일 다운로드 저장</a>
+                <a href="${url}" download="${fileName}" onclick="markBackupDone()" class="btn btn-success w-100 mb-10" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:1.1rem;">💾 파일 다운로드 저장</a>
                 <button onclick="closeModal('backupModal')" class="btn btn-secondary w-100">닫기</button>
             `;
         } catch (error) {
@@ -1737,13 +2003,13 @@
 
     async function performBackup(targetMemos, type, dateSuffix) {
         const blobParts =[];
-        blobParts.push(`{\n"version": "v14.4.7",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
+        blobParts.push(`{\n"version": "v14.5.0",\n"savedAt": "${new Date().toISOString()}",\n"type": "${type}",\n`);
         blobParts.push(`"tagTree": ${JSON.stringify(tagTree)},\n`);
         blobParts.push(`"memos": ${JSON.stringify(targetMemos)}`);
 
         if (type === 'full') {
             blobParts.push(`,\n"images":[\n`);
-            
+
             const requiredImageIds = new Set();
             targetMemos.forEach(m => {
                 if (m.content) {
@@ -1767,7 +2033,7 @@
                 if (img && img.blob) {
                     const base64 = await blobToBase64(img.blob);
                     if (!isFirstImg) blobParts.push(`,\n`);
-                    blobParts.push(JSON.stringify({ id: img.id, dataUrl: base64 }));
+                    blobParts.push(new Blob([JSON.stringify({ id: img.id, dataUrl: base64 })]));  // 조각마다 Blob으로 넘겨 폰 메모리 부담 줄임
                     isFirstImg = false;
                 }
             }
@@ -1786,8 +2052,8 @@
     async function executeDataDiet() {
         const dateVal = document.getElementById('dietDate').value;
         if (!dateVal) return alert("날짜를 선택해주세요.");
-        
-        const memos = await getAll(); 
+
+        const memos = await getAll();
         const targetMemos = memos.filter(m => {
             const mDate = parseInt(normalizeDate(m.dateStr));
             const dDate = parseInt(dateVal.replace(/-/g, ''));
@@ -1810,7 +2076,7 @@
             content.innerHTML = `
                 <h3 class="mt-0 text-success">✅ 아카이빙 백업 준비 완료!</h3>
                 <p class="text-muted">먼저 아래 버튼을 눌러 백업 파일을 기기에 저장하세요.<br><br><strong class="text-danger">다운로드가 완료된 후 '데이터 비우기 실행'을 눌러주세요.</strong></p>
-                <a href="${url}" download="${fileName}" class="btn btn-success w-100 mb-15" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:1.1rem;">💾 1단계: 백업 파일 다운로드</a>
+                <a href="${url}" download="${fileName}" onclick="markBackupDone()" class="btn btn-success w-100 mb-15" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:1.1rem;">💾 1단계: 백업 파일 다운로드</a>
                 <button id="confirmDietBtn" class="btn btn-danger w-100 mb-10">🗑️ 2단계: 데이터 비우기 실행</button>
                 <button onclick="closeModal('backupModal')" class="btn btn-secondary w-100">취소</button>
             `;
@@ -1848,23 +2114,23 @@
         }
     }
 
-    function restoreData(input) { 
-        const file = input.files[0]; 
-        if(!file) return; 
-        const reader = new FileReader(); 
-        reader.onload = async e => { 
-            try { 
-                let data = JSON.parse(e.target.result); 
+    function restoreData(input) {
+        const file = input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = async e => {
+            try {
+                let data = JSON.parse(e.target.result);
                 let memoList =[];
-                
+
                 if (data.memos && Array.isArray(data.memos)) {
                     memoList = data.memos;
                     if(data.tagTree) {
-                        tagTree = data.tagTree;
+                        mergeTagTree(data.tagTree);
                         saveTagTree();
                     } else if (data.tags && Array.isArray(data.tags)) {
                         localStorage.setItem('myTags', JSON.stringify(data.tags));
-                        localStorage.removeItem('tagTree_v3'); 
+                        localStorage.removeItem('tagTree_v3');
                     }
                 } else if (Array.isArray(data)) {
                     memoList = data;
@@ -1884,50 +2150,55 @@
                         }
                     }
                 }
-                
-                const tx = db.transaction([STORE_NAME, STORE_IMAGES], 'readwrite'); 
-                memoList.forEach(i => tx.objectStore(STORE_NAME).put(i)); 
+
+                const tx = db.transaction([STORE_NAME, STORE_IMAGES], 'readwrite');
+                memoList.forEach(i => tx.objectStore(STORE_NAME).put(i));
                 imageList.forEach(i => tx.objectStore(STORE_IMAGES).put(i));
 
-                tx.oncomplete = () => { 
-                    alert('성공적으로 복원되었습니다!\n\n※ 최신 3단계 폴더 규격으로 완벽 매칭되었습니다.'); 
-                    location.reload(); 
-                }; 
+                tx.oncomplete = () => {
+                    alert('성공적으로 복원되었습니다!\n\n※ 최신 3단계 폴더 규격으로 완벽 매칭되었습니다.');
+                    location.reload();
+                };
                 tx.onerror = () => {
                     alert('복원 중 데이터베이스 오류가 발생했습니다.');
                 };
-            } catch(err) { 
+            } catch(err) {
                 console.error(err);
-                alert('파일 오류: 올바른 형식의 백업 파일이 아닙니다.'); 
-            } 
-        }; 
-        reader.readAsText(file); 
+                alert('파일 오류: 올바른 형식의 백업 파일이 아닙니다.');
+            }
+        };
+        reader.readAsText(file);
     }
 
-    function resetApp() { 
-        if(confirm('모든 데이터가 삭제됩니다. 정말 초기화하시겠습니까?')) { 
+    function resetApp() {
+        if(confirm('모든 데이터가 삭제됩니다. 정말 초기화하시겠습니까?')) {
             const tx = db.transaction([STORE_NAME, STORE_IMAGES], 'readwrite');
             tx.objectStore(STORE_NAME).clear();
             tx.objectStore(STORE_IMAGES).clear();
-            tx.oncomplete = () => { 
-                alert('초기화 완료'); 
-                location.reload(); 
-            }; 
-        } 
+            tx.oncomplete = () => {
+                alert('초기화 완료');
+                location.reload();
+            };
+        }
     }
-    
+
     function strToInputDate(str) { const p=str.match(/\d+/g); return p ? `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}` : ''; }
     function inputDateToStr(val) { const p=val.split('-'); return p ? `${p[0]}. ${Number(p[1])}. ${Number(p[2])}.` : ''; }
     function openWriteWithDate(y, m, d) { document.getElementById('inputDate').value = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; switchTab('write'); }
-    
-    async function shareCurrentMemo() { 
-        const m = await getMemo(currentActiveMemoId); 
-        if(!m) return; 
-        const t = (m.content||"").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, ""); 
-        const safeTags = getTagsFromMemo(m); 
-        const s = {title: m.title||"무제", text: `[${m.title||"무제"}] (${m.dateStr||""})\n\n${t}\n\n[태그]\n${safeTags.join(' ')}`}; 
-        if(navigator.share) navigator.share(s); 
-        else { navigator.clipboard.writeText(`${s.title}\n\n${s.text}`); alert('복사되었습니다.'); } 
+
+    async function shareCurrentMemo() {
+        const m = await getMemo(currentActiveMemoId);
+        if(!m) return;
+        const t = (m.content||"").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "");
+        const safeTags = getTagsFromMemo(m);
+        const s = {title: m.title||"무제", text: `[${m.title||"무제"}] (${m.dateStr||""})\n\n${t}${getLinksFromMemo(m).length ? '\n\n[링크]\n' + getLinksFromMemo(m).join('\n') : ''}\n\n[태그]\n${safeTags.join(' ')}`};
+        if(navigator.share) navigator.share(s);
+        else { navigator.clipboard.writeText(`${s.title}\n\n${s.text}`); alert('복사되었습니다.'); }
+    }
+
+    // [v14.5.0] 홈 화면 설치 + 공유 받기용 서비스워커
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW 등록 실패', e)));
     }
 </script>
 </body>
